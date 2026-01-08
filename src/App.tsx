@@ -1,3 +1,4 @@
+// File: src/App.tsx
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/electron-vite.animate.svg'
@@ -8,7 +9,7 @@ function App() {
 
   return (
     <>
-      <div>
+      <div className='bg-black text-white w-screen h-screen'>
         <a href="https://electron-vite.github.io" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
