@@ -1,30 +1,23 @@
-// File: vite.config.ts
-
+// File: vite.config.js
 import { defineConfig } from "vite";
 import path from "node:path";
 import electron from "vite-plugin-electron/simple";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
     electron({
       main: {
-        // Shortcut of `build.lib.entry`.
-        entry: "electron/main.ts",
+        entry: "electron/main.js",
       },
       preload: {
-        // Shortcut of `build.rollupOptions.input`.
-        input: path.join(__dirname, "electron/preload.ts"),
+        input: path.join(__dirname, "electron/preload.js"),
       },
-      // Ployfill the Electron and Node.js API for Renderer process.
-      renderer: process.env.NODE_ENV === "test" ? undefined : {},
     }),
   ],
-  // Shadcn UI ke liye yeh 'resolve' object add karein
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
