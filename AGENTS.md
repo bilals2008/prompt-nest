@@ -17,7 +17,7 @@ electron/          # Electron main & preload (ESM, .js)
   preload.js       # contextBridge exposing ipcRenderer methods
 src/
   main.jsx         # React entry point (ReactDOM.createRoot)
-  App.jsx          # Root component (login card demo)
+  App.jsx          # Root component
   index.css        # Tailwind v4 imports + CSS variables (light/dark theme)
   App.css          # App-specific styles
   components/
@@ -72,3 +72,47 @@ npm run preview  # Vite preview (serves built files)
 ## Boilerplate Copy
 A clean boilerplate copy of this project is kept at:
 `D:\backup\OneDrive\Desktop\electron-js`
+
+---
+
+# Frontend & UI Rules
+
+- Use `shadcn/ui` components whenever possible
+- Use Tailwind semantic tokens only
+- Never use hardcoded colors or arbitrary values
+- Avoid classes like: `bg-white`, `text-black`, `border-gray-800`, `bg-[#000]`
+- Prefer semantic tokens: `bg-background`, `bg-primary`, `bg-secondary`, `text-foreground`, `text-muted-foreground`, `border-border`, `ring-ring`
+
+# Design Rules
+
+- Desktop application style only
+- No glassmorphism, neon gradients, glowing UI, heavy shadows, excessive blur, over-animated interfaces, or mobile-style oversized spacing
+
+# Interaction Rules
+
+- All interactive elements must use `cursor-pointer`
+- Add subtle micro interactions with soft hover states and smooth transitions
+- Keep animations minimal and professional — avoid dramatic motion effects
+
+# Sidebar Rules
+
+- Fixed compact sidebar with icons only (no expandable)
+- Show tooltips on hover
+- Active state: subtle tinted background
+
+# Card Styling Rules
+
+- Soft tinted surfaces with minimal borders and subtle depth
+- Calm professional appearance — no flashy gradients or effects
+
+# Code Quality Rules
+
+- Keep components modular and reusable
+- Reuse UI primitives
+- Avoid duplicated styles
+- Maintain consistent spacing system
+- Keep code scalable, clean, and production-ready
+
+# Overall UI Direction
+
+The application should feel: modern, calm, native, lightweight, productivity-focused, professional, desktop-first. The UI should resemble a polished desktop productivity application rather than a flashy marketing website.
