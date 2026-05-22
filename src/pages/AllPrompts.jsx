@@ -1,6 +1,6 @@
 // File: src/pages/AllPrompts.jsx
-import { useState, useEffect, useMemo } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useState, useEffect, useMemo, useCallback } from "react"
+import { useSearchParams, useNavigate } from "react-router-dom"
 import { Library } from "lucide-react"
 import { PromptsToolbar } from "@/components/prompts-toolbar"
 import { PromptCard } from "@/components/prompt-card"
@@ -9,6 +9,7 @@ import { DataPagination } from "@/components/data-pagination"
 import { IconFiles } from "@tabler/icons-react"
 
 export default function AllPrompts() {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [prompts, setPrompts] = useState([])
   const [collections, setCollections] = useState([])
@@ -53,6 +54,10 @@ export default function AllPrompts() {
   useEffect(() => {
     setCurrentPage(1)
   }, [searchQuery, sortBy, selectedCollection, pageSize])
+
+  const handleEdit = useCallback((id) => {
+    navigate(`/prompts/${id}/edit`)
+  }, [navigate])
 
   const loadData = () => {
     setLoading(true)
@@ -140,6 +145,7 @@ export default function AllPrompts() {
                       key={prompt.id}
                       prompt={prompt}
                       viewMode="grid"
+                      onEdit={handleEdit}
                       onToggleFavorite={handleToggleFavorite}
                       onDelete={handleDelete}
                       onDuplicate={handleDuplicate}
@@ -153,6 +159,7 @@ export default function AllPrompts() {
                       key={prompt.id}
                       prompt={prompt}
                       viewMode="list"
+                      onEdit={handleEdit}
                       onToggleFavorite={handleToggleFavorite}
                       onDelete={handleDelete}
                       onDuplicate={handleDuplicate}

@@ -1,6 +1,7 @@
 // File: src/pages/PromptEditor.jsx
 import { useState, useEffect, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -100,6 +101,7 @@ export default function PromptEditor() {
           setMeta({ created_at: created.created_at, updated_at: created.updated_at })
           navigate(`/prompts/${created.id}/edit`, { replace: true })
         }
+        toast.success("Prompt created")
       } else {
         await window.db.updatePrompt(id, {
           title: form.title,
@@ -113,10 +115,12 @@ export default function PromptEditor() {
           setMeta({ created_at: updated.created_at, updated_at: updated.updated_at })
         }
         window.db.logActivity(id, "edited").catch(() => {})
+        toast.success("Prompt saved")
       }
       setDirty(false)
     } catch (error) {
       console.error("Save failed:", error)
+      toast.error("Save failed")
     } finally {
       setSaving(false)
     }
@@ -210,6 +214,8 @@ export default function PromptEditor() {
   const tagList = form.tags
     ? form.tags.split(",").map((t) => t.trim()).filter(Boolean)
     : []
+
+  const cleanTagsDisplay = tagList.map((t) => parseTag(t).name).join(", ")
 
   const updateTagColor = (oldRaw, colorName) => {
     const { name } = parseTag(oldRaw)
@@ -342,7 +348,7 @@ export default function PromptEditor() {
                   </label>
                   <Input
                     placeholder="react, component, frontend"
-                    value={form.tags}
+                    value={cleanTagsDisplay || form.tags}
                     onChange={(e) => updateField("tags", e.target.value)}
                     className="border-border bg-card/30 text-sm"
                   />

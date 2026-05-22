@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Outlet } from "react-router-dom"
 import { AppSidebar } from "@/components/app-sidebar"
+import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
       )}>
         <Outlet />
       </main>
+      <Toaster />
     </div>
   )
 }

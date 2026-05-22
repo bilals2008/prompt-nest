@@ -21,7 +21,7 @@ import {
 } from "@tabler/icons-react"
 import { Heart } from "lucide-react"
 
-export function PromptCard({ prompt, viewMode = "grid", onToggleFavorite, onDelete, onDuplicate }) {
+export function PromptCard({ prompt, viewMode = "grid", onToggleFavorite, onDelete, onDuplicate, onEdit }) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async (e) => {
@@ -105,7 +105,7 @@ export function PromptCard({ prompt, viewMode = "grid", onToggleFavorite, onDele
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-36">
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation() }}>
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit?.(prompt.id) }}>
               <IconPencil className="size-3.5" /> Edit
             </DropdownMenuItem>
             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onDuplicate?.(prompt.id) }}>
@@ -174,7 +174,7 @@ export function PromptCard({ prompt, viewMode = "grid", onToggleFavorite, onDele
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-36">
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit?.(prompt.id) }}>
                 <IconPencil className="size-3.5" /> Edit
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onDuplicate?.(prompt.id)}>
