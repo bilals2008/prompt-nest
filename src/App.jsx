@@ -1,3 +1,4 @@
+// File: src/App.jsx
 import { ModeToggle } from "./components/mode-toggle.jsx";
 
 function App() {
