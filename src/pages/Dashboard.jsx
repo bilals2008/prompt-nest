@@ -39,7 +39,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     window.db.getAllPrompts().then((data) => {
-      setPrompts(data.slice(0, 5))
+      setPrompts(Array.isArray(data) ? data.slice(0, 5) : [])
     }).catch(console.error).finally(() => setLoading(false))
   }, [])
 
@@ -63,9 +63,7 @@ export default function Dashboard() {
 
         <div className="mx-auto mb-8 grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {cards.map((card) => (
-            <div key={card.title} onClick={() => card.path && navigate(card.path)}>
-              <DashboardCard {...card} />
-            </div>
+            <DashboardCard key={card.title} {...card} onClick={card.path ? () => navigate(card.path) : undefined} />
           ))}
         </div>
 

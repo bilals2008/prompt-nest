@@ -20,11 +20,11 @@ export default function AllPrompts() {
   const loadData = () => {
     setLoading(true)
     Promise.all([
-      window.db.getAllPrompts(),
-      window.db.getCollections(),
+      window.db.getAllPrompts().catch(() => []),
+      window.db.getCollections().catch(() => []),
     ]).then(([promptsData, collectionsData]) => {
-      setPrompts(promptsData || [])
-      setCollections(collectionsData || [])
+      setPrompts(Array.isArray(promptsData) ? promptsData : [])
+      setCollections(Array.isArray(collectionsData) ? collectionsData : [])
     }).catch(console.error).finally(() => setLoading(false))
   }
 
