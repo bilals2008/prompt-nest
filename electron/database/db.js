@@ -6,6 +6,43 @@ import { createTables } from './schema.js'
 
 let db = null
 
+function wrap(db) {
+  return {
+    run(sql, params = []) {
+      return new Promise((resolve, reject) => {
+        db.run(sql, params, function (err) {
+          if (err) reject(err)
+          else resolve(this)
+        })
+      })
+    },
+    get(sql, params = []) {
+      return new Promise((resolve, reject) => {
+        db.get(sql, params, (err, row) => {
+          if (err) reject(err)
+          else resolve(row)
+        })
+      })
+    },
+    all(sql, params = []) {
+      return new Promise((resolve, reject) => {
+        db.all(sql, params, (err, rows) => {
+          if (err) reject(err)
+          else resolve(rows)
+        })
+      })
+    },
+    exec(sql) {
+      return new Promise((resolve, reject) => {
+        db.exec(sql, (err) => {
+          if (err) reject(err)
+          else resolve()
+        })
+      })
+    },
+  }
+}
+
 export function getDatabase() {
   if (!db) throw new Error('Database not initialized. Call initDatabase() first.')
   return db
@@ -21,17 +58,14 @@ export async function initDatabase() {
 
   const dbPath = path.join(dbDir, 'promptnest.db')
 
-  await new Promise((resolve, reject) => {
-    db = new sqlite3.Database(dbPath, (err) => {
-      if (err) {
-        console.error('[DB] Failed to open database:', err)
-        reject(err)
-        return
-      }
-      console.log('[DB] Database opened at:', dbPath)
-      resolve()
+  const raw = await new Promise((resolve, reject) => {
+    const d = new sqlite3.Database(dbPath, (err) => {
+      if (err) { reject(err); return }
+      resolve(d)
     })
   })
+
+  db = wrap(raw)
 
   await db.run('PRAGMA journal_mode = WAL')
   await db.run('PRAGMA foreign_keys = ON')
@@ -61,17 +95,17 @@ async function seedData() {
 
 export function closeDatabase() {
   if (db) {
-    db.close()
-    db = null
+    db.run('PRAGMA optimize')
   }
+  db = null
 }
 
 export async function getDashboardStats() {
-  const db = getDatabase()
-  const totalPrompts = await db.get('SELECT COUNT(*) as count FROM prompts WHERE is_template = 0')
-  const collections = await db.get('SELECT COUNT(*) as count FROM collections')
-  const totalTemplates = await db.get('SELECT COUNT(*) as count FROM prompts WHERE is_template = 1')
-  const thisWeek = await db.get("SELECT COUNT(*) as count FROM prompts WHERE is_template = 0 AND created_at >= datetime('now', '-7 days')")
+  const d = getDatabase()
+  const totalPrompts = await d.get('SELECT COUNT(*) as count FROM prompts WHERE is_template = 0')
+  const collections = await d.get('SELECT COUNT(*) as count FROM collections')
+  const totalTemplates = await d.get('SELECT COUNT(*) as count FROM prompts WHERE is_template = 1')
+  const thisWeek = await d.get("SELECT COUNT(*) as count FROM prompts WHERE is_template = 0 AND created_at >= datetime('now', '-7 days')")
   return {
     totalPrompts: totalPrompts?.count || 0,
     collections: collections?.count || 0,
@@ -81,10 +115,10 @@ export async function getDashboardStats() {
 }
 
 export async function getDatabaseStats() {
-  const db = getDatabase()
-  const promptCount = await db.get('SELECT COUNT(*) as count FROM prompts')
-  const collectionCount = await db.get('SELECT COUNT(*) as count FROM collections')
-  const favoriteCount = await db.get('SELECT COUNT(*) as count FROM prompts WHERE favorite = 1')
+  const d = getDatabase()
+  const promptCount = await d.get('SELECT COUNT(*) as count FROM prompts')
+  const collectionCount = await d.get('SELECT COUNT(*) as count FROM collections')
+  const favoriteCount = await d.get('SELECT COUNT(*) as count FROM prompts WHERE favorite = 1')
   const dbPath = path.join(app.getPath('userData'), 'PromptNest', 'promptnest.db')
   let size = 0
   try { size = fs.statSync(dbPath).size } catch {}

@@ -1,3 +1,4 @@
+// File: dist-electron/preload.mjs
 let electron = require("electron");
 //#region electron/preload.js
 electron.contextBridge.exposeInMainWorld("db", {
