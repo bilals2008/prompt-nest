@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS prompts (
   title TEXT NOT NULL,
   content TEXT NOT NULL,
   tags TEXT,
+  notes TEXT,
   collection_id TEXT,
   favorite INTEGER DEFAULT 0,
   is_template INTEGER DEFAULT 0,
@@ -37,6 +38,10 @@ export async function createTables() {
   const hasIsTemplate = columns.some((c) => c.name === 'is_template')
   if (!hasIsTemplate) {
     await db.run('ALTER TABLE prompts ADD COLUMN is_template INTEGER DEFAULT 0')
+  }
+  const hasNotes = columns.some((c) => c.name === 'notes')
+  if (!hasNotes) {
+    await db.run('ALTER TABLE prompts ADD COLUMN notes TEXT')
   }
 
   const colColumns = await db.all('PRAGMA table_info(collections)')

@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from "react"
+// File: src/pages/PromptEditor.jsx
+import { useState, useEffect, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { TagBadge } from "@/components/tag-badge"
 import { getTagColorDot, parseTag, colorNames } from "@/lib/tag-colors"
+import { getCollectionIcon, getCollectionColor } from "@/lib/collection-config"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -34,7 +36,6 @@ export default function PromptEditor() {
   const { id } = useParams()
   const navigate = useNavigate()
   const isNew = !id
-  const saveTimer = useRef(null)
   const [collections, setCollections] = useState([])
   const [showPreview, setShowPreview] = useState(false)
   const [dirty, setDirty] = useState(false)
@@ -44,8 +45,8 @@ export default function PromptEditor() {
     title: "",
     content: "",
     tags: "",
-    collection_id: "",
     notes: "",
+    collection_id: "",
     favorite: false,
   })
 
@@ -65,8 +66,8 @@ export default function PromptEditor() {
             title: data.title || "",
             content: data.content || "",
             tags: data.tags || "",
-            collection_id: data.collection_id || "",
             notes: data.notes || "",
+            collection_id: data.collection_id || "",
             favorite: !!data.favorite,
           })
           setMeta({
@@ -92,9 +93,11 @@ export default function PromptEditor() {
           title: form.title || "Untitled",
           content: form.content,
           tags: form.tags,
+          notes: form.notes,
           collection_id: form.collection_id || null,
         })
         if (created) {
+          setMeta({ created_at: created.created_at, updated_at: created.updated_at })
           navigate(`/prompts/${created.id}/edit`, { replace: true })
         }
       } else {
@@ -102,6 +105,7 @@ export default function PromptEditor() {
           title: form.title,
           content: form.content,
           tags: form.tags,
+          notes: form.notes,
           collection_id: form.collection_id || null,
         })
         const updated = await window.db.getPromptById(id)
@@ -119,27 +123,15 @@ export default function PromptEditor() {
   }, [form, id, isNew, navigate])
 
   useEffect(() => {
-    if (!dirty) return
-    if (saveTimer.current) clearTimeout(saveTimer.current)
-    saveTimer.current = setTimeout(() => {
-      save()
-    }, 2000)
-    return () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current)
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault()
+        save()
+      }
     }
-  }, [dirty, save])
-
-  const handleKeyDown = (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "s") {
-      e.preventDefault()
-      save()
-    }
-  }
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [handleKeyDown])
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [save])
 
   const handleCopy = async () => {
     try {
@@ -160,6 +152,7 @@ export default function PromptEditor() {
       title: form.title ? `${form.title} (Copy)` : "Untitled (Copy)",
       content: form.content,
       tags: form.tags,
+      notes: form.notes,
       collection_id: form.collection_id || null,
     })
     if (created) {
@@ -181,6 +174,7 @@ export default function PromptEditor() {
       title: form.title,
       content: form.content,
       tags: form.tags,
+      notes: form.notes,
       collection_id: form.collection_id,
     }
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
@@ -211,7 +205,7 @@ export default function PromptEditor() {
 
   const wordCount = form.content ? form.content.trim().split(/\s+/).filter(Boolean).length : 0
   const charCount = form.content ? form.content.length : 0
-  const collectionName = collections.find((c) => c.id === form.collection_id)?.name
+  const selectedCollection = collections.find((c) => c.id === form.collection_id)
 
   const tagList = form.tags
     ? form.tags.split(",").map((t) => t.trim()).filter(Boolean)
@@ -226,6 +220,14 @@ export default function PromptEditor() {
   }
 
   const [openColorPicker, setOpenColorPicker] = useState(null)
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "—"
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short", day: "numeric", year: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    })
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -313,7 +315,7 @@ export default function PromptEditor() {
 
               <div className="relative">
                 <Textarea
-                  placeholder="Write your prompt content here... Supports **markdown** syntax."
+                  placeholder="Write your prompt content here..."
                   value={form.content}
                   onChange={(e) => updateField("content", e.target.value)}
                   className="min-h-[300px] resize-y border-border bg-card/30 p-4 text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-primary/20"
@@ -417,27 +419,34 @@ export default function PromptEditor() {
 
         <aside className="hidden w-60 shrink-0 border-l border-border bg-card/30 p-5 lg:block">
           <div className="space-y-5">
+
+            <div>
+              <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</h4>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-[11px] text-muted-foreground">Words</p>
+                  <p className="text-xs font-medium">{wordCount.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground">Characters</p>
+                  <p className="text-xs font-medium">{charCount.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
             <div>
               <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Details</h4>
               <div className="space-y-3">
-                {meta.created_at && (
-                  <div>
-                    <p className="text-[11px] text-muted-foreground">Created</p>
-                    <p className="text-xs">{new Date(meta.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
-                  </div>
-                )}
-                {meta.updated_at && (
-                  <div>
-                    <p className="text-[11px] text-muted-foreground">Updated</p>
-                    <p className="text-xs">{new Date(meta.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
-                  </div>
-                )}
-                {!meta.created_at && (
-                  <div>
-                    <p className="text-[11px] text-muted-foreground">Status</p>
-                    <p className="text-xs">Not saved yet</p>
-                  </div>
-                )}
+                <div>
+                  <p className="text-[11px] text-muted-foreground">Created</p>
+                  <p className="text-xs">{formatDate(meta.created_at)}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground">Updated</p>
+                  <p className="text-xs">{formatDate(meta.updated_at)}</p>
+                </div>
               </div>
             </div>
 
@@ -445,17 +454,14 @@ export default function PromptEditor() {
 
             <div>
               <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tags</h4>
-                  {tagList.length > 0 ? (
-                    <div className="flex flex-wrap gap-1.5">
-                      {tagList.map((tag, i) => (
-                        <div key={i} className="flex items-center gap-1">
-                          <TagBadge tag={tag} />
-                          <span className={cn("block size-1.5 rounded-full", getTagColorDot(parseTag(tag).colorName))} />
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                <p className="text-xs text-muted-foreground">No tags</p>
+              {tagList.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {tagList.map((tag, i) => (
+                    <TagBadge key={i} tag={tag} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">None</p>
               )}
             </div>
 
@@ -463,15 +469,26 @@ export default function PromptEditor() {
 
             <div>
               <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Collection</h4>
-              {collectionName ? (
+              {selectedCollection ? (
                 <div className="flex items-center gap-2 text-xs">
-                  <FolderOpen className="size-3.5 text-muted-foreground" />
-                  {collectionName}
+                  {(() => {
+                    const Icon = getCollectionIcon(selectedCollection.icon)
+                    const colColor = getCollectionColor(selectedCollection.color, selectedCollection.icon)
+                    return (
+                      <>
+                        <span className={cn("flex size-6 items-center justify-center rounded-md", colColor.bg, colColor.text)}>
+                          <Icon className="size-3.5" />
+                        </span>
+                        <span className="font-medium">{selectedCollection.name}</span>
+                      </>
+                    )
+                  })()}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">No collection</p>
+                <p className="text-xs text-muted-foreground">None</p>
               )}
             </div>
+
           </div>
         </aside>
       </div>

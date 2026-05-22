@@ -1,3 +1,4 @@
+// File: src/components/tag-badge.jsx
 import { cn } from "@/lib/utils"
 import { getTagColor, parseTag } from "@/lib/tag-colors"
 

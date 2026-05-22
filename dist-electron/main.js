@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS prompts (
   title TEXT NOT NULL,
   content TEXT NOT NULL,
   tags TEXT,
+  notes TEXT,
   collection_id TEXT,
   favorite INTEGER DEFAULT 0,
   is_template INTEGER DEFAULT 0,
@@ -34,7 +35,9 @@ CREATE TABLE IF NOT EXISTS activity_log (
 async function createTables() {
 	const db = getDatabase();
 	await db.exec(SCHEMA);
-	if (!(await db.all("PRAGMA table_info(prompts)")).some((c) => c.name === "is_template")) await db.run("ALTER TABLE prompts ADD COLUMN is_template INTEGER DEFAULT 0");
+	const columns = await db.all("PRAGMA table_info(prompts)");
+	if (!columns.some((c) => c.name === "is_template")) await db.run("ALTER TABLE prompts ADD COLUMN is_template INTEGER DEFAULT 0");
+	if (!columns.some((c) => c.name === "notes")) await db.run("ALTER TABLE prompts ADD COLUMN notes TEXT");
 	if (!(await db.all("PRAGMA table_info(collections)")).some((c) => c.name === "color")) await db.run("ALTER TABLE collections ADD COLUMN color TEXT DEFAULT 'blue'");
 }
 //#endregion
@@ -198,15 +201,16 @@ async function getDatabaseStats() {
 }
 //#endregion
 //#region electron/database/prompts.js
-async function createPrompt({ title, content, tags = "", collection_id = null }) {
+async function createPrompt({ title, content, tags = "", notes = "", collection_id = null }) {
 	const db = getDatabase();
 	const id = crypto.randomUUID();
 	const now = (/* @__PURE__ */ new Date()).toISOString();
-	await db.run("INSERT INTO prompts (id, title, content, tags, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?)", [
+	await db.run("INSERT INTO prompts (id, title, content, tags, notes, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)", [
 		id,
 		title,
 		content,
 		tags,
+		notes,
 		collection_id,
 		now,
 		now
@@ -232,7 +236,7 @@ async function getFavorites() {
     WHERE p.favorite = 1 ORDER BY p.updated_at DESC
   `);
 }
-async function updatePrompt(id, { title, content, tags, collection_id }) {
+async function updatePrompt(id, { title, content, tags, notes, collection_id }) {
 	const db = getDatabase();
 	const now = (/* @__PURE__ */ new Date()).toISOString();
 	const sets = [];
@@ -248,6 +252,10 @@ async function updatePrompt(id, { title, content, tags, collection_id }) {
 	if (tags !== void 0) {
 		sets.push("tags = ?");
 		values.push(tags);
+	}
+	if (notes !== void 0) {
+		sets.push("notes = ?");
+		values.push(notes);
 	}
 	if (collection_id !== void 0) {
 		sets.push("collection_id = ?");

@@ -1,13 +1,13 @@
 // File: electron/database/prompts.js
 import { getDatabase } from './db.js'
 
-export async function createPrompt({ title, content, tags = '', collection_id = null }) {
+export async function createPrompt({ title, content, tags = '', notes = '', collection_id = null }) {
   const db = getDatabase()
   const id = crypto.randomUUID()
   const now = new Date().toISOString()
   await db.run(
-    'INSERT INTO prompts (id, title, content, tags, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?)',
-    [id, title, content, tags, collection_id, now, now]
+    'INSERT INTO prompts (id, title, content, tags, notes, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)',
+    [id, title, content, tags, notes, collection_id, now, now]
   )
   return getPromptById(id)
 }
@@ -38,7 +38,7 @@ export async function getFavorites() {
   `)
 }
 
-export async function updatePrompt(id, { title, content, tags, collection_id }) {
+export async function updatePrompt(id, { title, content, tags, notes, collection_id }) {
   const db = getDatabase()
   const now = new Date().toISOString()
   const sets = []
@@ -46,6 +46,7 @@ export async function updatePrompt(id, { title, content, tags, collection_id }) 
   if (title !== undefined) { sets.push('title = ?'); values.push(title) }
   if (content !== undefined) { sets.push('content = ?'); values.push(content) }
   if (tags !== undefined) { sets.push('tags = ?'); values.push(tags) }
+  if (notes !== undefined) { sets.push('notes = ?'); values.push(notes) }
   if (collection_id !== undefined) { sets.push('collection_id = ?'); values.push(collection_id) }
   sets.push('updated_at = ?')
   values.push(now)
