@@ -1,3 +1,4 @@
+// File: src/pages/Dashboard.jsx
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { DashboardCard } from "@/components/dashboard-card"
@@ -19,6 +20,7 @@ import {
   Tags,
   GitFork,
   Zap,
+  Settings,
 } from "lucide-react"
 
 const cards = [
@@ -30,6 +32,7 @@ const cards = [
   { icon: Clock, title: "Recent Activity", accent: "orange", description: "Latest changes" },
   { icon: Download, title: "Export Prompts", accent: "muted", description: "Download as file" },
   { icon: FileText, title: "Templates", accent: "primary", description: "Starter templates" },
+  { icon: Settings, title: "Settings", accent: "primary", description: "Configure app", path: "/settings" },
 ]
 
 export default function Dashboard() {
