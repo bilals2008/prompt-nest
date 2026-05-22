@@ -4,6 +4,7 @@ import path from 'node:path'
 import { initDatabase, closeDatabase } from './database/db.js'
 import * as prompts from './database/prompts.js'
 import * as collections from './database/collections.js'
+import * as activity from './database/activity.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -50,6 +51,8 @@ function registerIpcHandlers() {
   ipcMain.handle('db:getCollections', () => collections.getCollections())
   ipcMain.handle('db:updateCollection', (_, id, data) => collections.updateCollection(id, data))
   ipcMain.handle('db:deleteCollection', (_, id) => collections.deleteCollection(id))
+  ipcMain.handle('db:logActivity', (_, promptId, action) => activity.logActivity(promptId, action))
+  ipcMain.handle('db:getActivity', (_, limit) => activity.getActivity(limit))
 }
 
 app.on('window-all-closed', () => {

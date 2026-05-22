@@ -38,6 +38,7 @@ export function PromptCard({ prompt, viewMode = "grid", onToggleFavorite, onDele
       setCopied(true)
       setTimeout(() => setCopied(false), 1500)
     }
+    window.db.logActivity(prompt.id, "copied").catch(() => {})
   }
 
   const handleFavorite = (e) => {

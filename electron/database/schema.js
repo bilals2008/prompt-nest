@@ -18,6 +18,13 @@ CREATE TABLE IF NOT EXISTS collections (
   icon TEXT,
   created_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS activity_log (
+  id TEXT PRIMARY KEY,
+  prompt_id TEXT,
+  action TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
 `
 
 export async function createTables() {

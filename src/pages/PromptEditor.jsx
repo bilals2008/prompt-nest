@@ -69,6 +69,7 @@ export default function PromptEditor() {
             created_at: data.created_at,
             updated_at: data.updated_at,
           })
+          window.db.logActivity(id, "viewed").catch(() => {})
         }
       })
     }
@@ -103,6 +104,7 @@ export default function PromptEditor() {
         if (updated) {
           setMeta({ created_at: updated.created_at, updated_at: updated.updated_at })
         }
+        window.db.logActivity(id, "edited").catch(() => {})
       }
       setDirty(false)
     } catch (error) {

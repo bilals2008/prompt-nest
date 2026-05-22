@@ -30,7 +30,7 @@ const topNavItems = [
   { icon: Heart, label: "Favorites", path: "/favorites" },
   { icon: FolderOpen, label: "Collections", path: "/collections" },
   { icon: Search, label: "Search", path: "/search" },
-  { icon: Clock, label: "Recent" },
+  { icon: Clock, label: "Activity", path: "/activity" },
   { icon: Download, label: "Export" },
   { icon: FileText, label: "Templates" },
 ]
