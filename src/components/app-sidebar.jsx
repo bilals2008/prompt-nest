@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
 import { ModeToggle } from "@/components/mode-toggle"
-import { Avatar, AvatarImage } from "@/components/ui/avatar"
 
 const topNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -86,9 +85,7 @@ export function AppSidebar({ expanded, onToggle }) {
           "flex h-16 w-full items-center border-b border-border gap-3",
           expanded ? "px-4 justify-start" : "justify-center"
         )}>
-          <Avatar className="size-11 rounded-xl shrink-0">
-            <AvatarImage src={logo} alt="Prompt Nest" className="object-contain rounded-xl" />
-          </Avatar>
+          <img src={logo} alt="Prompt Nest" className="size-10 shrink-0" />
           {expanded && (
             <span className="text-sm font-semibold text-foreground truncate">Prompt Nest</span>
           )}
