@@ -1,3 +1,4 @@
+<!-- File: AGENTS.md -->
 # AGENTS.md — Prompt Nest
 
 ## Project Overview
