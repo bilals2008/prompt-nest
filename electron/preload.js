@@ -15,4 +15,6 @@ contextBridge.exposeInMainWorld('db', {
   deleteCollection: (id) => ipcRenderer.invoke('db:deleteCollection', id),
   logActivity: (promptId, action) => ipcRenderer.invoke('db:logActivity', promptId, action),
   getActivity: (limit) => ipcRenderer.invoke('db:getActivity', limit),
+  exportData: (format) => ipcRenderer.invoke('db:exportData', format),
+  importData: () => ipcRenderer.invoke('db:importData'),
 })

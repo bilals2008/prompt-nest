@@ -31,7 +31,7 @@ const topNavItems = [
   { icon: FolderOpen, label: "Collections", path: "/collections" },
   { icon: Search, label: "Search", path: "/search" },
   { icon: Clock, label: "Activity", path: "/activity" },
-  { icon: Download, label: "Export" },
+  { icon: Download, label: "Export", path: "/export" },
   { icon: FileText, label: "Templates" },
 ]
 
