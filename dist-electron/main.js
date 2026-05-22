@@ -35,6 +35,7 @@ async function createTables() {
 	const db = getDatabase();
 	await db.exec(SCHEMA);
 	if (!(await db.all("PRAGMA table_info(prompts)")).some((c) => c.name === "is_template")) await db.run("ALTER TABLE prompts ADD COLUMN is_template INTEGER DEFAULT 0");
+	if (!(await db.all("PRAGMA table_info(collections)")).some((c) => c.name === "color")) await db.run("ALTER TABLE collections ADD COLUMN color TEXT DEFAULT 'blue'");
 }
 //#endregion
 //#region electron/database/db.js
@@ -216,10 +217,20 @@ async function getPromptById(id) {
 	return await getDatabase().get("SELECT * FROM prompts WHERE id = ?", [id]) || null;
 }
 async function getAllPrompts() {
-	return getDatabase().all("SELECT * FROM prompts ORDER BY created_at DESC");
+	return getDatabase().all(`
+    SELECT p.*, c.name as collection_name, c.icon as collection_icon, c.color as collection_color
+    FROM prompts p
+    LEFT JOIN collections c ON p.collection_id = c.id
+    ORDER BY p.created_at DESC
+  `);
 }
 async function getFavorites() {
-	return getDatabase().all("SELECT * FROM prompts WHERE favorite = 1 ORDER BY updated_at DESC");
+	return getDatabase().all(`
+    SELECT p.*, c.name as collection_name, c.icon as collection_icon, c.color as collection_color
+    FROM prompts p
+    LEFT JOIN collections c ON p.collection_id = c.id
+    WHERE p.favorite = 1 ORDER BY p.updated_at DESC
+  `);
 }
 async function updatePrompt(id, { title, content, tags, collection_id }) {
 	const db = getDatabase();
@@ -289,7 +300,7 @@ async function searchPrompts(query, filter = "all") {
 	const db = getDatabase();
 	const q = `%${query}%`;
 	let sql = `
-    SELECT p.*, c.name as collection_name
+    SELECT p.*, c.name as collection_name, c.icon as collection_icon, c.color as collection_color
     FROM prompts p
     LEFT JOIN collections c ON p.collection_id = c.id
     WHERE p.is_template = 0 AND (p.title LIKE ? OR p.content LIKE ? OR p.tags LIKE ? OR c.name LIKE ?)
@@ -306,14 +317,15 @@ async function searchPrompts(query, filter = "all") {
 }
 //#endregion
 //#region electron/database/collections.js
-async function createCollection({ name, icon = "folder" }) {
+async function createCollection({ name, icon = "folder", color = "blue" }) {
 	const db = getDatabase();
 	const id = crypto.randomUUID();
 	const now = (/* @__PURE__ */ new Date()).toISOString();
-	await db.run("INSERT INTO collections (id, name, icon, created_at) VALUES (?, ?, ?, ?)", [
+	await db.run("INSERT INTO collections (id, name, icon, color, created_at) VALUES (?, ?, ?, ?, ?)", [
 		id,
 		name,
 		icon,
+		color,
 		now
 	]);
 	return getCollectionById(id);
@@ -324,10 +336,11 @@ async function getCollectionById(id) {
 async function getCollections() {
 	return getDatabase().all("SELECT * FROM collections ORDER BY created_at ASC");
 }
-async function updateCollection(id, { name, icon }) {
-	await getDatabase().run("UPDATE collections SET name = ?, icon = ? WHERE id = ?", [
+async function updateCollection(id, { name, icon, color }) {
+	await getDatabase().run("UPDATE collections SET name = ?, icon = ?, color = ? WHERE id = ?", [
 		name,
 		icon || "folder",
+		color || "blue",
 		id
 	]);
 	return getCollectionById(id);

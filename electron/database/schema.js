@@ -38,4 +38,10 @@ export async function createTables() {
   if (!hasIsTemplate) {
     await db.run('ALTER TABLE prompts ADD COLUMN is_template INTEGER DEFAULT 0')
   }
+
+  const colColumns = await db.all('PRAGMA table_info(collections)')
+  const hasColor = colColumns.some((c) => c.name === 'color')
+  if (!hasColor) {
+    await db.run("ALTER TABLE collections ADD COLUMN color TEXT DEFAULT 'blue'")
+  }
 }

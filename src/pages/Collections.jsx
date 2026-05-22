@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import { cn } from "@/lib/utils"
 import {
   Dialog,
   DialogTrigger,
@@ -14,9 +15,9 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { LoadingState, EmptyState } from "@/components/loading-state"
+import { iconOptions, getCollectionIcon, getCollectionColor } from "@/lib/collection-config"
+import { getTagColorDot, colorNames } from "@/lib/tag-colors"
 import {
-  IconFolder,
-  IconFolderOpen,
   IconPlus,
   IconPencil,
   IconTrash,
@@ -31,14 +32,6 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 
-const iconOptions = [
-  { value: "folder", label: "Folder", icon: IconFolder },
-  { value: "star", label: "Star", icon: IconFolderOpen },
-  { value: "heart", label: "Heart", icon: IconFolderOpen },
-  { value: "bookmark", label: "Bookmark", icon: IconFolderOpen },
-  { value: "tag", label: "Tag", icon: IconFolderOpen },
-]
-
 export default function Collections() {
   const navigate = useNavigate()
   const [collections, setCollections] = useState([])
@@ -47,6 +40,7 @@ export default function Collections() {
   const [editDialog, setEditDialog] = useState({ open: false, collection: null })
   const [formName, setFormName] = useState("")
   const [formIcon, setFormIcon] = useState("folder")
+  const [formColor, setFormColor] = useState("blue")
 
   const loadData = () => {
     setLoading(true)
@@ -87,12 +81,14 @@ export default function Collections() {
   const openCreateDialog = () => {
     setFormName("")
     setFormIcon("folder")
+    setFormColor("blue")
     setEditDialog({ open: true, collection: null })
   }
 
   const openEditDialog = (collection) => {
     setFormName(collection.name)
     setFormIcon(collection.icon || "folder")
+    setFormColor(collection.color || "blue")
     setEditDialog({ open: true, collection })
   }
 
@@ -102,11 +98,13 @@ export default function Collections() {
       await window.db.updateCollection(editDialog.collection.id, {
         name: formName.trim(),
         icon: formIcon,
+        color: formColor,
       })
     } else {
       await window.db.createCollection({
         name: formName.trim(),
         icon: formIcon,
+        color: formColor,
       })
     }
     setEditDialog({ open: false, collection: null })
@@ -156,8 +154,8 @@ export default function Collections() {
                   className="group flex cursor-pointer flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-all hover:ring-1 hover:ring-primary/30"
                 >
                   <div className="flex items-start justify-between">
-                    <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <IconFolder className="size-6" />
+                    <div className={cn("flex size-11 items-center justify-center rounded-xl", getCollectionColor(col.color, col.icon).bg, getCollectionColor(col.color, col.icon).text)}>
+                      {(() => { const Icon = getCollectionIcon(col.icon); return <Icon className="size-6" /> })()}
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -225,19 +223,47 @@ export default function Collections() {
             <div>
               <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Icon</label>
               <div className="flex gap-2">
-                {iconOptions.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setFormIcon(opt.value)}
-                    className={`flex size-9 cursor-pointer items-center justify-center rounded-lg border transition-all ${
-                      formIcon === opt.value
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                    }`}
-                  >
-                    <opt.icon className="size-4" />
-                  </button>
-                ))}
+                {iconOptions.map((opt) => {
+                  const active = formIcon === opt.value
+                  const color = getCollectionColor(formColor, opt.value)
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => setFormIcon(opt.value)}
+                      className={cn(
+                        "flex size-9 cursor-pointer items-center justify-center rounded-lg border transition-all",
+                        active
+                          ? [color.bg, color.text, "border-current"]
+                          : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                      )}
+                    >
+                      <opt.icon className="size-4" />
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Color</label>
+              <div className="flex gap-1.5">
+                {colorNames.map((c) => {
+                  const active = formColor === c
+                  const color = getCollectionColor(c)
+                  return (
+                    <button
+                      key={c}
+                      onClick={() => setFormColor(c)}
+                      className={cn(
+                        "flex size-8 cursor-pointer items-center justify-center rounded-full border transition-all",
+                        active
+                          ? "border-ring ring-2 ring-ring ring-offset-1"
+                          : "border-border hover:border-muted-foreground"
+                      )}
+                    >
+                      <span className={cn("block size-4 rounded-full", getTagColorDot(c))} />
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </div>

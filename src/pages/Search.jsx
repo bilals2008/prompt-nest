@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
+import { TagBadge } from "@/components/tag-badge"
+import { collectionIcons, getCollectionColor } from "@/lib/collection-config"
 import { cn } from "@/lib/utils"
 import {
   IconSearch,
@@ -210,11 +212,15 @@ export default function Search() {
                         className="truncate text-sm font-medium"
                         dangerouslySetInnerHTML={{ __html: highlightMatch(prompt.title) }}
                       />
-                      {prompt.collection_id && (
-                        <Badge variant="outline" className="shrink-0 text-[10px] font-normal">
-                          {collectionMap[prompt.collection_id] || "Collection"}
-                        </Badge>
-                      )}
+                      {prompt.collection_id && (() => {
+                        const colColor = getCollectionColor(prompt.collection_color, prompt.collection_icon)
+                        return (
+                          <span className={cn("inline-flex shrink-0 items-center gap-1 rounded-4xl border px-2 py-0.5 text-[10px] font-normal", colColor.bg, colColor.text, colColor.border)}>
+                            {(() => { const Icon = collectionIcons[prompt.collection_icon]?.icon || IconFolder; return <Icon className="size-3" /> })()}
+                            {collectionMap[prompt.collection_id] || "Collection"}
+                          </span>
+                        )
+                      })()}
                     </div>
                     <p
                       className="mt-0.5 line-clamp-1 text-xs text-muted-foreground"
@@ -224,11 +230,7 @@ export default function Search() {
                       {prompt.tags?.split(",").map((tag) => {
                         const trimmed = tag.trim()
                         if (!trimmed) return null
-                        return (
-                          <Badge key={trimmed} variant="secondary" className="text-[10px] font-normal">
-                            {trimmed}
-                          </Badge>
-                        )
+                        return <TagBadge key={trimmed} tag={trimmed} />
                       })}
                     </div>
                   </div>

@@ -1,10 +1,10 @@
 import { getDatabase } from './db.js'
 
-export async function createCollection({ name, icon = 'folder' }) {
+export async function createCollection({ name, icon = 'folder', color = 'blue' }) {
   const db = getDatabase()
   const id = crypto.randomUUID()
   const now = new Date().toISOString()
-  await db.run('INSERT INTO collections (id, name, icon, created_at) VALUES (?, ?, ?, ?)', [id, name, icon, now])
+  await db.run('INSERT INTO collections (id, name, icon, color, created_at) VALUES (?, ?, ?, ?, ?)', [id, name, icon, color, now])
   return getCollectionById(id)
 }
 
@@ -19,9 +19,9 @@ export async function getCollections() {
   return db.all('SELECT * FROM collections ORDER BY created_at ASC')
 }
 
-export async function updateCollection(id, { name, icon }) {
+export async function updateCollection(id, { name, icon, color }) {
   const db = getDatabase()
-  await db.run('UPDATE collections SET name = ?, icon = ? WHERE id = ?', [name, icon || 'folder', id])
+  await db.run('UPDATE collections SET name = ?, icon = ?, color = ? WHERE id = ?', [name, icon || 'folder', color || 'blue', id])
   return getCollectionById(id)
 }
 

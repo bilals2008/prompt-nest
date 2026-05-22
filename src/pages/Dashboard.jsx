@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { DashboardCard } from "@/components/dashboard-card"
 import { StatCard } from "@/components/ui/stat-card"
+import { TagBadge } from "@/components/tag-badge"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { LoadingState, EmptyState } from "@/components/loading-state"
@@ -113,9 +114,7 @@ export default function Dashboard() {
                   </CardHeader>
                   <CardContent className="flex flex-wrap gap-1.5 pt-0">
                     {prompt.tags?.split(",").map((tag) => (
-                      <Badge key={tag.trim()} variant="secondary" className="text-[10px] font-normal">
-                        {tag.trim()}
-                      </Badge>
+                      <TagBadge key={tag.trim()} tag={tag.trim()} />
                     ))}
                   </CardContent>
                 </Card>

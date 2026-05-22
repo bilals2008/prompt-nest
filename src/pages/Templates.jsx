@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Badge } from "@/components/ui/badge"
+import { TagBadge } from "@/components/tag-badge"
 import { LoadingState, EmptyState } from "@/components/loading-state"
 import {
   IconFileText,
@@ -96,9 +96,7 @@ export default function Templates() {
                   <div className="flex items-center justify-between border-t border-border px-4 py-2">
                     <div className="flex min-w-0 flex-1 flex-wrap gap-1">
                       {tags.slice(0, 3).map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-[9px] font-normal leading-none">
-                          {tag}
-                        </Badge>
+                        <TagBadge key={tag} tag={tag} />
                       ))}
                       {tags.length > 3 && (
                         <span className="text-[9px] text-muted-foreground">+{tags.length - 3}</span>

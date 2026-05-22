@@ -20,12 +20,22 @@ export async function getPromptById(id) {
 
 export async function getAllPrompts() {
   const db = getDatabase()
-  return db.all('SELECT * FROM prompts ORDER BY created_at DESC')
+  return db.all(`
+    SELECT p.*, c.name as collection_name, c.icon as collection_icon, c.color as collection_color
+    FROM prompts p
+    LEFT JOIN collections c ON p.collection_id = c.id
+    ORDER BY p.created_at DESC
+  `)
 }
 
 export async function getFavorites() {
   const db = getDatabase()
-  return db.all('SELECT * FROM prompts WHERE favorite = 1 ORDER BY updated_at DESC')
+  return db.all(`
+    SELECT p.*, c.name as collection_name, c.icon as collection_icon, c.color as collection_color
+    FROM prompts p
+    LEFT JOIN collections c ON p.collection_id = c.id
+    WHERE p.favorite = 1 ORDER BY p.updated_at DESC
+  `)
 }
 
 export async function updatePrompt(id, { title, content, tags, collection_id }) {
@@ -85,7 +95,7 @@ export async function searchPrompts(query, filter = 'all') {
   const db = getDatabase()
   const q = `%${query}%`
   let sql = `
-    SELECT p.*, c.name as collection_name
+    SELECT p.*, c.name as collection_name, c.icon as collection_icon, c.color as collection_color
     FROM prompts p
     LEFT JOIN collections c ON p.collection_id = c.id
     WHERE p.is_template = 0 AND (p.title LIKE ? OR p.content LIKE ? OR p.tags LIKE ? OR c.name LIKE ?)

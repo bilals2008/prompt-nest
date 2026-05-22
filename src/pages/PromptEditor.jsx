@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
+import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { TagBadge } from "@/components/tag-badge"
+import { getTagColorDot, parseTag, colorNames } from "@/lib/tag-colors"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -214,6 +217,16 @@ export default function PromptEditor() {
     ? form.tags.split(",").map((t) => t.trim()).filter(Boolean)
     : []
 
+  const updateTagColor = (oldRaw, colorName) => {
+    const { name } = parseTag(oldRaw)
+    const newTag = name + ":" + colorName
+    const oldEntry = oldRaw.includes(":") ? oldRaw : name
+    const newTags = tagList.map((t) => (t === oldEntry || t === oldRaw ? newTag : t)).join(", ")
+    updateField("tags", newTags)
+  }
+
+  const [openColorPicker, setOpenColorPicker] = useState(null)
+
   return (
     <div className="flex h-full flex-col">
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-card/50 px-4">
@@ -333,11 +346,39 @@ export default function PromptEditor() {
                   />
                   {tagList.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1.5">
-                      {tagList.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-[10px] font-normal">
-                          {tag}
-                        </Badge>
-                      ))}
+                      {tagList.map((tag, i) => {
+                        const { name, colorName } = parseTag(tag)
+                        return (
+                          <div key={i} className="relative flex items-center gap-1">
+                            <TagBadge tag={tag} />
+                            <button
+                              onClick={() => setOpenColorPicker(openColorPicker === i ? null : i)}
+                              className="flex size-3.5 cursor-pointer items-center justify-center rounded-full transition-all hover:scale-125"
+                            >
+                              <span className={cn("block size-2 rounded-full", getTagColorDot(colorName || null))} />
+                            </button>
+                            {openColorPicker === i && (
+                              <>
+                                <div className="fixed inset-0 z-40" onClick={() => setOpenColorPicker(null)} />
+                                <div className="absolute bottom-full left-0 z-50 mb-1.5 flex gap-1 rounded-lg border border-border bg-popover p-1.5 shadow-sm">
+                                  {colorNames.map((c) => (
+                                    <button
+                                      key={c}
+                                      onClick={() => { updateTagColor(tag, c); setOpenColorPicker(null) }}
+                                      className={cn(
+                                        "flex size-5 cursor-pointer items-center justify-center rounded-full transition-all hover:scale-125",
+                                        (colorName || "") === c && "ring-2 ring-ring ring-offset-1"
+                                      )}
+                                    >
+                                      <span className={cn("block size-3 rounded-full", getTagColorDot(c))} />
+                                    </button>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
                   )}
                 </div>
@@ -404,13 +445,16 @@ export default function PromptEditor() {
 
             <div>
               <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tags</h4>
-              {tagList.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {tagList.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-[10px] font-normal">{tag}</Badge>
-                  ))}
-                </div>
-              ) : (
+                  {tagList.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {tagList.map((tag, i) => (
+                        <div key={i} className="flex items-center gap-1">
+                          <TagBadge tag={tag} />
+                          <span className={cn("block size-1.5 rounded-full", getTagColorDot(parseTag(tag).colorName))} />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
                 <p className="text-xs text-muted-foreground">No tags</p>
               )}
             </div>

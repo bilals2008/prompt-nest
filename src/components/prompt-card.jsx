@@ -1,7 +1,8 @@
 // File: src/components/prompt-card.jsx
 import { useState } from "react"
 import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
+import { TagBadge } from "@/components/tag-badge"
+import { collectionIcons, getCollectionColor } from "@/lib/collection-config"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -16,6 +17,7 @@ import {
   IconTrash,
   IconCopy,
   IconPin,
+  IconFolder,
 } from "@tabler/icons-react"
 import { Heart } from "lucide-react"
 
@@ -67,20 +69,22 @@ export function PromptCard({ prompt, viewMode = "grid", onToggleFavorite, onDele
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="truncate text-sm font-medium">{prompt.title}</span>
-            {prompt.collection_id && (
-              <Badge variant="outline" className="shrink-0 text-[10px] font-normal">
-                {prompt.collection_name || "Collection"}
-              </Badge>
-            )}
+            {prompt.collection_id && (() => {
+              const colColor = getCollectionColor(prompt.collection_color, prompt.collection_icon)
+              return (
+                <span className={cn("inline-flex shrink-0 items-center gap-1 rounded-4xl border px-2 py-0.5 text-[10px] font-normal", colColor.bg, colColor.text, colColor.border)}>
+                  {(() => { const Icon = collectionIcons[prompt.collection_icon]?.icon || IconFolder; return <Icon className="size-3" /> })()}
+                  {prompt.collection_name || "Collection"}
+                </span>
+              )
+            })()}
           </div>
           <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{prompt.content}</p>
         </div>
 
         <div className="hidden items-center gap-3 sm:flex">
           {prompt.tags?.split(",").slice(0, 2).map((tag) => (
-            <Badge key={tag.trim()} variant="secondary" className="text-[10px] font-normal">
-              {tag.trim()}
-            </Badge>
+            <TagBadge key={tag.trim()} tag={tag.trim()} />
           ))}
         </div>
 
@@ -126,11 +130,15 @@ export function PromptCard({ prompt, viewMode = "grid", onToggleFavorite, onDele
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-sm font-medium">{prompt.title}</h3>
-            {prompt.collection_id && (
-              <Badge variant="outline" className="mt-1 text-[10px] font-normal">
-                {prompt.collection_name || "Collection"}
-              </Badge>
-            )}
+            {prompt.collection_id && (() => {
+              const colColor = getCollectionColor(prompt.collection_color, prompt.collection_icon)
+              return (
+                <span className={cn("mt-1 inline-flex items-center gap-1 rounded-4xl border px-2 py-0.5 text-[10px] font-normal", colColor.bg, colColor.text, colColor.border)}>
+                  {(() => { const Icon = collectionIcons[prompt.collection_icon]?.icon || IconFolder; return <Icon className="size-3" /> })()}
+                  {prompt.collection_name || "Collection"}
+                </span>
+              )
+            })()}
           </div>
           <button onClick={handleFavorite} className="shrink-0 cursor-pointer">
             <Heart className={cn("size-4 transition-colors", prompt.favorite ? "fill-chart-3 text-chart-3" : "text-muted-foreground hover:text-chart-3")} />
@@ -142,9 +150,7 @@ export function PromptCard({ prompt, viewMode = "grid", onToggleFavorite, onDele
         {prompt.tags && (
           <div className="flex flex-wrap gap-1">
             {prompt.tags.split(",").map((tag) => (
-              <Badge key={tag.trim()} variant="secondary" className="text-[10px] font-normal">
-                {tag.trim()}
-              </Badge>
+              <TagBadge key={tag.trim()} tag={tag.trim()} />
             ))}
           </div>
         )}
