@@ -11,6 +11,7 @@ import {
   FileText,
   Settings,
 } from "lucide-react"
+import logo from "@/assets/logo.png"
 import { cn } from "@/lib/utils"
 import {
   Tooltip,
@@ -19,6 +20,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
+import { ModeToggle } from "@/components/mode-toggle"
+import { Avatar, AvatarImage } from "@/components/ui/avatar"
 
 const topNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", active: true },
@@ -63,9 +66,9 @@ export function AppSidebar() {
     <TooltipProvider delayDuration={300}>
       <aside className="fixed left-0 top-0 z-30 flex h-screen w-18 flex-col items-center border-r border-border bg-sidebar">
         <div className="flex h-16 w-full items-center justify-center border-b border-border">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-primary shadow-sm shadow-primary/20">
-            <LayoutDashboard className="size-5 text-primary-foreground" />
-          </div>
+          <Avatar className="size-11 rounded-xl">
+            <AvatarImage src={logo} alt="Prompt Nest" className="object-contain rounded-xl" />
+          </Avatar>
         </div>
 
         <nav className="flex flex-1 flex-col items-center gap-2 py-4">
@@ -80,6 +83,7 @@ export function AppSidebar() {
           {bottomNavItems.map((item) => (
             <SidebarButton key={item.label} {...item} />
           ))}
+          <ModeToggle />
         </nav>
       </aside>
     </TooltipProvider>
