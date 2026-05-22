@@ -1,9 +1,11 @@
+// File: src/pages/AllPrompts.jsx
 import { useState, useEffect, useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 import { Library } from "lucide-react"
 import { PromptsToolbar } from "@/components/prompts-toolbar"
 import { PromptCard } from "@/components/prompt-card"
 import { LoadingState, EmptyState } from "@/components/loading-state"
+import { DataPagination } from "@/components/data-pagination"
 import { IconFiles } from "@tabler/icons-react"
 
 export default function AllPrompts() {
@@ -15,25 +17,8 @@ export default function AllPrompts() {
   const [sortBy, setSortBy] = useState("updated_at")
   const [viewMode, setViewMode] = useState("grid")
   const [selectedCollection, setSelectedCollection] = useState(searchParams.get("collection") || null)
-
-  const loadData = () => {
-    setLoading(true)
-    Promise.all([
-      window.db.getAllPrompts().catch(() => []),
-      window.db.getCollections().catch(() => []),
-    ]).then(([promptsData, collectionsData]) => {
-      setPrompts(Array.isArray(promptsData) ? promptsData : [])
-      setCollections(Array.isArray(collectionsData) ? collectionsData : [])
-    }).catch(console.error).finally(() => setLoading(false))
-  }
-
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  useEffect(() => {
-    setSelectedCollection(searchParams.get("collection") || null)
-  }, [searchParams])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(16)
 
   const filteredAndSorted = useMemo(() => {
     let result = [...prompts]
@@ -59,6 +44,34 @@ export default function AllPrompts() {
 
     return result
   }, [prompts, searchQuery, sortBy, selectedCollection])
+
+  const paginatedResults = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredAndSorted.slice(start, start + pageSize)
+  }, [filteredAndSorted, currentPage, pageSize])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, sortBy, selectedCollection, pageSize])
+
+  const loadData = () => {
+    setLoading(true)
+    Promise.all([
+      window.db.getAllPrompts().catch(() => []),
+      window.db.getCollections().catch(() => []),
+    ]).then(([promptsData, collectionsData]) => {
+      setPrompts(Array.isArray(promptsData) ? promptsData : [])
+      setCollections(Array.isArray(collectionsData) ? collectionsData : [])
+    }).catch(console.error).finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  useEffect(() => {
+    setSelectedCollection(searchParams.get("collection") || null)
+  }, [searchParams])
 
   const handleToggleFavorite = async (id) => {
     const updated = await window.db.toggleFavorite(id)
@@ -90,11 +103,9 @@ export default function AllPrompts() {
           <Library className="size-5" />
           Prompt Library
         </h1>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">
-            {filteredAndSorted.length} prompt{filteredAndSorted.length !== 1 ? "s" : ""}
-          </span>
-        </div>
+        <span className="text-xs text-muted-foreground">
+          {filteredAndSorted.length} prompt{filteredAndSorted.length !== 1 ? "s" : ""}
+        </span>
       </header>
 
       <div className="flex flex-col overflow-hidden">
@@ -120,32 +131,45 @@ export default function AllPrompts() {
               title="No prompts found"
               description={searchQuery || selectedCollection ? "Try adjusting your filters" : "Create your first prompt to get started"}
             />
-          ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredAndSorted.map((prompt) => (
-                <PromptCard
-                  key={prompt.id}
-                  prompt={prompt}
-                  viewMode="grid"
-                  onToggleFavorite={handleToggleFavorite}
-                  onDelete={handleDelete}
-                  onDuplicate={handleDuplicate}
-                />
-              ))}
-            </div>
           ) : (
-            <div className="flex flex-col gap-2">
-              {filteredAndSorted.map((prompt) => (
-                <PromptCard
-                  key={prompt.id}
-                  prompt={prompt}
-                  viewMode="list"
-                  onToggleFavorite={handleToggleFavorite}
-                  onDelete={handleDelete}
-                  onDuplicate={handleDuplicate}
-                />
-              ))}
-            </div>
+            <>
+              {viewMode === "grid" ? (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {paginatedResults.map((prompt) => (
+                    <PromptCard
+                      key={prompt.id}
+                      prompt={prompt}
+                      viewMode="grid"
+                      onToggleFavorite={handleToggleFavorite}
+                      onDelete={handleDelete}
+                      onDuplicate={handleDuplicate}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {paginatedResults.map((prompt) => (
+                    <PromptCard
+                      key={prompt.id}
+                      prompt={prompt}
+                      viewMode="list"
+                      onToggleFavorite={handleToggleFavorite}
+                      onDelete={handleDelete}
+                      onDuplicate={handleDuplicate}
+                    />
+                  ))}
+                </div>
+              )}
+
+              <DataPagination
+                className="mt-6"
+                currentPage={currentPage}
+                pageSize={pageSize}
+                totalItems={filteredAndSorted.length}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={setPageSize}
+              />
+            </>
           )}
         </div>
       </div>
