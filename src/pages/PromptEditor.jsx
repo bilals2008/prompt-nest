@@ -295,7 +295,7 @@ export default function PromptEditor() {
                 placeholder="Prompt title..."
                 value={form.title}
                 onChange={(e) => updateField("title", e.target.value)}
-                className="h-10 border-0 border-b border-border rounded-none bg-transparent px-0 text-xl font-bold focus-visible:border-primary/50 focus-visible:ring-0"
+                className="h-10 rounded-lg border-border bg-transparent px-2.5 text-xl font-bold focus-visible:border-primary/50 focus-visible:ring-1"
               />
 
               <div className="relative">
