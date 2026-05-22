@@ -75,7 +75,7 @@ export default function ExportImport() {
       </header>
 
       <div className="flex-1 overflow-auto p-6">
-        <div className="mx-auto max-w-3xl space-y-8">
+        <div className="space-y-8">
           {result && (
             <div className={cn(
               "flex items-start gap-3 rounded-xl border px-4 py-3",

@@ -163,7 +163,7 @@ export default function RecentActivity() {
       </div>
 
       <div className="flex-1 overflow-auto">
-        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 p-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-3">
           <div className={cn("space-y-4", activeTab === "all" ? "lg:col-span-2" : "lg:col-span-3")}>
             {loading ? (
               <div className="flex items-center justify-center py-24">
