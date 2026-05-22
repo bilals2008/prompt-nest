@@ -18,10 +18,8 @@ import {
   Tags,
   GitFork,
   Zap,
-  Sparkles,
-  ChevronRight,
-  MessageSquare,
 } from "lucide-react"
+import { IconHistory, IconFileDescription, IconChevronRight } from "@tabler/icons-react"
 
 const cards = [
   { icon: Plus, title: "New Prompt", accent: "primary", description: "Create a new prompt" },
@@ -73,12 +71,12 @@ function App() {
           <div className="mx-auto max-w-6xl">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-base font-semibold">
-                <Sparkles className="size-4 text-primary" />
+                <IconHistory className="size-4 text-primary" />
                 Recent Prompts
               </h2>
               <button className="flex cursor-pointer items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground">
                 View all
-                <ChevronRight className="size-3.5" />
+                <IconChevronRight className="size-3.5" />
               </button>
             </div>
 
@@ -96,7 +94,7 @@ function App() {
                   <Card key={prompt.id} size="sm" className="group cursor-pointer transition-all hover:ring-1 hover:ring-primary/30">
                     <CardHeader className="flex-row items-center gap-3 space-y-0">
                       <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <MessageSquare className="size-4" />
+                        <IconFileDescription className="size-4" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <CardTitle className="truncate text-sm">{prompt.title}</CardTitle>

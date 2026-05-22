@@ -43,6 +43,7 @@ index.html         # Entry HTML, references src/main.jsx
 - **CSS** — Tailwind v4 with CSS variables for theming; add custom theme tokens via `@theme inline` in `index.css`
 - **Electron** — main process entry: `electron/main.js`; preload: `electron/preload.js`
 - **Explicit file extensions** — all imports include `.jsx` / `.js` extension
+- **Icons** — use `@tabler/icons-react` (`Icon*` components); fall back to `lucide-react` for existing shadcn-generated components
 
 ## Available Scripts
 ```bash

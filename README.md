@@ -83,7 +83,8 @@ The application focuses on:
 - clsx
 - tailwind-merge
 - class-variance-authority
-- lucide-react
+- @tabler/icons-react
+- lucide-react (legacy, shadcn-generated components only)
 
 ---
 
