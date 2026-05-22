@@ -25,7 +25,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar"
 
 const topNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: Plus, label: "New Prompt" },
+  { icon: Plus, label: "New Prompt", path: "/prompts/new" },
   { icon: Library, label: "Prompt Library", path: "/prompts" },
   { icon: Heart, label: "Favorites" },
   { icon: FolderOpen, label: "Collections" },

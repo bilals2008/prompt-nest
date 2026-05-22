@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider.jsx"
 import App from "./App.jsx"
 import Dashboard from "@/pages/Dashboard.jsx"
 import AllPrompts from "@/pages/AllPrompts.jsx"
+import PromptEditor from "@/pages/PromptEditor.jsx"
 import "./index.css"
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -15,6 +16,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <Route path="/" element={<App />}>
             <Route index element={<Dashboard />} />
             <Route path="prompts" element={<AllPrompts />} />
+            <Route path="prompts/new" element={<PromptEditor />} />
+            <Route path="prompts/:id/edit" element={<PromptEditor />} />
           </Route>
         </Routes>
       </HashRouter>

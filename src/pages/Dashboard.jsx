@@ -22,7 +22,7 @@ import {
 } from "lucide-react"
 
 const cards = [
-  { icon: Plus, title: "New Prompt", accent: "primary", description: "Create a new prompt" },
+  { icon: Plus, title: "New Prompt", accent: "primary", description: "Create a new prompt", path: "/prompts/new" },
   { icon: Library, title: "Prompt Library", accent: "blue", description: "Browse all prompts", path: "/prompts" },
   { icon: Heart, title: "Favorites", accent: "yellow", description: "Your saved prompts" },
   { icon: FolderOpen, title: "Collections", accent: "purple", description: "Organized groups" },
