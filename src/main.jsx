@@ -14,6 +14,7 @@ import RecentActivity from "@/pages/RecentActivity.jsx"
 import Templates from "@/pages/Templates.jsx"
 import ExportImport from "@/pages/ExportImport.jsx"
 import Settings from "@/pages/Settings.jsx"
+import Changelog from "@/pages/Changelog.jsx"
 import "./index.css"
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -33,6 +34,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="templates" element={<Templates />} />
             <Route path="export" element={<ExportImport />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="changelog" element={<Changelog />} />
           </Route>
         </Routes>
       </HashRouter>

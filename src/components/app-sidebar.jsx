@@ -12,6 +12,7 @@ import {
   Settings,
   PanelLeft,
   PanelLeftClose,
+  History,
 } from "lucide-react"
 import logo from "@/assets/logo.png"
 import { cn } from "@/lib/utils"
@@ -37,6 +38,7 @@ const topNavItems = [
 ]
 
 const bottomNavItems = [
+  { icon: History, label: "Changelog", path: "/changelog" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ]
 

@@ -1,7 +1,8 @@
 {
   "name": "electron-js",
+  "productName": "Prompt Nest",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1-beta",
   "type": "module",
   "scripts": {
     "dev": "vite",

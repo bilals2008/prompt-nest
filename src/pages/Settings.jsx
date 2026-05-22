@@ -19,6 +19,7 @@ import {
 } from "@tabler/icons-react"
 import { toast } from "sonner"
 import { Settings as SettingsIcon, Check, Copy, CheckCheck } from "lucide-react"
+import { APP_VERSION } from "@/lib/version"
 import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
 
@@ -94,8 +95,6 @@ export default function Settings() {
   const [activeSection, setActiveSection] = useState("general")
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [appVersion, setAppVersion] = useState("1.0.0")
-
   const [backupStatus, setBackupStatus] = useState(null)
   const [copied, setCopied] = useState(false)
 
@@ -104,10 +103,6 @@ export default function Settings() {
       .then(setStats)
       .catch(console.error)
       .finally(() => setLoading(false))
-
-    window.db.getAppVersion?.()
-      .then(setAppVersion)
-      .catch(() => {})
   }, [])
 
   const handleBackup = async () => {
@@ -396,7 +391,7 @@ export default function Settings() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium">Prompt Nest</p>
-                      <p className="text-xs text-muted-foreground">v{appVersion}</p>
+                        <p className="text-xs text-muted-foreground">{APP_VERSION}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="text-[10px] font-normal">Electron</Badge>
