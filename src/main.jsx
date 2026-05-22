@@ -1,3 +1,4 @@
+// File: src/main.jsx
 import React from "react"
 import ReactDOM from "react-dom/client"
 import { HashRouter, Routes, Route } from "react-router-dom"
@@ -7,6 +8,7 @@ import Dashboard from "@/pages/Dashboard.jsx"
 import AllPrompts from "@/pages/AllPrompts.jsx"
 import PromptEditor from "@/pages/PromptEditor.jsx"
 import Collections from "@/pages/Collections.jsx"
+import Favorites from "@/pages/Favorites.jsx"
 import "./index.css"
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -20,6 +22,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="prompts/new" element={<PromptEditor />} />
             <Route path="prompts/:id/edit" element={<PromptEditor />} />
             <Route path="collections" element={<Collections />} />
+            <Route path="favorites" element={<Favorites />} />
           </Route>
         </Routes>
       </HashRouter>

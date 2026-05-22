@@ -45,6 +45,7 @@ function registerIpcHandlers() {
   ipcMain.handle('db:updatePrompt', (_, id, data) => prompts.updatePrompt(id, data))
   ipcMain.handle('db:deletePrompt', (_, id) => prompts.deletePrompt(id))
   ipcMain.handle('db:toggleFavorite', (_, id) => prompts.toggleFavorite(id))
+  ipcMain.handle('db:getFavorites', () => prompts.getFavorites())
   ipcMain.handle('db:createCollection', (_, data) => collections.createCollection(data))
   ipcMain.handle('db:getCollections', () => collections.getCollections())
   ipcMain.handle('db:updateCollection', (_, id, data) => collections.updateCollection(id, data))

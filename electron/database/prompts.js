@@ -1,3 +1,4 @@
+// File: electron/database/prompts.js
 import { getDatabase } from './db.js'
 
 export async function createPrompt({ title, content, tags = '', collection_id = null }) {
@@ -20,6 +21,11 @@ export async function getPromptById(id) {
 export async function getAllPrompts() {
   const db = getDatabase()
   return db.all('SELECT * FROM prompts ORDER BY created_at DESC')
+}
+
+export async function getFavorites() {
+  const db = getDatabase()
+  return db.all('SELECT * FROM prompts WHERE favorite = 1 ORDER BY updated_at DESC')
 }
 
 export async function updatePrompt(id, { title, content, tags, collection_id }) {

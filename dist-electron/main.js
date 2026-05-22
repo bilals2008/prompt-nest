@@ -1,165 +1,258 @@
-import { BrowserWindow as e, app as t, ipcMain as n } from "electron";
-import { fileURLToPath as r } from "node:url";
-import i from "node:path";
-import a from "sqlite3";
-import o from "node:fs";
+import { BrowserWindow, app, ipcMain } from "electron";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+import sqlite3 from "sqlite3";
+import fs from "node:fs";
 //#region electron/database/schema.js
-var s = "\nCREATE TABLE IF NOT EXISTS prompts (\n  id TEXT PRIMARY KEY,\n  title TEXT NOT NULL,\n  content TEXT NOT NULL,\n  tags TEXT,\n  collection_id TEXT,\n  favorite INTEGER DEFAULT 0,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n);\n\nCREATE TABLE IF NOT EXISTS collections (\n  id TEXT PRIMARY KEY,\n  name TEXT NOT NULL,\n  icon TEXT,\n  created_at TEXT NOT NULL\n);\n";
-async function c() {
-	await u().exec(s);
+var SCHEMA = `
+CREATE TABLE IF NOT EXISTS prompts (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  tags TEXT,
+  collection_id TEXT,
+  favorite INTEGER DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS collections (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  icon TEXT,
+  created_at TEXT NOT NULL
+);
+`;
+async function createTables() {
+	await getDatabase().exec(SCHEMA);
 }
 //#endregion
 //#region electron/database/db.js
-var l = null;
-function u() {
-	if (!l) throw Error("Database not initialized. Call initDatabase() first.");
-	return l;
+var db = null;
+function getDatabase() {
+	if (!db) throw new Error("Database not initialized. Call initDatabase() first.");
+	return db;
 }
-async function d() {
-	if (l) return l;
-	let e = i.join(t.getPath("userData"), "PromptNest");
-	o.existsSync(e) || o.mkdirSync(e, { recursive: !0 });
-	let n = i.join(e, "promptnest.db");
-	return await new Promise((e, t) => {
-		l = new a.Database(n, (r) => {
-			if (r) {
-				console.error("[DB] Failed to open database:", r), t(r);
+async function initDatabase() {
+	if (db) return db;
+	const dbDir = path.join(app.getPath("userData"), "PromptNest");
+	if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
+	const dbPath = path.join(dbDir, "promptnest.db");
+	await new Promise((resolve, reject) => {
+		db = new sqlite3.Database(dbPath, (err) => {
+			if (err) {
+				console.error("[DB] Failed to open database:", err);
+				reject(err);
 				return;
 			}
-			console.log("[DB] Database opened at:", n), e();
+			console.log("[DB] Database opened at:", dbPath);
+			resolve();
 		});
-	}), await l.run("PRAGMA journal_mode = WAL"), await l.run("PRAGMA foreign_keys = ON"), await c(), await f(), console.log("[DB] Database initialized successfully"), l;
+	});
+	await db.run("PRAGMA journal_mode = WAL");
+	await db.run("PRAGMA foreign_keys = ON");
+	await createTables();
+	await seedData();
+	console.log("[DB] Database initialized successfully");
+	return db;
 }
-async function f() {
-	if ((await l.get("SELECT COUNT(*) as count FROM prompts")).count > 0) return;
-	let e = (/* @__PURE__ */ new Date()).toISOString(), t = "INSERT INTO prompts (id, title, content, tags, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-	await l.run(t, [
+async function seedData() {
+	if ((await db.get("SELECT COUNT(*) as count FROM prompts")).count > 0) return;
+	const now = (/* @__PURE__ */ new Date()).toISOString();
+	const insert = "INSERT INTO prompts (id, title, content, tags, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+	await db.run(insert, [
 		crypto.randomUUID(),
 		"React Component Generator",
 		"Create a reusable React component with PropTypes, default props, and proper state management. Include a loading state, empty state, and error boundary.",
 		"react, component, frontend",
 		null,
 		1,
-		e,
-		e
-	]), await l.run(t, [
+		now,
+		now
+	]);
+	await db.run(insert, [
 		crypto.randomUUID(),
 		"UI Design Critique",
 		"Review this UI design for consistency, accessibility, color contrast, typography hierarchy, spacing, and responsive behavior. Provide specific actionable feedback.",
 		"design, ui, review",
 		null,
 		0,
-		e,
-		e
-	]), await l.run(t, [
+		now,
+		now
+	]);
+	await db.run(insert, [
 		crypto.randomUUID(),
 		"Marketing Email Copy",
 		"Write a compelling marketing email for our new product launch. The tone should be professional yet friendly. Include subject line options, body copy, and a clear CTA.",
 		"marketing, copywriting, email",
 		null,
 		1,
-		e,
-		e
+		now,
+		now
 	]);
 }
-function p() {
-	l &&= (l.close(), null);
+function closeDatabase() {
+	if (db) {
+		db.close();
+		db = null;
+	}
 }
 //#endregion
 //#region electron/database/prompts.js
-async function m({ title: e, content: t, tags: n = "", collection_id: r = null }) {
-	let i = u(), a = crypto.randomUUID(), o = (/* @__PURE__ */ new Date()).toISOString();
-	return await i.run("INSERT INTO prompts (id, title, content, tags, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?)", [
-		a,
-		e,
-		t,
-		n,
-		r,
-		o,
-		o
-	]), h(a);
+async function createPrompt({ title, content, tags = "", collection_id = null }) {
+	const db = getDatabase();
+	const id = crypto.randomUUID();
+	const now = (/* @__PURE__ */ new Date()).toISOString();
+	await db.run("INSERT INTO prompts (id, title, content, tags, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?)", [
+		id,
+		title,
+		content,
+		tags,
+		collection_id,
+		now,
+		now
+	]);
+	return getPromptById(id);
 }
-async function h(e) {
-	return await u().get("SELECT * FROM prompts WHERE id = ?", [e]) || null;
+async function getPromptById(id) {
+	return await getDatabase().get("SELECT * FROM prompts WHERE id = ?", [id]) || null;
 }
-async function g() {
-	return u().all("SELECT * FROM prompts ORDER BY created_at DESC");
+async function getAllPrompts() {
+	return getDatabase().all("SELECT * FROM prompts ORDER BY created_at DESC");
 }
-async function _(e, { title: t, content: n, tags: r, collection_id: i }) {
-	let a = u(), o = (/* @__PURE__ */ new Date()).toISOString(), s = [], c = [];
-	return t !== void 0 && (s.push("title = ?"), c.push(t)), n !== void 0 && (s.push("content = ?"), c.push(n)), r !== void 0 && (s.push("tags = ?"), c.push(r)), i !== void 0 && (s.push("collection_id = ?"), c.push(i)), s.push("updated_at = ?"), c.push(o), c.push(e), await a.run(`UPDATE prompts SET ${s.join(", ")} WHERE id = ?`, c), h(e);
+async function getFavorites() {
+	return getDatabase().all("SELECT * FROM prompts WHERE favorite = 1 ORDER BY updated_at DESC");
 }
-async function v(e) {
-	return await u().run("DELETE FROM prompts WHERE id = ?", [e]), { success: !0 };
+async function updatePrompt(id, { title, content, tags, collection_id }) {
+	const db = getDatabase();
+	const now = (/* @__PURE__ */ new Date()).toISOString();
+	const sets = [];
+	const values = [];
+	if (title !== void 0) {
+		sets.push("title = ?");
+		values.push(title);
+	}
+	if (content !== void 0) {
+		sets.push("content = ?");
+		values.push(content);
+	}
+	if (tags !== void 0) {
+		sets.push("tags = ?");
+		values.push(tags);
+	}
+	if (collection_id !== void 0) {
+		sets.push("collection_id = ?");
+		values.push(collection_id);
+	}
+	sets.push("updated_at = ?");
+	values.push(now);
+	values.push(id);
+	await db.run(`UPDATE prompts SET ${sets.join(", ")} WHERE id = ?`, values);
+	return getPromptById(id);
 }
-async function y(e) {
-	let t = u(), n = await h(e);
-	if (!n) return null;
-	let r = +!n.favorite;
-	return await t.run("UPDATE prompts SET favorite = ?, updated_at = ? WHERE id = ?", [
-		r,
+async function deletePrompt(id) {
+	await getDatabase().run("DELETE FROM prompts WHERE id = ?", [id]);
+	return { success: true };
+}
+async function toggleFavorite(id) {
+	const db = getDatabase();
+	const prompt = await getPromptById(id);
+	if (!prompt) return null;
+	const newVal = prompt.favorite ? 0 : 1;
+	await db.run("UPDATE prompts SET favorite = ?, updated_at = ? WHERE id = ?", [
+		newVal,
 		(/* @__PURE__ */ new Date()).toISOString(),
-		e
-	]), h(e);
+		id
+	]);
+	return getPromptById(id);
 }
 //#endregion
 //#region electron/database/collections.js
-async function b({ name: e, icon: t = "folder" }) {
-	let n = u(), r = crypto.randomUUID(), i = (/* @__PURE__ */ new Date()).toISOString();
-	return await n.run("INSERT INTO collections (id, name, icon, created_at) VALUES (?, ?, ?, ?)", [
-		r,
-		e,
-		t,
-		i
-	]), x(r);
+async function createCollection({ name, icon = "folder" }) {
+	const db = getDatabase();
+	const id = crypto.randomUUID();
+	const now = (/* @__PURE__ */ new Date()).toISOString();
+	await db.run("INSERT INTO collections (id, name, icon, created_at) VALUES (?, ?, ?, ?)", [
+		id,
+		name,
+		icon,
+		now
+	]);
+	return getCollectionById(id);
 }
-async function x(e) {
-	return await u().get("SELECT * FROM collections WHERE id = ?", [e]) || null;
+async function getCollectionById(id) {
+	return await getDatabase().get("SELECT * FROM collections WHERE id = ?", [id]) || null;
 }
-async function S() {
-	return u().all("SELECT * FROM collections ORDER BY created_at ASC");
+async function getCollections() {
+	return getDatabase().all("SELECT * FROM collections ORDER BY created_at ASC");
 }
-async function C(e, { name: t, icon: n }) {
-	return await u().run("UPDATE collections SET name = ?, icon = ? WHERE id = ?", [
-		t,
-		n || "folder",
-		e
-	]), x(e);
+async function updateCollection(id, { name, icon }) {
+	await getDatabase().run("UPDATE collections SET name = ?, icon = ? WHERE id = ?", [
+		name,
+		icon || "folder",
+		id
+	]);
+	return getCollectionById(id);
 }
-async function w(e) {
-	let t = u();
-	return await t.run("UPDATE prompts SET collection_id = NULL WHERE collection_id = ?", [e]), await t.run("DELETE FROM collections WHERE id = ?", [e]), { success: !0 };
+async function deleteCollection(id) {
+	const db = getDatabase();
+	await db.run("UPDATE prompts SET collection_id = NULL WHERE collection_id = ?", [id]);
+	await db.run("DELETE FROM collections WHERE id = ?", [id]);
+	return { success: true };
 }
 //#endregion
 //#region electron/main.js
-var T = i.dirname(r(import.meta.url));
-process.env.APP_ROOT = i.join(T, "..");
-var E = process.env.VITE_DEV_SERVER_URL, D = i.join(process.env.APP_ROOT, "dist-electron"), O = i.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = E ? i.join(process.env.APP_ROOT, "public") : O;
-var k;
-function A() {
-	k = new e({
-		icon: i.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+var __dirname = path.dirname(fileURLToPath(import.meta.url));
+process.env.APP_ROOT = path.join(__dirname, "..");
+var VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
+var MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
+var RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
+process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
+var win;
+function createWindow() {
+	win = new BrowserWindow({
+		icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
 		webPreferences: {
-			preload: i.join(T, "preload.mjs"),
-			contextIsolation: !0,
-			nodeIntegration: !1
+			preload: path.join(__dirname, "preload.mjs"),
+			contextIsolation: true,
+			nodeIntegration: false
 		}
-	}), k.webContents.on("did-finish-load", () => {
-		k?.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-	}), E ? k.loadURL(E) : k.loadFile(i.join(O, "index.html"));
+	});
+	win.webContents.on("did-finish-load", () => {
+		win?.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
+	});
+	if (VITE_DEV_SERVER_URL) win.loadURL(VITE_DEV_SERVER_URL);
+	else win.loadFile(path.join(RENDERER_DIST, "index.html"));
 }
-function j() {
-	n.handle("db:createPrompt", (e, t) => m(t)), n.handle("db:getPromptById", (e, t) => h(t)), n.handle("db:getAllPrompts", () => g()), n.handle("db:updatePrompt", (e, t, n) => _(t, n)), n.handle("db:deletePrompt", (e, t) => v(t)), n.handle("db:toggleFavorite", (e, t) => y(t)), n.handle("db:createCollection", (e, t) => b(t)), n.handle("db:getCollections", () => S()), n.handle("db:updateCollection", (e, t, n) => C(t, n)), n.handle("db:deleteCollection", (e, t) => w(t));
+function registerIpcHandlers() {
+	ipcMain.handle("db:createPrompt", (_, data) => createPrompt(data));
+	ipcMain.handle("db:getPromptById", (_, id) => getPromptById(id));
+	ipcMain.handle("db:getAllPrompts", () => getAllPrompts());
+	ipcMain.handle("db:updatePrompt", (_, id, data) => updatePrompt(id, data));
+	ipcMain.handle("db:deletePrompt", (_, id) => deletePrompt(id));
+	ipcMain.handle("db:toggleFavorite", (_, id) => toggleFavorite(id));
+	ipcMain.handle("db:getFavorites", () => getFavorites());
+	ipcMain.handle("db:createCollection", (_, data) => createCollection(data));
+	ipcMain.handle("db:getCollections", () => getCollections());
+	ipcMain.handle("db:updateCollection", (_, id, data) => updateCollection(id, data));
+	ipcMain.handle("db:deleteCollection", (_, id) => deleteCollection(id));
 }
-t.on("window-all-closed", () => {
-	process.platform !== "darwin" && (t.quit(), k = null);
-}), t.on("activate", () => {
-	e.getAllWindows().length === 0 && A();
-}), t.whenReady().then(async () => {
-	await d(), j(), A();
-}), t.on("will-quit", () => {
-	p();
+app.on("window-all-closed", () => {
+	if (process.platform !== "darwin") {
+		app.quit();
+		win = null;
+	}
+});
+app.on("activate", () => {
+	if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});
+app.whenReady().then(async () => {
+	await initDatabase();
+	registerIpcHandlers();
+	createWindow();
+});
+app.on("will-quit", () => {
+	closeDatabase();
 });
 //#endregion
-export { D as MAIN_DIST, O as RENDERER_DIST, E as VITE_DEV_SERVER_URL };
+export { MAIN_DIST, RENDERER_DIST, VITE_DEV_SERVER_URL };

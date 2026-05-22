@@ -1,3 +1,4 @@
+// File: electron/preload.js
 import { ipcRenderer, contextBridge } from 'electron'
 
 contextBridge.exposeInMainWorld('db', {
@@ -7,6 +8,7 @@ contextBridge.exposeInMainWorld('db', {
   updatePrompt: (id, data) => ipcRenderer.invoke('db:updatePrompt', id, data),
   deletePrompt: (id) => ipcRenderer.invoke('db:deletePrompt', id),
   toggleFavorite: (id) => ipcRenderer.invoke('db:toggleFavorite', id),
+  getFavorites: () => ipcRenderer.invoke('db:getFavorites'),
   createCollection: (data) => ipcRenderer.invoke('db:createCollection', data),
   getCollections: () => ipcRenderer.invoke('db:getCollections'),
   updateCollection: (id, data) => ipcRenderer.invoke('db:updateCollection', id, data),

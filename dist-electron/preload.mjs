@@ -1,1 +1,16 @@
-let e=require("electron");e.contextBridge.exposeInMainWorld(`db`,{createPrompt:t=>e.ipcRenderer.invoke(`db:createPrompt`,t),getPromptById:t=>e.ipcRenderer.invoke(`db:getPromptById`,t),getAllPrompts:()=>e.ipcRenderer.invoke(`db:getAllPrompts`),updatePrompt:(t,n)=>e.ipcRenderer.invoke(`db:updatePrompt`,t,n),deletePrompt:t=>e.ipcRenderer.invoke(`db:deletePrompt`,t),toggleFavorite:t=>e.ipcRenderer.invoke(`db:toggleFavorite`,t),createCollection:t=>e.ipcRenderer.invoke(`db:createCollection`,t),getCollections:()=>e.ipcRenderer.invoke(`db:getCollections`),updateCollection:(t,n)=>e.ipcRenderer.invoke(`db:updateCollection`,t,n),deleteCollection:t=>e.ipcRenderer.invoke(`db:deleteCollection`,t)});
+let electron = require("electron");
+//#region electron/preload.js
+electron.contextBridge.exposeInMainWorld("db", {
+	createPrompt: (data) => electron.ipcRenderer.invoke("db:createPrompt", data),
+	getPromptById: (id) => electron.ipcRenderer.invoke("db:getPromptById", id),
+	getAllPrompts: () => electron.ipcRenderer.invoke("db:getAllPrompts"),
+	updatePrompt: (id, data) => electron.ipcRenderer.invoke("db:updatePrompt", id, data),
+	deletePrompt: (id) => electron.ipcRenderer.invoke("db:deletePrompt", id),
+	toggleFavorite: (id) => electron.ipcRenderer.invoke("db:toggleFavorite", id),
+	getFavorites: () => electron.ipcRenderer.invoke("db:getFavorites"),
+	createCollection: (data) => electron.ipcRenderer.invoke("db:createCollection", data),
+	getCollections: () => electron.ipcRenderer.invoke("db:getCollections"),
+	updateCollection: (id, data) => electron.ipcRenderer.invoke("db:updateCollection", id, data),
+	deleteCollection: (id) => electron.ipcRenderer.invoke("db:deleteCollection", id)
+});
+//#endregion
