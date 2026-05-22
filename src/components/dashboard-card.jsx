@@ -11,13 +11,14 @@ const accentStyles = {
   muted: "bg-muted text-muted-foreground",
 }
 
-export function DashboardCard({ icon: Icon, title, description, accent = "primary", trend }) {
+export function DashboardCard({ icon: Icon, title, description, accent = "primary", trend, onClick }) {
   const isUp = trend?.startsWith("+")
   const TrendIcon = isUp ? TrendingUp : TrendingDown
   const tone = accentStyles[accent] || accentStyles.primary
 
   return (
     <button
+      onClick={onClick}
       className={cn(
         "group flex cursor-pointer flex-col items-center gap-4 rounded-xl border border-border bg-card p-5 text-center transition-all duration-300 select-none hover:shadow-md hover:bg-accent/50 active:scale-95"
       )}
