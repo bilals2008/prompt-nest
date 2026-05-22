@@ -60,3 +60,20 @@ export function closeDatabase() {
     db = null
   }
 }
+
+export async function getDatabaseStats() {
+  const db = getDatabase()
+  const promptCount = await db.get('SELECT COUNT(*) as count FROM prompts')
+  const collectionCount = await db.get('SELECT COUNT(*) as count FROM collections')
+  const favoriteCount = await db.get('SELECT COUNT(*) as count FROM prompts WHERE favorite = 1')
+  const dbPath = path.join(app.getPath('userData'), 'PromptNest', 'promptnest.db')
+  let size = 0
+  try { size = fs.statSync(dbPath).size } catch {}
+  return {
+    prompts: promptCount?.count || 0,
+    collections: collectionCount?.count || 0,
+    favorites: favoriteCount?.count || 0,
+    size,
+    path: dbPath,
+  }
+}

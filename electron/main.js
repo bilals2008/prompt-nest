@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { initDatabase, closeDatabase } from './database/db.js'
+import { initDatabase, closeDatabase, getDatabaseStats } from './database/db.js'
 import * as prompts from './database/prompts.js'
 import * as collections from './database/collections.js'
 import * as activity from './database/activity.js'
@@ -56,6 +56,7 @@ function registerIpcHandlers() {
   ipcMain.handle('db:getActivity', (_, limit) => activity.getActivity(limit))
   ipcMain.handle('db:exportData', (_, format) => io.exportData(format))
   ipcMain.handle('db:importData', () => io.importData())
+  ipcMain.handle('db:getDatabaseStats', () => getDatabaseStats())
 }
 
 app.on('window-all-closed', () => {

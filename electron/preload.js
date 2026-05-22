@@ -17,4 +17,5 @@ contextBridge.exposeInMainWorld('db', {
   getActivity: (limit) => ipcRenderer.invoke('db:getActivity', limit),
   exportData: (format) => ipcRenderer.invoke('db:exportData', format),
   importData: () => ipcRenderer.invoke('db:importData'),
+  getDatabaseStats: () => ipcRenderer.invoke('db:getDatabaseStats'),
 })

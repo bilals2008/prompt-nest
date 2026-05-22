@@ -36,7 +36,7 @@ const topNavItems = [
 ]
 
 const bottomNavItems = [
-  { icon: Settings, label: "Settings" },
+  { icon: Settings, label: "Settings", path: "/settings" },
 ]
 
 function SidebarButton({ icon: Icon, label, active, onClick }) {
@@ -90,7 +90,12 @@ export function AppSidebar() {
 
         <nav className="flex flex-col items-center gap-2 pb-4">
           {bottomNavItems.map((item) => (
-            <SidebarButton key={item.label} {...item} />
+            <SidebarButton
+              key={item.label}
+              {...item}
+              active={item.path ? location.pathname === item.path : false}
+              onClick={item.path ? () => navigate(item.path) : undefined}
+            />
           ))}
           <ModeToggle />
         </nav>

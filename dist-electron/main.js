@@ -1,200 +1,323 @@
-import { BrowserWindow as e, app as t, dialog as n, ipcMain as r } from "electron";
-import { fileURLToPath as i } from "node:url";
-import a from "node:path";
-import o from "sqlite3";
-import s from "node:fs";
+import { BrowserWindow, app, dialog, ipcMain } from "electron";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+import sqlite3 from "sqlite3";
+import fs from "node:fs";
 //#region electron/database/schema.js
-var c = "\nCREATE TABLE IF NOT EXISTS prompts (\n  id TEXT PRIMARY KEY,\n  title TEXT NOT NULL,\n  content TEXT NOT NULL,\n  tags TEXT,\n  collection_id TEXT,\n  favorite INTEGER DEFAULT 0,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n);\n\nCREATE TABLE IF NOT EXISTS collections (\n  id TEXT PRIMARY KEY,\n  name TEXT NOT NULL,\n  icon TEXT,\n  created_at TEXT NOT NULL\n);\n\nCREATE TABLE IF NOT EXISTS activity_log (\n  id TEXT PRIMARY KEY,\n  prompt_id TEXT,\n  action TEXT NOT NULL,\n  created_at TEXT NOT NULL\n);\n";
-async function l() {
-	await d().exec(c);
+var SCHEMA = `
+CREATE TABLE IF NOT EXISTS prompts (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  tags TEXT,
+  collection_id TEXT,
+  favorite INTEGER DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS collections (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  icon TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS activity_log (
+  id TEXT PRIMARY KEY,
+  prompt_id TEXT,
+  action TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+`;
+async function createTables() {
+	await getDatabase().exec(SCHEMA);
 }
 //#endregion
 //#region electron/database/db.js
-var u = null;
-function d() {
-	if (!u) throw Error("Database not initialized. Call initDatabase() first.");
-	return u;
+var db = null;
+function getDatabase() {
+	if (!db) throw new Error("Database not initialized. Call initDatabase() first.");
+	return db;
 }
-async function f() {
-	if (u) return u;
-	let e = a.join(t.getPath("userData"), "PromptNest");
-	s.existsSync(e) || s.mkdirSync(e, { recursive: !0 });
-	let n = a.join(e, "promptnest.db");
-	return await new Promise((e, t) => {
-		u = new o.Database(n, (r) => {
-			if (r) {
-				console.error("[DB] Failed to open database:", r), t(r);
+async function initDatabase() {
+	if (db) return db;
+	const dbDir = path.join(app.getPath("userData"), "PromptNest");
+	if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
+	const dbPath = path.join(dbDir, "promptnest.db");
+	await new Promise((resolve, reject) => {
+		db = new sqlite3.Database(dbPath, (err) => {
+			if (err) {
+				console.error("[DB] Failed to open database:", err);
+				reject(err);
 				return;
 			}
-			console.log("[DB] Database opened at:", n), e();
+			console.log("[DB] Database opened at:", dbPath);
+			resolve();
 		});
-	}), await u.run("PRAGMA journal_mode = WAL"), await u.run("PRAGMA foreign_keys = ON"), await l(), await p(), console.log("[DB] Database initialized successfully"), u;
+	});
+	await db.run("PRAGMA journal_mode = WAL");
+	await db.run("PRAGMA foreign_keys = ON");
+	await createTables();
+	await seedData();
+	console.log("[DB] Database initialized successfully");
+	return db;
 }
-async function p() {
-	if ((await u.get("SELECT COUNT(*) as count FROM prompts")).count > 0) return;
-	let e = (/* @__PURE__ */ new Date()).toISOString(), t = "INSERT INTO prompts (id, title, content, tags, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-	await u.run(t, [
+async function seedData() {
+	if ((await db.get("SELECT COUNT(*) as count FROM prompts")).count > 0) return;
+	const now = (/* @__PURE__ */ new Date()).toISOString();
+	const insert = "INSERT INTO prompts (id, title, content, tags, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+	await db.run(insert, [
 		crypto.randomUUID(),
 		"React Component Generator",
 		"Create a reusable React component with PropTypes, default props, and proper state management. Include a loading state, empty state, and error boundary.",
 		"react, component, frontend",
 		null,
 		1,
-		e,
-		e
-	]), await u.run(t, [
+		now,
+		now
+	]);
+	await db.run(insert, [
 		crypto.randomUUID(),
 		"UI Design Critique",
 		"Review this UI design for consistency, accessibility, color contrast, typography hierarchy, spacing, and responsive behavior. Provide specific actionable feedback.",
 		"design, ui, review",
 		null,
 		0,
-		e,
-		e
-	]), await u.run(t, [
+		now,
+		now
+	]);
+	await db.run(insert, [
 		crypto.randomUUID(),
 		"Marketing Email Copy",
 		"Write a compelling marketing email for our new product launch. The tone should be professional yet friendly. Include subject line options, body copy, and a clear CTA.",
 		"marketing, copywriting, email",
 		null,
 		1,
-		e,
-		e
+		now,
+		now
 	]);
 }
-function m() {
-	u &&= (u.close(), null);
+function closeDatabase() {
+	if (db) {
+		db.close();
+		db = null;
+	}
+}
+async function getDatabaseStats() {
+	const db = getDatabase();
+	const promptCount = await db.get("SELECT COUNT(*) as count FROM prompts");
+	const collectionCount = await db.get("SELECT COUNT(*) as count FROM collections");
+	const favoriteCount = await db.get("SELECT COUNT(*) as count FROM prompts WHERE favorite = 1");
+	const dbPath = path.join(app.getPath("userData"), "PromptNest", "promptnest.db");
+	let size = 0;
+	try {
+		size = fs.statSync(dbPath).size;
+	} catch {}
+	return {
+		prompts: promptCount?.count || 0,
+		collections: collectionCount?.count || 0,
+		favorites: favoriteCount?.count || 0,
+		size,
+		path: dbPath
+	};
 }
 //#endregion
 //#region electron/database/prompts.js
-async function h({ title: e, content: t, tags: n = "", collection_id: r = null }) {
-	let i = d(), a = crypto.randomUUID(), o = (/* @__PURE__ */ new Date()).toISOString();
-	return await i.run("INSERT INTO prompts (id, title, content, tags, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?)", [
-		a,
-		e,
-		t,
-		n,
-		r,
-		o,
-		o
-	]), g(a);
+async function createPrompt({ title, content, tags = "", collection_id = null }) {
+	const db = getDatabase();
+	const id = crypto.randomUUID();
+	const now = (/* @__PURE__ */ new Date()).toISOString();
+	await db.run("INSERT INTO prompts (id, title, content, tags, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?)", [
+		id,
+		title,
+		content,
+		tags,
+		collection_id,
+		now,
+		now
+	]);
+	return getPromptById(id);
 }
-async function g(e) {
-	return await d().get("SELECT * FROM prompts WHERE id = ?", [e]) || null;
+async function getPromptById(id) {
+	return await getDatabase().get("SELECT * FROM prompts WHERE id = ?", [id]) || null;
 }
-async function _() {
-	return d().all("SELECT * FROM prompts ORDER BY created_at DESC");
+async function getAllPrompts() {
+	return getDatabase().all("SELECT * FROM prompts ORDER BY created_at DESC");
 }
-async function v() {
-	return d().all("SELECT * FROM prompts WHERE favorite = 1 ORDER BY updated_at DESC");
+async function getFavorites() {
+	return getDatabase().all("SELECT * FROM prompts WHERE favorite = 1 ORDER BY updated_at DESC");
 }
-async function y(e, { title: t, content: n, tags: r, collection_id: i }) {
-	let a = d(), o = (/* @__PURE__ */ new Date()).toISOString(), s = [], c = [];
-	return t !== void 0 && (s.push("title = ?"), c.push(t)), n !== void 0 && (s.push("content = ?"), c.push(n)), r !== void 0 && (s.push("tags = ?"), c.push(r)), i !== void 0 && (s.push("collection_id = ?"), c.push(i)), s.push("updated_at = ?"), c.push(o), c.push(e), await a.run(`UPDATE prompts SET ${s.join(", ")} WHERE id = ?`, c), g(e);
+async function updatePrompt(id, { title, content, tags, collection_id }) {
+	const db = getDatabase();
+	const now = (/* @__PURE__ */ new Date()).toISOString();
+	const sets = [];
+	const values = [];
+	if (title !== void 0) {
+		sets.push("title = ?");
+		values.push(title);
+	}
+	if (content !== void 0) {
+		sets.push("content = ?");
+		values.push(content);
+	}
+	if (tags !== void 0) {
+		sets.push("tags = ?");
+		values.push(tags);
+	}
+	if (collection_id !== void 0) {
+		sets.push("collection_id = ?");
+		values.push(collection_id);
+	}
+	sets.push("updated_at = ?");
+	values.push(now);
+	values.push(id);
+	await db.run(`UPDATE prompts SET ${sets.join(", ")} WHERE id = ?`, values);
+	return getPromptById(id);
 }
-async function b(e) {
-	return await d().run("DELETE FROM prompts WHERE id = ?", [e]), { success: !0 };
+async function deletePrompt(id) {
+	await getDatabase().run("DELETE FROM prompts WHERE id = ?", [id]);
+	return { success: true };
 }
-async function x(e) {
-	let t = d(), n = await g(e);
-	if (!n) return null;
-	let r = +!n.favorite;
-	return await t.run("UPDATE prompts SET favorite = ?, updated_at = ? WHERE id = ?", [
-		r,
+async function toggleFavorite(id) {
+	const db = getDatabase();
+	const prompt = await getPromptById(id);
+	if (!prompt) return null;
+	const newVal = prompt.favorite ? 0 : 1;
+	await db.run("UPDATE prompts SET favorite = ?, updated_at = ? WHERE id = ?", [
+		newVal,
 		(/* @__PURE__ */ new Date()).toISOString(),
-		e
-	]), g(e);
+		id
+	]);
+	return getPromptById(id);
 }
 //#endregion
 //#region electron/database/collections.js
-async function S({ name: e, icon: t = "folder" }) {
-	let n = d(), r = crypto.randomUUID(), i = (/* @__PURE__ */ new Date()).toISOString();
-	return await n.run("INSERT INTO collections (id, name, icon, created_at) VALUES (?, ?, ?, ?)", [
-		r,
-		e,
-		t,
-		i
-	]), C(r);
+async function createCollection({ name, icon = "folder" }) {
+	const db = getDatabase();
+	const id = crypto.randomUUID();
+	const now = (/* @__PURE__ */ new Date()).toISOString();
+	await db.run("INSERT INTO collections (id, name, icon, created_at) VALUES (?, ?, ?, ?)", [
+		id,
+		name,
+		icon,
+		now
+	]);
+	return getCollectionById(id);
 }
-async function C(e) {
-	return await d().get("SELECT * FROM collections WHERE id = ?", [e]) || null;
+async function getCollectionById(id) {
+	return await getDatabase().get("SELECT * FROM collections WHERE id = ?", [id]) || null;
 }
-async function w() {
-	return d().all("SELECT * FROM collections ORDER BY created_at ASC");
+async function getCollections() {
+	return getDatabase().all("SELECT * FROM collections ORDER BY created_at ASC");
 }
-async function T(e, { name: t, icon: n }) {
-	return await d().run("UPDATE collections SET name = ?, icon = ? WHERE id = ?", [
-		t,
-		n || "folder",
-		e
-	]), C(e);
+async function updateCollection(id, { name, icon }) {
+	await getDatabase().run("UPDATE collections SET name = ?, icon = ? WHERE id = ?", [
+		name,
+		icon || "folder",
+		id
+	]);
+	return getCollectionById(id);
 }
-async function E(e) {
-	let t = d();
-	return await t.run("UPDATE prompts SET collection_id = NULL WHERE collection_id = ?", [e]), await t.run("DELETE FROM collections WHERE id = ?", [e]), { success: !0 };
+async function deleteCollection(id) {
+	const db = getDatabase();
+	await db.run("UPDATE prompts SET collection_id = NULL WHERE collection_id = ?", [id]);
+	await db.run("DELETE FROM collections WHERE id = ?", [id]);
+	return { success: true };
 }
 //#endregion
 //#region electron/database/activity.js
-async function D(e, t) {
-	let n = d(), r = crypto.randomUUID(), i = (/* @__PURE__ */ new Date()).toISOString();
-	return await n.run("INSERT INTO activity_log (id, prompt_id, action, created_at) VALUES (?, ?, ?, ?)", [
-		r,
-		e,
-		t,
-		i
-	]), r;
+async function logActivity(promptId, action) {
+	const db = getDatabase();
+	const id = crypto.randomUUID();
+	const now = (/* @__PURE__ */ new Date()).toISOString();
+	await db.run("INSERT INTO activity_log (id, prompt_id, action, created_at) VALUES (?, ?, ?, ?)", [
+		id,
+		promptId,
+		action,
+		now
+	]);
+	return id;
 }
-async function O(e = 50) {
-	return await d().all("\n    SELECT a.*, p.title as prompt_title, p.content as prompt_content\n    FROM activity_log a\n    LEFT JOIN prompts p ON a.prompt_id = p.id\n    ORDER BY a.created_at DESC\n    LIMIT ?\n  ", [e]) || [];
+async function getActivity(limit = 50) {
+	return await getDatabase().all(`
+    SELECT a.*, p.title as prompt_title, p.content as prompt_content
+    FROM activity_log a
+    LEFT JOIN prompts p ON a.prompt_id = p.id
+    ORDER BY a.created_at DESC
+    LIMIT ?
+  `, [limit]) || [];
 }
 //#endregion
 //#region electron/database/io.js
-async function k(t) {
-	let r = d(), i = await r.all("SELECT * FROM prompts ORDER BY created_at DESC"), a = await r.all("SELECT * FROM collections ORDER BY created_at ASC"), o, c;
-	switch (t) {
+async function exportData(format) {
+	const db = getDatabase();
+	const prompts = await db.all("SELECT * FROM prompts ORDER BY created_at DESC");
+	const collections = await db.all("SELECT * FROM collections ORDER BY created_at ASC");
+	let content, filters;
+	switch (format) {
 		case "json":
-			o = JSON.stringify({
-				prompts: i,
-				collections: a,
+			content = JSON.stringify({
+				prompts,
+				collections,
 				exportedAt: (/* @__PURE__ */ new Date()).toISOString()
-			}, null, 2), c = [{
+			}, null, 2);
+			filters = [{
 				name: "JSON",
 				extensions: ["json"]
 			}];
 			break;
 		case "markdown": {
-			let e = "# Prompt Nest Export\n\n";
-			e += `Exported: ${(/* @__PURE__ */ new Date()).toLocaleString()}\n\n---\n\n`;
-			for (let t of i) e += `## ${t.title}\n\n`, t.tags && (e += `**Tags:** ${t.tags}\n\n`), e += `${t.content}\n\n`, e += `_Created: ${new Date(t.created_at).toLocaleString()} | Updated: ${new Date(t.updated_at).toLocaleString()}_\n\n---\n\n`;
-			o = e, c = [{
+			let md = "# Prompt Nest Export\n\n";
+			md += `Exported: ${(/* @__PURE__ */ new Date()).toLocaleString()}\n\n---\n\n`;
+			for (const p of prompts) {
+				md += `## ${p.title}\n\n`;
+				if (p.tags) md += `**Tags:** ${p.tags}\n\n`;
+				md += `${p.content}\n\n`;
+				md += `_Created: ${new Date(p.created_at).toLocaleString()} | Updated: ${new Date(p.updated_at).toLocaleString()}_\n\n---\n\n`;
+			}
+			content = md;
+			filters = [{
 				name: "Markdown",
 				extensions: ["md"]
 			}];
 			break;
 		}
 		case "txt": {
-			let e = "";
-			for (let t of i) e += `${"=".repeat(60)}\n`, e += `TITLE: ${t.title}\n`, t.tags && (e += `TAGS: ${t.tags}\n`), e += `${"=".repeat(60)}\n`, e += `${t.content}\n\n`;
-			o = e, c = [{
+			let txt = "";
+			for (const p of prompts) {
+				txt += `${"=".repeat(60)}\n`;
+				txt += `TITLE: ${p.title}\n`;
+				if (p.tags) txt += `TAGS: ${p.tags}\n`;
+				txt += `${"=".repeat(60)}\n`;
+				txt += `${p.content}\n\n`;
+			}
+			content = txt;
+			filters = [{
 				name: "Text",
 				extensions: ["txt"]
 			}];
 			break;
 		}
-		default: throw Error(`Unsupported format: ${t}`);
+		default: throw new Error(`Unsupported format: ${format}`);
 	}
-	let l = e.getFocusedWindow(), { canceled: u, filePath: f } = await n.showSaveDialog(l, {
-		title: `Export as ${t.toUpperCase()}`,
-		defaultPath: `promptnest-export.${t === "markdown" ? "md" : t}`,
-		filters: c
+	const win = BrowserWindow.getFocusedWindow();
+	const { canceled, filePath } = await dialog.showSaveDialog(win, {
+		title: `Export as ${format.toUpperCase()}`,
+		defaultPath: `promptnest-export.${format === "markdown" ? "md" : format}`,
+		filters
 	});
-	return u || !f ? { canceled: !0 } : (s.writeFileSync(f, o, "utf-8"), {
-		success: !0,
-		filePath: f
-	});
+	if (canceled || !filePath) return { canceled: true };
+	fs.writeFileSync(filePath, content, "utf-8");
+	return {
+		success: true,
+		filePath
+	};
 }
-async function A() {
-	let t = d(), r = e.getFocusedWindow(), { canceled: i, filePaths: a } = await n.showOpenDialog(r, {
+async function importData() {
+	const db = getDatabase();
+	const win = BrowserWindow.getFocusedWindow();
+	const { canceled, filePaths } = await dialog.showOpenDialog(win, {
 		title: "Import Prompts",
 		properties: ["openFile"],
 		filters: [{
@@ -202,92 +325,126 @@ async function A() {
 			extensions: ["json"]
 		}]
 	});
-	if (i || a.length === 0) return { canceled: !0 };
-	let o = s.readFileSync(a[0], "utf-8"), c;
+	if (canceled || filePaths.length === 0) return { canceled: true };
+	const raw = fs.readFileSync(filePaths[0], "utf-8");
+	let data;
 	try {
-		c = JSON.parse(o);
+		data = JSON.parse(raw);
 	} catch {
 		return { error: "Invalid JSON file" };
 	}
-	let l = {
+	const imported = {
 		prompts: 0,
 		collections: 0,
 		errors: 0
 	};
-	if (Array.isArray(c.collections)) {
-		let e = await t.all("SELECT id FROM collections"), n = new Set(e.map((e) => e.id));
-		for (let e of c.collections) try {
-			n.has(e.id) ? await t.run("UPDATE collections SET name = ?, icon = ? WHERE id = ?", [
-				e.name,
-				e.icon || "folder",
-				e.id
-			]) : await t.run("INSERT INTO collections (id, name, icon, created_at) VALUES (?, ?, ?, ?)", [
-				e.id || crypto.randomUUID(),
-				e.name,
-				e.icon || "folder",
-				e.created_at || (/* @__PURE__ */ new Date()).toISOString()
-			]), l.collections++;
+	if (Array.isArray(data.collections)) {
+		const existing = await db.all("SELECT id FROM collections");
+		const existingIds = new Set(existing.map((c) => c.id));
+		for (const col of data.collections) try {
+			if (existingIds.has(col.id)) await db.run("UPDATE collections SET name = ?, icon = ? WHERE id = ?", [
+				col.name,
+				col.icon || "folder",
+				col.id
+			]);
+			else await db.run("INSERT INTO collections (id, name, icon, created_at) VALUES (?, ?, ?, ?)", [
+				col.id || crypto.randomUUID(),
+				col.name,
+				col.icon || "folder",
+				col.created_at || (/* @__PURE__ */ new Date()).toISOString()
+			]);
+			imported.collections++;
 		} catch {
-			l.errors++;
+			imported.errors++;
 		}
 	}
-	if (Array.isArray(c.prompts)) for (let e of c.prompts) try {
-		await t.get("SELECT id FROM prompts WHERE id = ?", [e.id]) ? await t.run("UPDATE prompts SET title = ?, content = ?, tags = ?, collection_id = ?, favorite = ?, updated_at = ? WHERE id = ?", [
-			e.title,
-			e.content,
-			e.tags || "",
-			e.collection_id || null,
-			e.favorite || 0,
+	if (Array.isArray(data.prompts)) for (const p of data.prompts) try {
+		if (await db.get("SELECT id FROM prompts WHERE id = ?", [p.id])) await db.run("UPDATE prompts SET title = ?, content = ?, tags = ?, collection_id = ?, favorite = ?, updated_at = ? WHERE id = ?", [
+			p.title,
+			p.content,
+			p.tags || "",
+			p.collection_id || null,
+			p.favorite || 0,
 			(/* @__PURE__ */ new Date()).toISOString(),
-			e.id
-		]) : await t.run("INSERT INTO prompts (id, title, content, tags, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [
-			e.id || crypto.randomUUID(),
-			e.title,
-			e.content,
-			e.tags || "",
-			e.collection_id || null,
-			e.favorite || 0,
-			e.created_at || (/* @__PURE__ */ new Date()).toISOString(),
+			p.id
+		]);
+		else await db.run("INSERT INTO prompts (id, title, content, tags, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [
+			p.id || crypto.randomUUID(),
+			p.title,
+			p.content,
+			p.tags || "",
+			p.collection_id || null,
+			p.favorite || 0,
+			p.created_at || (/* @__PURE__ */ new Date()).toISOString(),
 			(/* @__PURE__ */ new Date()).toISOString()
-		]), l.prompts++;
+		]);
+		imported.prompts++;
 	} catch {
-		l.errors++;
+		imported.errors++;
 	}
 	return {
-		success: !0,
-		...l
+		success: true,
+		...imported
 	};
 }
 //#endregion
 //#region electron/main.js
-var j = a.dirname(i(import.meta.url));
-process.env.APP_ROOT = a.join(j, "..");
-var M = process.env.VITE_DEV_SERVER_URL, N = a.join(process.env.APP_ROOT, "dist-electron"), P = a.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = M ? a.join(process.env.APP_ROOT, "public") : P;
-var F;
-function I() {
-	F = new e({
-		icon: a.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+var __dirname = path.dirname(fileURLToPath(import.meta.url));
+process.env.APP_ROOT = path.join(__dirname, "..");
+var VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
+var MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
+var RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
+process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
+var win;
+function createWindow() {
+	win = new BrowserWindow({
+		icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
 		webPreferences: {
-			preload: a.join(j, "preload.mjs"),
-			contextIsolation: !0,
-			nodeIntegration: !1
+			preload: path.join(__dirname, "preload.mjs"),
+			contextIsolation: true,
+			nodeIntegration: false
 		}
-	}), F.webContents.on("did-finish-load", () => {
-		F?.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-	}), M ? F.loadURL(M) : F.loadFile(a.join(P, "index.html"));
+	});
+	win.webContents.on("did-finish-load", () => {
+		win?.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
+	});
+	if (VITE_DEV_SERVER_URL) win.loadURL(VITE_DEV_SERVER_URL);
+	else win.loadFile(path.join(RENDERER_DIST, "index.html"));
 }
-function L() {
-	r.handle("db:createPrompt", (e, t) => h(t)), r.handle("db:getPromptById", (e, t) => g(t)), r.handle("db:getAllPrompts", () => _()), r.handle("db:updatePrompt", (e, t, n) => y(t, n)), r.handle("db:deletePrompt", (e, t) => b(t)), r.handle("db:toggleFavorite", (e, t) => x(t)), r.handle("db:getFavorites", () => v()), r.handle("db:createCollection", (e, t) => S(t)), r.handle("db:getCollections", () => w()), r.handle("db:updateCollection", (e, t, n) => T(t, n)), r.handle("db:deleteCollection", (e, t) => E(t)), r.handle("db:logActivity", (e, t, n) => D(t, n)), r.handle("db:getActivity", (e, t) => O(t)), r.handle("db:exportData", (e, t) => k(t)), r.handle("db:importData", () => A());
+function registerIpcHandlers() {
+	ipcMain.handle("db:createPrompt", (_, data) => createPrompt(data));
+	ipcMain.handle("db:getPromptById", (_, id) => getPromptById(id));
+	ipcMain.handle("db:getAllPrompts", () => getAllPrompts());
+	ipcMain.handle("db:updatePrompt", (_, id, data) => updatePrompt(id, data));
+	ipcMain.handle("db:deletePrompt", (_, id) => deletePrompt(id));
+	ipcMain.handle("db:toggleFavorite", (_, id) => toggleFavorite(id));
+	ipcMain.handle("db:getFavorites", () => getFavorites());
+	ipcMain.handle("db:createCollection", (_, data) => createCollection(data));
+	ipcMain.handle("db:getCollections", () => getCollections());
+	ipcMain.handle("db:updateCollection", (_, id, data) => updateCollection(id, data));
+	ipcMain.handle("db:deleteCollection", (_, id) => deleteCollection(id));
+	ipcMain.handle("db:logActivity", (_, promptId, action) => logActivity(promptId, action));
+	ipcMain.handle("db:getActivity", (_, limit) => getActivity(limit));
+	ipcMain.handle("db:exportData", (_, format) => exportData(format));
+	ipcMain.handle("db:importData", () => importData());
+	ipcMain.handle("db:getDatabaseStats", () => getDatabaseStats());
 }
-t.on("window-all-closed", () => {
-	process.platform !== "darwin" && (t.quit(), F = null);
-}), t.on("activate", () => {
-	e.getAllWindows().length === 0 && I();
-}), t.whenReady().then(async () => {
-	await f(), L(), I();
-}), t.on("will-quit", () => {
-	m();
+app.on("window-all-closed", () => {
+	if (process.platform !== "darwin") {
+		app.quit();
+		win = null;
+	}
+});
+app.on("activate", () => {
+	if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});
+app.whenReady().then(async () => {
+	await initDatabase();
+	registerIpcHandlers();
+	createWindow();
+});
+app.on("will-quit", () => {
+	closeDatabase();
 });
 //#endregion
-export { N as MAIN_DIST, P as RENDERER_DIST, M as VITE_DEV_SERVER_URL };
+export { MAIN_DIST, RENDERER_DIST, VITE_DEV_SERVER_URL };
