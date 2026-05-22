@@ -24,19 +24,15 @@ const filters = [
 export default function Search() {
   const navigate = useNavigate()
   const inputRef = useRef(null)
-  const [prompts, setPrompts] = useState([])
   const [collections, setCollections] = useState([])
   const [query, setQuery] = useState("")
   const [activeFilter, setActiveFilter] = useState("all")
   const [selectedIndex, setSelectedIndex] = useState(-1)
+  const [results, setResults] = useState([])
 
   useEffect(() => {
-    Promise.all([
-      window.db.getAllPrompts().catch(() => []),
-      window.db.getCollections().catch(() => []),
-    ]).then(([p, c]) => {
-      setPrompts(Array.isArray(p) ? p : [])
-      setCollections(Array.isArray(c) ? c : [])
+    window.db.getCollections().then((data) => {
+      setCollections(Array.isArray(data) ? data : [])
     })
     inputRef.current?.focus()
   }, [])
@@ -47,44 +43,21 @@ export default function Search() {
     return map
   }, [collections])
 
-  const results = useMemo(() => {
-    if (!query.trim()) return []
-
-    const q = query.toLowerCase()
-    const terms = q.split(/\s+/).filter(Boolean)
-
-    const scored = []
-
-    for (const p of prompts) {
-      let score = 0
-      const matches = { title: false, content: false, tags: false, collection: false }
-
-      const titleLower = p.title.toLowerCase()
-      const contentLower = p.content.toLowerCase()
-      const tagsLower = (p.tags || "").toLowerCase()
-      const collectionName = (collectionMap[p.collection_id] || "").toLowerCase()
-
-      for (const term of terms) {
-        if (titleLower.includes(term)) { score += 10; matches.title = true }
-        if (contentLower.includes(term)) { score += 3; matches.content = true }
-        if (tagsLower.includes(term)) { score += 8; matches.tags = true }
-        if (collectionName.includes(term)) { score += 6; matches.collection = true }
-      }
-
-      if (activeFilter === "favorites" && !p.favorite) continue
-      if (activeFilter === "recent") {
-        const daysAgo = (Date.now() - new Date(p.updated_at).getTime()) / 86400000
-        if (daysAgo > 7) continue
-      }
-
-      if (score > 0) {
-        scored.push({ ...p, score, matches })
-      }
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([])
+      return
     }
-
-    scored.sort((a, b) => b.score - a.score)
-    return scored
-  }, [prompts, query, activeFilter, collectionMap])
+    const timer = setTimeout(async () => {
+      try {
+        const data = await window.db.searchPrompts(query.trim(), activeFilter)
+        setResults(Array.isArray(data) ? data : [])
+      } catch {
+        setResults([])
+      }
+    }, 200)
+    return () => clearTimeout(timer)
+  }, [query, activeFilter])
 
   useEffect(() => {
     setSelectedIndex(-1)

@@ -16,6 +16,7 @@ import {
   IconHeartFilled,
   IconEye,
   IconEyeOff,
+  IconFileText,
 } from "@tabler/icons-react"
 import { FileText, Tags, FolderOpen } from "lucide-react"
 import {
@@ -188,6 +189,15 @@ export default function PromptEditor() {
     URL.revokeObjectURL(url)
   }
 
+  const handleSaveAsTemplate = async () => {
+    if (!form.title && !form.content) return
+    await window.db.createTemplate({
+      title: form.title || "Untitled Template",
+      content: form.content,
+      tags: form.tags,
+    })
+  }
+
   const handleToggleFavorite = async () => {
     const newVal = !form.favorite
     updateField("favorite", newVal)
@@ -264,6 +274,9 @@ export default function PromptEditor() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleExport}>
                 <IconFileExport className="size-3.5" /> Export
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSaveAsTemplate}>
+                <IconFileText className="size-3.5" /> Save as Template
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onClick={handleDelete}>

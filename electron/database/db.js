@@ -52,12 +52,31 @@ async function seedData() {
   await db.run(insert, [crypto.randomUUID(), 'React Component Generator', 'Create a reusable React component with PropTypes, default props, and proper state management. Include a loading state, empty state, and error boundary.', 'react, component, frontend', null, 1, now, now])
   await db.run(insert, [crypto.randomUUID(), 'UI Design Critique', 'Review this UI design for consistency, accessibility, color contrast, typography hierarchy, spacing, and responsive behavior. Provide specific actionable feedback.', 'design, ui, review', null, 0, now, now])
   await db.run(insert, [crypto.randomUUID(), 'Marketing Email Copy', 'Write a compelling marketing email for our new product launch. The tone should be professional yet friendly. Include subject line options, body copy, and a clear CTA.', 'marketing, copywriting, email', null, 1, now, now])
+
+  const tplInsert = 'INSERT INTO prompts (id, title, content, tags, is_template, created_at, updated_at) VALUES (?, ?, ?, ?, 1, ?, ?)'
+  await db.run(tplInsert, [crypto.randomUUID(), 'Code Review Checklist', 'Review this code for:\n- Correctness: Does it handle edge cases?\n- Performance: Any obvious bottlenecks?\n- Readability: Is the intent clear?\n- Security: Any injection or validation issues?\n- Testing: Are there unit tests?', 'code, review, checklist', now, now])
+  await db.run(tplInsert, [crypto.randomUUID(), 'Meeting Notes', '## Agenda\n- \n- \n\n## Discussion Points\n1. \n2. \n3. \n\n## Action Items\n- [ ] \n- [ ] \n\n## Decisions\n- ', 'meetings, productivity', now, now])
+  await db.run(tplInsert, [crypto.randomUUID(), 'Brainstorming Session', '## Problem Statement\n\n## Ideas\n- \n- \n- \n\n## Constraints\n- \n- \n\n## Next Steps\n1. \n2. ', 'creative, brainstorming', now, now])
 }
 
 export function closeDatabase() {
   if (db) {
     db.close()
     db = null
+  }
+}
+
+export async function getDashboardStats() {
+  const db = getDatabase()
+  const totalPrompts = await db.get('SELECT COUNT(*) as count FROM prompts WHERE is_template = 0')
+  const collections = await db.get('SELECT COUNT(*) as count FROM collections')
+  const totalTemplates = await db.get('SELECT COUNT(*) as count FROM prompts WHERE is_template = 1')
+  const thisWeek = await db.get("SELECT COUNT(*) as count FROM prompts WHERE is_template = 0 AND created_at >= datetime('now', '-7 days')")
+  return {
+    totalPrompts: totalPrompts?.count || 0,
+    collections: collections?.count || 0,
+    totalTemplates: totalTemplates?.count || 0,
+    thisWeek: thisWeek?.count || 0,
   }
 }
 

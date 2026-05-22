@@ -38,11 +38,16 @@ const cards = [
 export default function Dashboard() {
   const navigate = useNavigate()
   const [prompts, setPrompts] = useState([])
+  const [stats, setStats] = useState({ totalPrompts: 0, collections: 0, totalTemplates: 0, thisWeek: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    window.db.getAllPrompts().then((data) => {
-      setPrompts(Array.isArray(data) ? data.slice(0, 5) : [])
+    Promise.all([
+      window.db.getAllPrompts().then((data) => Array.isArray(data) ? data.slice(0, 5) : []),
+      window.db.getDashboardStats().then((s) => s || {}),
+    ]).then(([p, s]) => {
+      setPrompts(p)
+      setStats(s)
     }).catch(console.error).finally(() => setLoading(false))
   }, [])
 
@@ -58,10 +63,10 @@ export default function Dashboard() {
 
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto mb-6 grid max-w-6xl grid-cols-4 gap-4">
-          <StatCard label="Total Prompts" value="247" icon={FileStack} accent="blue" size="md" trend="+12%" />
-          <StatCard label="Categories" value="12" icon={Tags} accent="green" size="md" desc="Organized by use case" />
-          <StatCard label="Collections" value="8" icon={GitFork} accent="purple" size="md" desc="Curated prompt sets" />
-          <StatCard label="This Week" value="34" icon={Zap} accent="orange" size="md" trend="+18%" />
+          <StatCard label="Total Prompts" value={String(stats.totalPrompts)} icon={FileStack} accent="blue" size="md" />
+          <StatCard label="Templates" value={String(stats.totalTemplates)} icon={FileText} accent="primary" size="md" />
+          <StatCard label="Collections" value={String(stats.collections)} icon={GitFork} accent="purple" size="md" />
+          <StatCard label="This Week" value={String(stats.thisWeek)} icon={Zap} accent="orange" size="md" />
         </div>
 
         <div className="mx-auto mb-8 grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

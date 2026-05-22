@@ -11,6 +11,7 @@ import Collections from "@/pages/Collections.jsx"
 import Favorites from "@/pages/Favorites.jsx"
 import Search from "@/pages/Search.jsx"
 import RecentActivity from "@/pages/RecentActivity.jsx"
+import Templates from "@/pages/Templates.jsx"
 import ExportImport from "@/pages/ExportImport.jsx"
 import Settings from "@/pages/Settings.jsx"
 import "./index.css"
@@ -29,6 +30,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="favorites" element={<Favorites />} />
             <Route path="search" element={<Search />} />
             <Route path="activity" element={<RecentActivity />} />
+            <Route path="templates" element={<Templates />} />
             <Route path="export" element={<ExportImport />} />
             <Route path="settings" element={<Settings />} />
           </Route>

@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
-import { initDatabase, closeDatabase, getDatabaseStats } from './database/db.js'
+import { initDatabase, closeDatabase, getDatabaseStats, getDashboardStats } from './database/db.js'
 import * as prompts from './database/prompts.js'
 import * as collections from './database/collections.js'
 import * as activity from './database/activity.js'
@@ -57,6 +57,11 @@ function registerIpcHandlers() {
   ipcMain.handle('db:getActivity', (_, limit) => activity.getActivity(limit))
   ipcMain.handle('db:exportData', (_, format) => io.exportData(format))
   ipcMain.handle('db:importData', () => io.importData())
+  ipcMain.handle('db:searchPrompts', (_, query, filter) => prompts.searchPrompts(query, filter))
+  ipcMain.handle('db:getDashboardStats', () => getDashboardStats())
+  ipcMain.handle('db:getTemplates', () => prompts.getTemplates())
+  ipcMain.handle('db:createTemplate', (_, data) => prompts.createTemplate(data))
+  ipcMain.handle('db:deleteTemplate', (_, id) => prompts.deleteTemplate(id))
   ipcMain.handle('db:getDatabaseStats', () => getDatabaseStats())
   ipcMain.handle('app:getVersion', () => app.getVersion())
   ipcMain.handle('db:openDbFolder', async () => {

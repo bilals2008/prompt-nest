@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS prompts (
   tags TEXT,
   collection_id TEXT,
   favorite INTEGER DEFAULT 0,
+  is_template INTEGER DEFAULT 0,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
@@ -30,8 +31,17 @@ CREATE TABLE IF NOT EXISTS activity_log (
   created_at TEXT NOT NULL
 );
 `;
+function toPromise(method, ...args) {
+	return new Promise((resolve, reject) => {
+		getDatabase()[method](...args, function(err, result) {
+			if (err) reject(err);
+			else resolve(result);
+		});
+	});
+}
 async function createTables() {
 	await getDatabase().exec(SCHEMA);
+	if (!(await toPromise("all", "PRAGMA table_info(prompts)")).some((c) => c.name === "is_template")) await toPromise("run", "ALTER TABLE prompts ADD COLUMN is_template INTEGER DEFAULT 0");
 }
 //#endregion
 //#region electron/database/db.js
@@ -97,12 +107,50 @@ async function seedData() {
 		now,
 		now
 	]);
+	const tplInsert = "INSERT INTO prompts (id, title, content, tags, is_template, created_at, updated_at) VALUES (?, ?, ?, ?, 1, ?, ?)";
+	await db.run(tplInsert, [
+		crypto.randomUUID(),
+		"Code Review Checklist",
+		"Review this code for:\n- Correctness: Does it handle edge cases?\n- Performance: Any obvious bottlenecks?\n- Readability: Is the intent clear?\n- Security: Any injection or validation issues?\n- Testing: Are there unit tests?",
+		"code, review, checklist",
+		now,
+		now
+	]);
+	await db.run(tplInsert, [
+		crypto.randomUUID(),
+		"Meeting Notes",
+		"## Agenda\n- \n- \n\n## Discussion Points\n1. \n2. \n3. \n\n## Action Items\n- [ ] \n- [ ] \n\n## Decisions\n- ",
+		"meetings, productivity",
+		now,
+		now
+	]);
+	await db.run(tplInsert, [
+		crypto.randomUUID(),
+		"Brainstorming Session",
+		"## Problem Statement\n\n## Ideas\n- \n- \n- \n\n## Constraints\n- \n- \n\n## Next Steps\n1. \n2. ",
+		"creative, brainstorming",
+		now,
+		now
+	]);
 }
 function closeDatabase() {
 	if (db) {
 		db.close();
 		db = null;
 	}
+}
+async function getDashboardStats() {
+	const db = getDatabase();
+	const totalPrompts = await db.get("SELECT COUNT(*) as count FROM prompts WHERE is_template = 0");
+	const collections = await db.get("SELECT COUNT(*) as count FROM collections");
+	const totalTemplates = await db.get("SELECT COUNT(*) as count FROM prompts WHERE is_template = 1");
+	const thisWeek = await db.get("SELECT COUNT(*) as count FROM prompts WHERE is_template = 0 AND created_at >= datetime('now', '-7 days')");
+	return {
+		totalPrompts: totalPrompts?.count || 0,
+		collections: collections?.count || 0,
+		totalTemplates: totalTemplates?.count || 0,
+		thisWeek: thisWeek?.count || 0
+	};
 }
 async function getDatabaseStats() {
 	const db = getDatabase();
@@ -190,6 +238,46 @@ async function toggleFavorite(id) {
 		id
 	]);
 	return getPromptById(id);
+}
+async function getTemplates() {
+	return getDatabase().all("SELECT * FROM prompts WHERE is_template = 1 ORDER BY updated_at DESC");
+}
+async function createTemplate({ title, content, tags = "" }) {
+	const db = getDatabase();
+	const id = crypto.randomUUID();
+	const now = (/* @__PURE__ */ new Date()).toISOString();
+	await db.run("INSERT INTO prompts (id, title, content, tags, is_template, created_at, updated_at) VALUES (?, ?, ?, ?, 1, ?, ?)", [
+		id,
+		title,
+		content,
+		tags,
+		now,
+		now
+	]);
+	return getPromptById(id);
+}
+async function deleteTemplate(id) {
+	await getDatabase().run("DELETE FROM prompts WHERE id = ? AND is_template = 1", [id]);
+	return { success: true };
+}
+async function searchPrompts(query, filter = "all") {
+	const db = getDatabase();
+	const q = `%${query}%`;
+	let sql = `
+    SELECT p.*, c.name as collection_name
+    FROM prompts p
+    LEFT JOIN collections c ON p.collection_id = c.id
+    WHERE p.is_template = 0 AND (p.title LIKE ? OR p.content LIKE ? OR p.tags LIKE ? OR c.name LIKE ?)
+  `;
+	if (filter === "favorites") sql += " AND p.favorite = 1";
+	if (filter === "recent") sql += " AND p.updated_at >= datetime('now', '-7 days')";
+	sql += " ORDER BY p.updated_at DESC LIMIT 100";
+	return db.all(sql, [
+		q,
+		q,
+		q,
+		q
+	]);
 }
 //#endregion
 //#region electron/database/collections.js
@@ -359,22 +447,24 @@ async function importData() {
 		}
 	}
 	if (Array.isArray(data.prompts)) for (const p of data.prompts) try {
-		if (await db.get("SELECT id FROM prompts WHERE id = ?", [p.id])) await db.run("UPDATE prompts SET title = ?, content = ?, tags = ?, collection_id = ?, favorite = ?, updated_at = ? WHERE id = ?", [
+		if (await db.get("SELECT id FROM prompts WHERE id = ?", [p.id])) await db.run("UPDATE prompts SET title = ?, content = ?, tags = ?, collection_id = ?, favorite = ?, is_template = ?, updated_at = ? WHERE id = ?", [
 			p.title,
 			p.content,
 			p.tags || "",
 			p.collection_id || null,
 			p.favorite || 0,
+			p.is_template || 0,
 			(/* @__PURE__ */ new Date()).toISOString(),
 			p.id
 		]);
-		else await db.run("INSERT INTO prompts (id, title, content, tags, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [
+		else await db.run("INSERT INTO prompts (id, title, content, tags, collection_id, favorite, is_template, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [
 			p.id || crypto.randomUUID(),
 			p.title,
 			p.content,
 			p.tags || "",
 			p.collection_id || null,
 			p.favorite || 0,
+			p.is_template || 0,
 			p.created_at || (/* @__PURE__ */ new Date()).toISOString(),
 			(/* @__PURE__ */ new Date()).toISOString()
 		]);
@@ -427,6 +517,11 @@ function registerIpcHandlers() {
 	ipcMain.handle("db:getActivity", (_, limit) => getActivity(limit));
 	ipcMain.handle("db:exportData", (_, format) => exportData(format));
 	ipcMain.handle("db:importData", () => importData());
+	ipcMain.handle("db:searchPrompts", (_, query, filter) => searchPrompts(query, filter));
+	ipcMain.handle("db:getDashboardStats", () => getDashboardStats());
+	ipcMain.handle("db:getTemplates", () => getTemplates());
+	ipcMain.handle("db:createTemplate", (_, data) => createTemplate(data));
+	ipcMain.handle("db:deleteTemplate", (_, id) => deleteTemplate(id));
 	ipcMain.handle("db:getDatabaseStats", () => getDatabaseStats());
 	ipcMain.handle("app:getVersion", () => app.getVersion());
 	ipcMain.handle("db:openDbFolder", async () => {

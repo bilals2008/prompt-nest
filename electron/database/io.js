@@ -103,9 +103,9 @@ export async function importData() {
       try {
         const existing = await db.get('SELECT id FROM prompts WHERE id = ?', [p.id])
         if (existing) {
-          await db.run('UPDATE prompts SET title = ?, content = ?, tags = ?, collection_id = ?, favorite = ?, updated_at = ? WHERE id = ?', [p.title, p.content, p.tags || '', p.collection_id || null, p.favorite || 0, new Date().toISOString(), p.id])
+          await db.run('UPDATE prompts SET title = ?, content = ?, tags = ?, collection_id = ?, favorite = ?, is_template = ?, updated_at = ? WHERE id = ?', [p.title, p.content, p.tags || '', p.collection_id || null, p.favorite || 0, p.is_template || 0, new Date().toISOString(), p.id])
         } else {
-          await db.run('INSERT INTO prompts (id, title, content, tags, collection_id, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [p.id || crypto.randomUUID(), p.title, p.content, p.tags || '', p.collection_id || null, p.favorite || 0, p.created_at || new Date().toISOString(), new Date().toISOString()])
+          await db.run('INSERT INTO prompts (id, title, content, tags, collection_id, favorite, is_template, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [p.id || crypto.randomUUID(), p.title, p.content, p.tags || '', p.collection_id || null, p.favorite || 0, p.is_template || 0, p.created_at || new Date().toISOString(), new Date().toISOString()])
         }
         imported.prompts++
       } catch { imported.errors++ }
