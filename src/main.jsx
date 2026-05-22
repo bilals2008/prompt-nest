@@ -9,6 +9,7 @@ import AllPrompts from "@/pages/AllPrompts.jsx"
 import PromptEditor from "@/pages/PromptEditor.jsx"
 import Collections from "@/pages/Collections.jsx"
 import Favorites from "@/pages/Favorites.jsx"
+import Search from "@/pages/Search.jsx"
 import "./index.css"
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -23,6 +24,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="prompts/:id/edit" element={<PromptEditor />} />
             <Route path="collections" element={<Collections />} />
             <Route path="favorites" element={<Favorites />} />
+            <Route path="search" element={<Search />} />
           </Route>
         </Routes>
       </HashRouter>
