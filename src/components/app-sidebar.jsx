@@ -1,4 +1,3 @@
-// File: src/components/app-sidebar.jsx
 import {
   LayoutDashboard,
   Plus,

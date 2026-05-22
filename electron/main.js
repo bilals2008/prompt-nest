@@ -1,6 +1,9 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { initDatabase, closeDatabase } from './database/db.js'
+import * as prompts from './database/prompts.js'
+import * as collections from './database/collections.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -19,6 +22,8 @@ function createWindow() {
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
     },
   })
 
@@ -31,6 +36,18 @@ function createWindow() {
   } else {
     win.loadFile(path.join(RENDERER_DIST, 'index.html'))
   }
+}
+
+function registerIpcHandlers() {
+  ipcMain.handle('db:createPrompt', (_, data) => prompts.createPrompt(data))
+  ipcMain.handle('db:getPromptById', (_, id) => prompts.getPromptById(id))
+  ipcMain.handle('db:getAllPrompts', () => prompts.getAllPrompts())
+  ipcMain.handle('db:updatePrompt', (_, id, data) => prompts.updatePrompt(id, data))
+  ipcMain.handle('db:deletePrompt', (_, id) => prompts.deletePrompt(id))
+  ipcMain.handle('db:toggleFavorite', (_, id) => prompts.toggleFavorite(id))
+  ipcMain.handle('db:createCollection', (_, data) => collections.createCollection(data))
+  ipcMain.handle('db:getCollections', () => collections.getCollections())
+  ipcMain.handle('db:deleteCollection', (_, id) => collections.deleteCollection(id))
 }
 
 app.on('window-all-closed', () => {
@@ -46,4 +63,12 @@ app.on('activate', () => {
   }
 })
 
-app.whenReady().then(createWindow)
+app.whenReady().then(async () => {
+  await initDatabase()
+  registerIpcHandlers()
+  createWindow()
+})
+
+app.on('will-quit', () => {
+  closeDatabase()
+})

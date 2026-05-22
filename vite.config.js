@@ -12,6 +12,13 @@ export default defineConfig({
     electron({
       main: {
         entry: "electron/main.js",
+        vite: {
+          build: {
+            rollupOptions: {
+              external: ["sqlite3"],
+            },
+          },
+        },
       },
       preload: {
         input: path.join(__dirname, "electron/preload.js"),

@@ -1,6 +1,7 @@
-// File: src/App.jsx
 import { AppSidebar } from "@/components/app-sidebar"
 import { DashboardCard } from "@/components/dashboard-card"
+import { StatCard } from "@/components/ui/stat-card"
+import { Badge } from "@/components/ui/badge"
 import {
   Plus,
   Library,
@@ -16,8 +17,6 @@ import {
   GitFork,
   Zap,
 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { StatCard } from "@/components/ui/stat-card"
 
 const cards = [
   { icon: Plus, title: "New Prompt", accent: "primary", description: "Create a new prompt" },
@@ -40,9 +39,7 @@ function App() {
             <LayoutDashboard className="size-5" />
             Dashboard
           </h1>
-          <div className="flex items-center gap-3">
-            <Badge variant="secondary" className="font-normal">v1.0.0</Badge>
-          </div>
+          <Badge variant="secondary" className="font-normal">v1.0.0</Badge>
         </header>
 
         <div className="flex-1 overflow-auto p-6">

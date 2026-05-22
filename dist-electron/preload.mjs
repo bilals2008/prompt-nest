@@ -1,17 +1,14 @@
 let electron = require("electron");
 //#region electron/preload.js
-electron.contextBridge.exposeInMainWorld("ipcRenderer", {
-	on(channel, listener) {
-		return electron.ipcRenderer.on(channel, (event, ...args) => listener(event, ...args));
-	},
-	off(channel, ...omit) {
-		return electron.ipcRenderer.off(channel, ...omit);
-	},
-	send(channel, ...omit) {
-		return electron.ipcRenderer.send(channel, ...omit);
-	},
-	invoke(channel, ...omit) {
-		return electron.ipcRenderer.invoke(channel, ...omit);
-	}
+electron.contextBridge.exposeInMainWorld("db", {
+	createPrompt: (data) => electron.ipcRenderer.invoke("db:createPrompt", data),
+	getPromptById: (id) => electron.ipcRenderer.invoke("db:getPromptById", id),
+	getAllPrompts: () => electron.ipcRenderer.invoke("db:getAllPrompts"),
+	updatePrompt: (id, data) => electron.ipcRenderer.invoke("db:updatePrompt", id, data),
+	deletePrompt: (id) => electron.ipcRenderer.invoke("db:deletePrompt", id),
+	toggleFavorite: (id) => electron.ipcRenderer.invoke("db:toggleFavorite", id),
+	createCollection: (data) => electron.ipcRenderer.invoke("db:createCollection", data),
+	getCollections: () => electron.ipcRenderer.invoke("db:getCollections"),
+	deleteCollection: (id) => electron.ipcRenderer.invoke("db:deleteCollection", id)
 });
 //#endregion
