@@ -1,8 +1,8 @@
-import { BrowserWindow, app, dialog, ipcMain } from "electron";
+import { BrowserWindow, app, dialog, ipcMain, shell } from "electron";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import sqlite3 from "sqlite3";
 import fs from "node:fs";
+import sqlite3 from "sqlite3";
 //#region electron/database/schema.js
 var SCHEMA = `
 CREATE TABLE IF NOT EXISTS prompts (
@@ -428,6 +428,22 @@ function registerIpcHandlers() {
 	ipcMain.handle("db:exportData", (_, format) => exportData(format));
 	ipcMain.handle("db:importData", () => importData());
 	ipcMain.handle("db:getDatabaseStats", () => getDatabaseStats());
+	ipcMain.handle("app:getVersion", () => app.getVersion());
+	ipcMain.handle("db:openDbFolder", async () => {
+		const dbDir = path.join(app.getPath("userData"), "PromptNest");
+		await shell.openPath(dbDir);
+	});
+	ipcMain.handle("db:backupDatabase", async () => {
+		const dbDir = path.join(app.getPath("userData"), "PromptNest");
+		const dbPath = path.join(dbDir, "promptnest.db");
+		const timestamp = (/* @__PURE__ */ new Date()).toISOString().replace(/[:.]/g, "-");
+		const backupPath = path.join(dbDir, `promptnest-backup-${timestamp}.db`);
+		fs.copyFileSync(dbPath, backupPath);
+		return {
+			success: true,
+			path: backupPath
+		};
+	});
 }
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {

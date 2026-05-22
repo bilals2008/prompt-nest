@@ -16,6 +16,9 @@ electron.contextBridge.exposeInMainWorld("db", {
 	getActivity: (limit) => electron.ipcRenderer.invoke("db:getActivity", limit),
 	exportData: (format) => electron.ipcRenderer.invoke("db:exportData", format),
 	importData: () => electron.ipcRenderer.invoke("db:importData"),
-	getDatabaseStats: () => electron.ipcRenderer.invoke("db:getDatabaseStats")
+	getDatabaseStats: () => electron.ipcRenderer.invoke("db:getDatabaseStats"),
+	openDbFolder: () => electron.ipcRenderer.invoke("db:openDbFolder"),
+	backupDatabase: () => electron.ipcRenderer.invoke("db:backupDatabase"),
+	getAppVersion: () => electron.ipcRenderer.invoke("app:getVersion")
 });
 //#endregion

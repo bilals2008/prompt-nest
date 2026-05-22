@@ -1,6 +1,7 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import fs from 'node:fs'
 import { initDatabase, closeDatabase, getDatabaseStats } from './database/db.js'
 import * as prompts from './database/prompts.js'
 import * as collections from './database/collections.js'
@@ -57,6 +58,19 @@ function registerIpcHandlers() {
   ipcMain.handle('db:exportData', (_, format) => io.exportData(format))
   ipcMain.handle('db:importData', () => io.importData())
   ipcMain.handle('db:getDatabaseStats', () => getDatabaseStats())
+  ipcMain.handle('app:getVersion', () => app.getVersion())
+  ipcMain.handle('db:openDbFolder', async () => {
+    const dbDir = path.join(app.getPath('userData'), 'PromptNest')
+    await shell.openPath(dbDir)
+  })
+  ipcMain.handle('db:backupDatabase', async () => {
+    const dbDir = path.join(app.getPath('userData'), 'PromptNest')
+    const dbPath = path.join(dbDir, 'promptnest.db')
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+    const backupPath = path.join(dbDir, `promptnest-backup-${timestamp}.db`)
+    fs.copyFileSync(dbPath, backupPath)
+    return { success: true, path: backupPath }
+  })
 }
 
 app.on('window-all-closed', () => {

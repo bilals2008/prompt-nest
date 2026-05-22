@@ -18,4 +18,7 @@ contextBridge.exposeInMainWorld('db', {
   exportData: (format) => ipcRenderer.invoke('db:exportData', format),
   importData: () => ipcRenderer.invoke('db:importData'),
   getDatabaseStats: () => ipcRenderer.invoke('db:getDatabaseStats'),
+  openDbFolder: () => ipcRenderer.invoke('db:openDbFolder'),
+  backupDatabase: () => ipcRenderer.invoke('db:backupDatabase'),
+  getAppVersion: () => ipcRenderer.invoke('app:getVersion'),
 })
