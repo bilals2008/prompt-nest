@@ -14,6 +14,7 @@ import {
   IconFileImport,
   IconHistory,
 } from "@tabler/icons-react"
+import { toast } from "sonner"
 import { Download, Upload } from "lucide-react"
 
 const exportFormats = [
@@ -38,9 +39,11 @@ export default function ExportImport() {
       }
       if (res.success) {
         setResult({ type: "success", message: `Exported successfully`, detail: res.filePath })
+        toast.success(`Exported as ${format.toUpperCase()}`)
       }
     } catch (err) {
       setResult({ type: "error", message: "Export failed", detail: err.message })
+      toast.error("Export failed")
     }
     setExporting(null)
   }
@@ -56,11 +59,14 @@ export default function ExportImport() {
       }
       if (res.error) {
         setResult({ type: "error", message: "Import failed", detail: res.error })
+        toast.error("Import failed")
       } else if (res.success) {
         setResult({ type: "success", message: "Import complete", detail: `${res.prompts} prompts, ${res.collections} collections imported${res.errors > 0 ? ` (${res.errors} errors)` : ""}` })
+        toast.success("Import complete")
       }
     } catch (err) {
       setResult({ type: "error", message: "Import failed", detail: err.message })
+      toast.error("Import failed")
     }
     setImporting(false)
   }

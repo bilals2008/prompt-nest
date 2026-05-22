@@ -17,6 +17,7 @@ import {
   IconSparkles,
   IconLayoutGrid,
 } from "@tabler/icons-react"
+import { toast } from "sonner"
 import { Settings as SettingsIcon, Check, Copy, CheckCheck } from "lucide-react"
 import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
@@ -113,9 +114,16 @@ export default function Settings() {
     setBackupStatus("backingup")
     try {
       const result = await window.db.backupDatabase()
-      setBackupStatus(result.success ? "success" : "error")
+      if (result.success) {
+        setBackupStatus("success")
+        toast.success("Database backed up successfully")
+      } else {
+        setBackupStatus("error")
+        toast.error("Backup failed")
+      }
     } catch {
       setBackupStatus("error")
+      toast.error("Backup failed")
     }
     setTimeout(() => setBackupStatus(null), 3000)
   }
@@ -124,9 +132,10 @@ export default function Settings() {
     try {
       await navigator.clipboard.writeText(text)
       setCopied(true)
+      toast.success("Path copied")
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // clipboard write failed
+      toast.error("Failed to copy path")
     }
   }
 

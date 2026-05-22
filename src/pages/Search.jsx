@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { TagBadge } from "@/components/tag-badge"
 import { collectionIcons, getCollectionColor } from "@/lib/collection-config"
@@ -96,6 +97,7 @@ export default function Search() {
     e.stopPropagation()
     try {
       await navigator.clipboard.writeText(content)
+      toast.success("Copied to clipboard")
     } catch {
       const ta = document.createElement("textarea")
       ta.value = content
@@ -103,6 +105,7 @@ export default function Search() {
       ta.select()
       document.execCommand("copy")
       document.body.removeChild(ta)
+      toast.success("Copied to clipboard")
     }
   }
 

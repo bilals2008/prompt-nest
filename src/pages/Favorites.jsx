@@ -9,6 +9,7 @@ import {
   IconHeartFilled,
   IconSortDescending,
 } from "@tabler/icons-react"
+import { toast } from "sonner"
 import { Heart } from "lucide-react"
 
 export default function Favorites() {
@@ -49,6 +50,7 @@ export default function Favorites() {
     const updated = await window.db.toggleFavorite(id)
     if (updated && !updated.favorite) {
       setPrompts((prev) => prev.filter((p) => p.id !== id))
+      toast.success("Removed from favorites")
     } else if (updated) {
       setPrompts((prev) => prev.map((p) => (p.id === id ? updated : p)))
     }
@@ -57,6 +59,7 @@ export default function Favorites() {
   const handleDelete = async (id) => {
     await window.db.deletePrompt(id)
     setPrompts((prev) => prev.filter((p) => p.id !== id))
+    toast.success("Prompt deleted")
   }
 
   const handleDuplicate = async (id) => {
@@ -68,6 +71,7 @@ export default function Favorites() {
       title: `${original.title} (Copy)`,
     })
     loadData()
+    toast.success("Prompt duplicated")
   }
 
   return (

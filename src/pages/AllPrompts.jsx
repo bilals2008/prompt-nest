@@ -1,6 +1,7 @@
 // File: src/pages/AllPrompts.jsx
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 import { Library } from "lucide-react"
 import { PromptsToolbar } from "@/components/prompts-toolbar"
 import { PromptCard } from "@/components/prompt-card"
@@ -82,12 +83,14 @@ export default function AllPrompts() {
     const updated = await window.db.toggleFavorite(id)
     if (updated) {
       setPrompts((prev) => prev.map((p) => (p.id === id ? updated : p)))
+      toast.success(updated.favorite ? "Added to favorites" : "Removed from favorites")
     }
   }
 
   const handleDelete = async (id) => {
     await window.db.deletePrompt(id)
     setPrompts((prev) => prev.filter((p) => p.id !== id))
+    toast.success("Prompt deleted")
   }
 
   const handleDuplicate = async (id) => {
@@ -99,6 +102,7 @@ export default function AllPrompts() {
       title: `${original.title} (Copy)`,
     })
     loadData()
+    toast.success("Prompt duplicated")
   }
 
   return (

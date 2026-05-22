@@ -23,6 +23,7 @@ import {
   IconTrash,
   IconDotsVertical,
 } from "@tabler/icons-react"
+import { toast } from "sonner"
 import { FolderOpen } from "lucide-react"
 import {
   DropdownMenu,
@@ -100,12 +101,14 @@ export default function Collections() {
         icon: formIcon,
         color: formColor,
       })
+      toast.success("Collection updated")
     } else {
       await window.db.createCollection({
         name: formName.trim(),
         icon: formIcon,
         color: formColor,
       })
+      toast.success("Collection created")
     }
     setEditDialog({ open: false, collection: null })
     loadData()
@@ -114,6 +117,7 @@ export default function Collections() {
   const handleDelete = async (id) => {
     await window.db.deleteCollection(id)
     loadData()
+    toast.success("Collection deleted")
   }
 
   const handleOpen = (id) => {

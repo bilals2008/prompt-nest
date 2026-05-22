@@ -8,6 +8,7 @@ import {
   IconCopyPlus,
   IconSearch,
 } from "@tabler/icons-react"
+import { toast } from "sonner"
 import { FileText } from "lucide-react"
 
 export default function Templates() {
@@ -33,6 +34,7 @@ export default function Templates() {
       tags: tpl.tags,
     })
     if (created) {
+      toast.success("Template used — prompt created")
       navigate(`/prompts/${created.id}/edit`)
     }
   }
@@ -40,6 +42,7 @@ export default function Templates() {
   const handleDelete = async (id) => {
     await window.db.deleteTemplate(id)
     setTemplates((prev) => prev.filter((t) => t.id !== id))
+    toast.success("Template deleted")
   }
 
   const filtered = templates.filter((t) =>
