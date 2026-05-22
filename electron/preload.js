@@ -1,6 +1,20 @@
 // File: electron/preload.js
 import { ipcRenderer, contextBridge } from 'electron'
 
+contextBridge.exposeInMainWorld('electronAPI', {
+  onUpdaterEvent: (listener) => {
+    const handler = (_event, data) => listener(data)
+    ipcRenderer.on('updater:event', handler)
+    return () => ipcRenderer.removeListener('updater:event', handler)
+  },
+  updater: {
+    getAppVersion: () => ipcRenderer.invoke('updater:get-app-version'),
+    checkForUpdates: () => ipcRenderer.invoke('updater:check-for-updates'),
+    downloadUpdate: () => ipcRenderer.invoke('updater:download-update'),
+    quitAndInstall: () => ipcRenderer.invoke('updater:quit-and-install'),
+  },
+})
+
 contextBridge.exposeInMainWorld('db', {
   createPrompt: (data) => ipcRenderer.invoke('db:createPrompt', data),
   getPromptById: (id) => ipcRenderer.invoke('db:getPromptById', id),

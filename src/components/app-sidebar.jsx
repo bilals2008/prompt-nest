@@ -13,6 +13,7 @@ import {
   PanelLeft,
   PanelLeftClose,
   History,
+  RefreshCw,
 } from "lucide-react"
 import logo from "@/assets/logo.png"
 import { cn } from "@/lib/utils"
@@ -24,6 +25,8 @@ import {
 } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
 import { ModeToggle } from "@/components/mode-toggle"
+import { useState } from "react"
+import { UpdateDialog, useUpdateStatus } from "@/components/update-dialog"
 
 const topNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -76,9 +79,12 @@ function SidebarButton({ icon: Icon, label, active, onClick, expanded }) {
 export function AppSidebar({ expanded, onToggle }) {
   const location = useLocation()
   const navigate = useNavigate()
+  const [updateOpen, setUpdateOpen] = useState(false)
+  const { updateAvailable } = useUpdateStatus()
 
   return (
-    <TooltipProvider delayDuration={300}>
+    <>
+      <TooltipProvider delayDuration={300}>
       <aside className={cn(
         "fixed left-0 top-0 z-30 flex h-screen flex-col border-r border-border bg-sidebar transition-all duration-300 ease-in-out",
         expanded ? "w-56" : "w-18 items-center"
@@ -123,6 +129,23 @@ export function AppSidebar({ expanded, onToggle }) {
               onClick={item.path ? () => navigate(item.path) : undefined}
             />
           ))}
+          <div className={cn("relative", !expanded && "flex justify-center")}>
+            <SidebarButton
+              icon={RefreshCw}
+              label="Check for Updates"
+              expanded={expanded}
+              onClick={() => setUpdateOpen(true)}
+            />
+            {updateAvailable && (
+              <span className={cn(
+                "absolute flex size-2.5",
+                expanded ? "top-1 right-2" : "-right-0.5 -top-0.5"
+              )}>
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex size-2.5 rounded-full bg-emerald-500" />
+              </span>
+            )}
+          </div>
           <SidebarButton
             icon={expanded ? PanelLeftClose : PanelLeft}
             label={expanded ? "Collapse" : "Expand"}
@@ -132,6 +155,8 @@ export function AppSidebar({ expanded, onToggle }) {
           <ModeToggle />
         </nav>
       </aside>
-    </TooltipProvider>
+      </TooltipProvider>
+      <UpdateDialog open={updateOpen} onOpenChange={setUpdateOpen} />
+    </>
   )
 }

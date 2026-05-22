@@ -2,6 +2,8 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
+import pkg from 'electron-updater'
+const { autoUpdater } = pkg
 import { initDatabase, closeDatabase, getDatabaseStats, getDashboardStats } from './database/db.js'
 import * as prompts from './database/prompts.js'
 import * as collections from './database/collections.js'
@@ -19,6 +21,48 @@ export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 'public') : RENDERER_DIST
 
 let win
+const isDev = !app.isPackaged
+
+function sendUpdaterEvent(type, payload = {}) {
+  if (!win || win.isDestroyed()) return
+  win.webContents.send('updater:event', { type, payload })
+}
+
+function setupUpdater() {
+  autoUpdater.autoDownload = false
+  autoUpdater.autoInstallOnAppQuit = true
+
+  autoUpdater.on('checking-for-update', () => {
+    sendUpdaterEvent('checking-for-update')
+  })
+
+  autoUpdater.on('update-available', (info) => {
+    sendUpdaterEvent('update-available', {
+      version: info?.version ?? '',
+      releaseDate: info?.releaseDate ?? '',
+      releaseNotes: info?.releaseNotes ?? '',
+    })
+  })
+
+  autoUpdater.on('update-not-available', () => {
+    sendUpdaterEvent('update-not-available')
+  })
+
+  autoUpdater.on('download-progress', (progress) => {
+    sendUpdaterEvent('download-progress', {
+      percent: progress?.percent ?? 0,
+      total: progress?.total ?? 0,
+    })
+  })
+
+  autoUpdater.on('update-downloaded', (info) => {
+    sendUpdaterEvent('update-downloaded', { version: info?.version ?? '' })
+  })
+
+  autoUpdater.on('error', (error) => {
+    sendUpdaterEvent('error', { message: error?.message || 'Auto update failed.' })
+  })
+}
 
 function createWindow() {
   win = new BrowserWindow({
@@ -42,6 +86,7 @@ function createWindow() {
 }
 
 function registerIpcHandlers() {
+  if (!isDev) setupUpdater()
   ipcMain.handle('db:createPrompt', (_, data) => prompts.createPrompt(data))
   ipcMain.handle('db:getPromptById', (_, id) => prompts.getPromptById(id))
   ipcMain.handle('db:getAllPrompts', () => prompts.getAllPrompts())
@@ -64,6 +109,39 @@ function registerIpcHandlers() {
   ipcMain.handle('db:deleteTemplate', (_, id) => prompts.deleteTemplate(id))
   ipcMain.handle('db:getDatabaseStats', () => getDatabaseStats())
   ipcMain.handle('app:getVersion', () => app.getVersion())
+  ipcMain.handle('updater:get-app-version', () => {
+    if (isDev) {
+      try {
+        const pkgPath = path.join(__dirname, '..', 'package.json')
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+        if (pkg?.version) return pkg.version
+      } catch {}
+    }
+    return app.getVersion()
+  })
+  ipcMain.handle('updater:check-for-updates', async () => {
+    if (isDev) return { ok: false, devMode: true, message: 'Packaged builds only.' }
+    try {
+      await autoUpdater.checkForUpdates()
+      return { ok: true }
+    } catch (error) {
+      return { ok: false, message: error?.message }
+    }
+  })
+  ipcMain.handle('updater:download-update', async () => {
+    if (isDev) return { ok: false, devMode: true, message: 'Packaged builds only.' }
+    try {
+      await autoUpdater.downloadUpdate()
+      return { ok: true }
+    } catch (error) {
+      return { ok: false, message: error?.message }
+    }
+  })
+  ipcMain.handle('updater:quit-and-install', () => {
+    if (isDev) return { ok: false, devMode: true, message: 'Packaged builds only.' }
+    setImmediate(() => autoUpdater.quitAndInstall(false, true))
+    return { ok: true }
+  })
   ipcMain.handle('db:openDbFolder', async () => {
     const dbDir = path.join(app.getPath('userData'), 'PromptNest')
     await shell.openPath(dbDir)
