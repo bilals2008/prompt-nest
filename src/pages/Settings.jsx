@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Switch } from "@/components/ui/switch"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   IconDatabase,
@@ -37,16 +36,6 @@ const sections = [
   { id: "about", icon: IconInfoCircle, label: "About" },
 ]
 
-const startupOptions = [
-  { id: "continue", label: "Continue where I left off" },
-  { id: "fresh", label: "Start fresh" },
-]
-
-const densityOptions = [
-  { id: "default", label: "Default" },
-  { id: "compact", label: "Compact" },
-]
-
 const shortcuts = [
   { keys: ["Ctrl", "B"], label: "Toggle sidebar" },
   { keys: ["Ctrl", "K"], label: "Quick search" },
@@ -55,6 +44,14 @@ const shortcuts = [
   { keys: ["Ctrl", "S"], label: "Save prompt" },
   { keys: ["Ctrl", "D"], label: "Toggle favorite" },
 ]
+
+function ComingSoon() {
+  return (
+    <span className="rounded-md border border-border bg-muted/50 px-2 py-1 text-[10px] font-medium text-muted-foreground tracking-wide cursor-default">
+      Coming soon
+    </span>
+  )
+}
 
 function SettingRow({ icon: Icon, label, description, children }) {
   return (
@@ -69,30 +66,6 @@ function SettingRow({ icon: Icon, label, description, children }) {
         </div>
       </div>
       <div className="shrink-0">{children}</div>
-    </div>
-  )
-}
-
-function ButtonGroup({ options, value, onChange }) {
-  return (
-    <div className="flex rounded-lg border border-border overflow-hidden">
-      {options.map((opt) => {
-        const active = value === opt.id
-        return (
-          <button
-            key={opt.id}
-            onClick={() => onChange(opt.id)}
-            className={cn(
-              "px-3 py-1.5 text-xs font-medium transition-all cursor-pointer",
-              active
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent"
-            )}
-          >
-            {opt.label}
-          </button>
-        )
-      })}
     </div>
   )
 }
@@ -120,11 +93,6 @@ export default function Settings() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [appVersion, setAppVersion] = useState("1.0.0")
-
-  const [compactMode, setCompactMode] = useState(false)
-  const [startupBehavior, setStartupBehavior] = useState("continue")
-  const [animations, setAnimations] = useState(true)
-  const [density, setDensity] = useState("default")
 
   const [backupStatus, setBackupStatus] = useState(null)
   const [copied, setCopied] = useState(false)
@@ -204,7 +172,7 @@ export default function Settings() {
                     label="Compact mode"
                     description="Reduce spacing and visual density"
                   >
-                    <Switch checked={compactMode} onCheckedChange={setCompactMode} />
+                    <ComingSoon />
                   </SettingRow>
                   <Separator className="my-1" />
                   <SettingRow
@@ -212,11 +180,7 @@ export default function Settings() {
                     label="Startup behavior"
                     description="What to show on launch"
                   >
-                    <ButtonGroup
-                      options={startupOptions}
-                      value={startupBehavior}
-                      onChange={setStartupBehavior}
-                    />
+                    <ComingSoon />
                   </SettingRow>
                 </div>
               </section>
@@ -258,7 +222,7 @@ export default function Settings() {
                     label="Animations"
                     description="Enable transition effects and micro-interactions"
                   >
-                    <Switch checked={animations} onCheckedChange={setAnimations} />
+                    <ComingSoon />
                   </SettingRow>
                   <Separator className="my-1" />
                   <SettingRow
@@ -266,11 +230,7 @@ export default function Settings() {
                     label="Density"
                     description="Content spacing and sizing"
                   >
-                    <ButtonGroup
-                      options={densityOptions}
-                      value={density}
-                      onChange={setDensity}
-                    />
+                    <ComingSoon />
                   </SettingRow>
                 </div>
               </section>
