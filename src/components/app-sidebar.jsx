@@ -1,3 +1,4 @@
+import { useLocation, useNavigate } from "react-router-dom"
 import {
   LayoutDashboard,
   Plus,
@@ -23,9 +24,9 @@ import { ModeToggle } from "@/components/mode-toggle"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 
 const topNavItems = [
-  { icon: LayoutDashboard, label: "Dashboard", active: true },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Plus, label: "New Prompt" },
-  { icon: Library, label: "Prompt Library" },
+  { icon: Library, label: "Prompt Library", path: "/prompts" },
   { icon: Heart, label: "Favorites" },
   { icon: FolderOpen, label: "Collections" },
   { icon: Search, label: "Search" },
@@ -38,11 +39,12 @@ const bottomNavItems = [
   { icon: Settings, label: "Settings" },
 ]
 
-function SidebarButton({ icon: Icon, label, active }) {
+function SidebarButton({ icon: Icon, label, active, onClick }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <button
+          onClick={onClick}
           className={cn(
             "flex h-11 w-11 items-center justify-center rounded-lg transition-all duration-200 cursor-pointer",
             active
@@ -61,6 +63,9 @@ function SidebarButton({ icon: Icon, label, active }) {
 }
 
 export function AppSidebar() {
+  const location = useLocation()
+  const navigate = useNavigate()
+
   return (
     <TooltipProvider delayDuration={300}>
       <aside className="fixed left-0 top-0 z-30 flex h-screen w-18 flex-col items-center border-r border-border bg-sidebar">
@@ -72,7 +77,12 @@ export function AppSidebar() {
 
         <nav className="flex flex-1 flex-col items-center gap-2 py-4">
           {topNavItems.map((item) => (
-            <SidebarButton key={item.label} {...item} />
+            <SidebarButton
+              key={item.label}
+              {...item}
+              active={item.path ? location.pathname === item.path : false}
+              onClick={item.path ? () => navigate(item.path) : undefined}
+            />
           ))}
         </nav>
 

@@ -1,122 +1,12 @@
-import { useState, useEffect } from "react"
+import { Outlet } from "react-router-dom"
 import { AppSidebar } from "@/components/app-sidebar"
-import { DashboardCard } from "@/components/dashboard-card"
-import { StatCard } from "@/components/ui/stat-card"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import {
-  Plus,
-  Library,
-  Heart,
-  FolderOpen,
-  Search,
-  Clock,
-  Download,
-  FileText,
-  LayoutDashboard,
-  FileStack,
-  Tags,
-  GitFork,
-  Zap,
-} from "lucide-react"
-import { IconHistory, IconFileDescription, IconChevronRight } from "@tabler/icons-react"
-
-const cards = [
-  { icon: Plus, title: "New Prompt", accent: "primary", description: "Create a new prompt" },
-  { icon: Library, title: "Prompt Library", accent: "blue", description: "Browse all prompts" },
-  { icon: Heart, title: "Favorites", accent: "yellow", description: "Your saved prompts" },
-  { icon: FolderOpen, title: "Collections", accent: "purple", description: "Organized groups" },
-  { icon: Search, title: "Search Prompts", accent: "green", description: "Find anything" },
-  { icon: Clock, title: "Recent Activity", accent: "orange", description: "Latest changes" },
-  { icon: Download, title: "Export Prompts", accent: "muted", description: "Download as file" },
-  { icon: FileText, title: "Templates", accent: "primary", description: "Starter templates" },
-]
 
 function App() {
-  const [prompts, setPrompts] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    window.db.getAllPrompts().then((data) => {
-      setPrompts(data.slice(0, 5))
-    }).catch(console.error).finally(() => setLoading(false))
-  }, [])
-
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">
       <AppSidebar />
       <main className="ml-18 flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card/50 px-6">
-          <h1 className="flex items-center gap-2 text-lg font-bold tracking-tight text-primary">
-            <LayoutDashboard className="size-5" />
-            Dashboard
-          </h1>
-          <Badge variant="secondary" className="font-normal">v1.0.0</Badge>
-        </header>
-
-        <div className="flex-1 overflow-auto p-6">
-          <div className="mx-auto mb-6 grid max-w-6xl grid-cols-4 gap-4">
-            <StatCard label="Total Prompts" value="247" icon={FileStack} accent="blue" size="md" trend="+12%" />
-            <StatCard label="Categories" value="12" icon={Tags} accent="green" size="md" desc="Organized by use case" />
-            <StatCard label="Collections" value="8" icon={GitFork} accent="purple" size="md" desc="Curated prompt sets" />
-            <StatCard label="This Week" value="34" icon={Zap} accent="orange" size="md" trend="+18%" />
-          </div>
-
-          <div className="mx-auto mb-8 grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {cards.map((card) => (
-              <DashboardCard key={card.title} {...card} />
-            ))}
-          </div>
-
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-base font-semibold">
-                <IconHistory className="size-4 text-primary" />
-                Recent Prompts
-              </h2>
-              <button className="flex cursor-pointer items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground">
-                View all
-                <IconChevronRight className="size-3.5" />
-              </button>
-            </div>
-
-            {loading ? (
-              <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-                Loading prompts...
-              </div>
-            ) : prompts.length === 0 ? (
-              <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-                No prompts yet. Create your first one.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {prompts.map((prompt) => (
-                  <Card key={prompt.id} size="sm" className="group cursor-pointer transition-all hover:ring-1 hover:ring-primary/30">
-                    <CardHeader className="flex-row items-center gap-3 space-y-0">
-                      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <IconFileDescription className="size-4" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <CardTitle className="truncate text-sm">{prompt.title}</CardTitle>
-                        <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{prompt.content}</p>
-                      </div>
-                      {prompt.favorite ? (
-                        <Heart className="size-3.5 fill-chart-3 text-chart-3" />
-                      ) : null}
-                    </CardHeader>
-                    <CardContent className="flex flex-wrap gap-1.5 pt-0">
-                      {prompt.tags?.split(",").map((tag) => (
-                        <Badge key={tag.trim()} variant="secondary" className="text-[10px] font-normal">
-                          {tag.trim()}
-                        </Badge>
-                      ))}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <Outlet />
       </main>
     </div>
   )
