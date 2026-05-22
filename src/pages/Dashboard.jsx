@@ -28,12 +28,12 @@ import {
 const cards = [
   { icon: Plus, title: "New Prompt", accent: "primary", description: "Create a new prompt", path: "/prompts/new" },
   { icon: Library, title: "Prompt Library", accent: "blue", description: "Browse all prompts", path: "/prompts" },
-  { icon: Heart, title: "Favorites", accent: "yellow", description: "Your saved prompts" },
-  { icon: FolderOpen, title: "Collections", accent: "purple", description: "Organized groups" },
-  { icon: Search, title: "Search Prompts", accent: "green", description: "Find anything" },
-  { icon: Clock, title: "Recent Activity", accent: "orange", description: "Latest changes" },
-  { icon: Download, title: "Export Prompts", accent: "muted", description: "Download as file" },
-  { icon: FileText, title: "Templates", accent: "primary", description: "Starter templates" },
+  { icon: Heart, title: "Favorites", accent: "yellow", description: "Your saved prompts", path: "/favorites" },
+  { icon: FolderOpen, title: "Collections", accent: "purple", description: "Organized groups", path: "/collections" },
+  { icon: Search, title: "Search Prompts", accent: "green", description: "Find anything", path: "/search" },
+  { icon: Clock, title: "Recent Activity", accent: "orange", description: "Latest changes", path: "/activity" },
+  { icon: Download, title: "Export Prompts", accent: "muted", description: "Download as file", path: "/export" },
+  { icon: FileText, title: "Templates", accent: "primary", description: "Starter templates", path: "/templates" },
   { icon: Settings, title: "Settings", accent: "primary", description: "Configure app", path: "/settings" },
 ]
 
@@ -73,7 +73,7 @@ export default function Dashboard() {
 
         <div className="mx-auto mb-8 grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {cards.map((card) => (
-            <DashboardCard key={card.title} {...card} onClick={card.path ? () => navigate(card.path) : undefined} />
+            <DashboardCard key={card.title} {...card} onClick={() => navigate(card.path)} />
           ))}
         </div>
 
