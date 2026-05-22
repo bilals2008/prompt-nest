@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld('db', {
   toggleFavorite: (id) => ipcRenderer.invoke('db:toggleFavorite', id),
   createCollection: (data) => ipcRenderer.invoke('db:createCollection', data),
   getCollections: () => ipcRenderer.invoke('db:getCollections'),
+  updateCollection: (id, data) => ipcRenderer.invoke('db:updateCollection', id, data),
   deleteCollection: (id) => ipcRenderer.invoke('db:deleteCollection', id),
 })

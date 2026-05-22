@@ -28,7 +28,7 @@ const topNavItems = [
   { icon: Plus, label: "New Prompt", path: "/prompts/new" },
   { icon: Library, label: "Prompt Library", path: "/prompts" },
   { icon: Heart, label: "Favorites" },
-  { icon: FolderOpen, label: "Collections" },
+  { icon: FolderOpen, label: "Collections", path: "/collections" },
   { icon: Search, label: "Search" },
   { icon: Clock, label: "Recent" },
   { icon: Download, label: "Export" },

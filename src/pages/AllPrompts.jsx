@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react"
+import { useSearchParams } from "react-router-dom"
 import { Library } from "lucide-react"
 import { PromptsToolbar } from "@/components/prompts-toolbar"
 import { PromptCard } from "@/components/prompt-card"
@@ -9,13 +10,14 @@ import {
 } from "@tabler/icons-react"
 
 export default function AllPrompts() {
+  const [searchParams] = useSearchParams()
   const [prompts, setPrompts] = useState([])
   const [collections, setCollections] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState("updated_at")
   const [viewMode, setViewMode] = useState("grid")
-  const [selectedCollection, setSelectedCollection] = useState(null)
+  const [selectedCollection, setSelectedCollection] = useState(searchParams.get("collection") || null)
 
   const loadData = () => {
     setLoading(true)
@@ -31,6 +33,10 @@ export default function AllPrompts() {
   useEffect(() => {
     loadData()
   }, [])
+
+  useEffect(() => {
+    setSelectedCollection(searchParams.get("collection") || null)
+  }, [searchParams])
 
   const filteredAndSorted = useMemo(() => {
     let result = [...prompts]

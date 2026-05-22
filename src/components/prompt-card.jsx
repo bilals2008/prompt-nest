@@ -1,3 +1,4 @@
+// File: src/components/prompt-card.jsx
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"

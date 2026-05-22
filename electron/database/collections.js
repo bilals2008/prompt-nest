@@ -19,6 +19,12 @@ export async function getCollections() {
   return db.all('SELECT * FROM collections ORDER BY created_at ASC')
 }
 
+export async function updateCollection(id, { name, icon }) {
+  const db = getDatabase()
+  await db.run('UPDATE collections SET name = ?, icon = ? WHERE id = ?', [name, icon || 'folder', id])
+  return getCollectionById(id)
+}
+
 export async function deleteCollection(id) {
   const db = getDatabase()
   await db.run('UPDATE prompts SET collection_id = NULL WHERE collection_id = ?', [id])

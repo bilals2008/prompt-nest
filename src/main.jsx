@@ -6,6 +6,7 @@ import App from "./App.jsx"
 import Dashboard from "@/pages/Dashboard.jsx"
 import AllPrompts from "@/pages/AllPrompts.jsx"
 import PromptEditor from "@/pages/PromptEditor.jsx"
+import Collections from "@/pages/Collections.jsx"
 import "./index.css"
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -18,6 +19,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="prompts" element={<AllPrompts />} />
             <Route path="prompts/new" element={<PromptEditor />} />
             <Route path="prompts/:id/edit" element={<PromptEditor />} />
+            <Route path="collections" element={<Collections />} />
           </Route>
         </Routes>
       </HashRouter>

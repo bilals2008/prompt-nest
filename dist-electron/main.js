@@ -119,40 +119,47 @@ async function x(e) {
 async function S() {
 	return u().all("SELECT * FROM collections ORDER BY created_at ASC");
 }
-async function C(e) {
+async function C(e, { name: t, icon: n }) {
+	return await u().run("UPDATE collections SET name = ?, icon = ? WHERE id = ?", [
+		t,
+		n || "folder",
+		e
+	]), x(e);
+}
+async function w(e) {
 	let t = u();
 	return await t.run("UPDATE prompts SET collection_id = NULL WHERE collection_id = ?", [e]), await t.run("DELETE FROM collections WHERE id = ?", [e]), { success: !0 };
 }
 //#endregion
 //#region electron/main.js
-var w = i.dirname(r(import.meta.url));
-process.env.APP_ROOT = i.join(w, "..");
-var T = process.env.VITE_DEV_SERVER_URL, E = i.join(process.env.APP_ROOT, "dist-electron"), D = i.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = T ? i.join(process.env.APP_ROOT, "public") : D;
-var O;
-function k() {
-	O = new e({
+var T = i.dirname(r(import.meta.url));
+process.env.APP_ROOT = i.join(T, "..");
+var E = process.env.VITE_DEV_SERVER_URL, D = i.join(process.env.APP_ROOT, "dist-electron"), O = i.join(process.env.APP_ROOT, "dist");
+process.env.VITE_PUBLIC = E ? i.join(process.env.APP_ROOT, "public") : O;
+var k;
+function A() {
+	k = new e({
 		icon: i.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
 		webPreferences: {
-			preload: i.join(w, "preload.mjs"),
+			preload: i.join(T, "preload.mjs"),
 			contextIsolation: !0,
 			nodeIntegration: !1
 		}
-	}), O.webContents.on("did-finish-load", () => {
-		O?.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-	}), T ? O.loadURL(T) : O.loadFile(i.join(D, "index.html"));
+	}), k.webContents.on("did-finish-load", () => {
+		k?.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
+	}), E ? k.loadURL(E) : k.loadFile(i.join(O, "index.html"));
 }
-function A() {
-	n.handle("db:createPrompt", (e, t) => m(t)), n.handle("db:getPromptById", (e, t) => h(t)), n.handle("db:getAllPrompts", () => g()), n.handle("db:updatePrompt", (e, t, n) => _(t, n)), n.handle("db:deletePrompt", (e, t) => v(t)), n.handle("db:toggleFavorite", (e, t) => y(t)), n.handle("db:createCollection", (e, t) => b(t)), n.handle("db:getCollections", () => S()), n.handle("db:deleteCollection", (e, t) => C(t));
+function j() {
+	n.handle("db:createPrompt", (e, t) => m(t)), n.handle("db:getPromptById", (e, t) => h(t)), n.handle("db:getAllPrompts", () => g()), n.handle("db:updatePrompt", (e, t, n) => _(t, n)), n.handle("db:deletePrompt", (e, t) => v(t)), n.handle("db:toggleFavorite", (e, t) => y(t)), n.handle("db:createCollection", (e, t) => b(t)), n.handle("db:getCollections", () => S()), n.handle("db:updateCollection", (e, t, n) => C(t, n)), n.handle("db:deleteCollection", (e, t) => w(t));
 }
 t.on("window-all-closed", () => {
-	process.platform !== "darwin" && (t.quit(), O = null);
+	process.platform !== "darwin" && (t.quit(), k = null);
 }), t.on("activate", () => {
-	e.getAllWindows().length === 0 && k();
+	e.getAllWindows().length === 0 && A();
 }), t.whenReady().then(async () => {
-	await d(), A(), k();
+	await d(), j(), A();
 }), t.on("will-quit", () => {
 	p();
 });
 //#endregion
-export { E as MAIN_DIST, D as RENDERER_DIST, T as VITE_DEV_SERVER_URL };
+export { D as MAIN_DIST, O as RENDERER_DIST, E as VITE_DEV_SERVER_URL };
