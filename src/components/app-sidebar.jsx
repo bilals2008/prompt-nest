@@ -10,8 +10,6 @@ import {
   Download,
   FileText,
   Settings,
-  HelpCircle,
-  User,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -36,8 +34,6 @@ const topNavItems = [
 
 const bottomNavItems = [
   { icon: Settings, label: "Settings" },
-  { icon: HelpCircle, label: "Help" },
-  { icon: User, label: "Profile" },
 ]
 
 function SidebarButton({ icon: Icon, label, active }) {
