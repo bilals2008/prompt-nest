@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { LoadingState, EmptyState } from "@/components/loading-state"
 import {
   IconFolder,
   IconFolderOpen,
@@ -20,8 +21,6 @@ import {
   IconPencil,
   IconTrash,
   IconDotsVertical,
-  IconRefresh,
-  IconAlertCircle,
 } from "@tabler/icons-react"
 import { FolderOpen } from "lucide-react"
 import {
@@ -138,28 +137,13 @@ export default function Collections() {
 
       <div className="flex-1 overflow-auto p-6">
         {loading ? (
-          <div className="flex items-center justify-center py-24">
-            <div className="flex flex-col items-center gap-3 text-muted-foreground">
-              <IconRefresh className="size-8 animate-spin" />
-              <span className="text-sm">Loading collections...</span>
-            </div>
-          </div>
+          <LoadingState message="Loading collections..." />
         ) : collections.length === 0 ? (
-          <div className="flex items-center justify-center py-24">
-            <div className="flex flex-col items-center gap-3 text-muted-foreground">
-              <IconAlertCircle className="size-10" strokeWidth={1.5} />
-              <div className="text-center">
-                <p className="text-sm font-medium">No collections yet</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Create your first collection to organize prompts
-                </p>
-                <Button onClick={openCreateDialog} className="mt-4">
-                  <IconPlus className="size-4" />
-                  Create Collection
-                </Button>
-              </div>
-            </div>
-          </div>
+          <EmptyState
+            title="No collections yet"
+            description="Create your first collection to organize prompts"
+            action={<Button onClick={openCreateDialog}><IconPlus className="size-4" /> Create Collection</Button>}
+          />
         ) : (
           <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {collections.map((col) => {

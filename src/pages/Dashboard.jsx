@@ -5,6 +5,7 @@ import { DashboardCard } from "@/components/dashboard-card"
 import { StatCard } from "@/components/ui/stat-card"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { LoadingState, EmptyState } from "@/components/loading-state"
 import { IconHistory, IconFileDescription, IconChevronRight } from "@tabler/icons-react"
 import {
   Plus,
@@ -91,9 +92,9 @@ export default function Dashboard() {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">Loading prompts...</div>
+            <LoadingState message="Loading prompts..." />
           ) : prompts.length === 0 ? (
-            <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">No prompts yet. Create your first one.</div>
+            <EmptyState title="No prompts yet" description="Create your first prompt to get started" />
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {prompts.map((prompt) => (

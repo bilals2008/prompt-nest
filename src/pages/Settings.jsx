@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { LoadingState } from "@/components/loading-state"
 import {
   IconDatabase,
   IconInfoCircle,
@@ -244,10 +245,7 @@ export default function Settings() {
                 </div>
                 <div className="rounded-lg border border-border bg-card p-4 space-y-1">
                   {loading ? (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
-                      <IconRefresh className="size-3.5 animate-spin" />
-                      Loading stats...
-                    </div>
+                    <LoadingState message="Loading stats..." className="py-2" />
                   ) : stats ? (
                     <>
                       <div className="grid grid-cols-3 gap-2 mb-2">

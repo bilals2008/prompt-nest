@@ -2,14 +2,13 @@ import { useState, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { LoadingState, EmptyState } from "@/components/loading-state"
 import { cn } from "@/lib/utils"
 import {
   IconPencil,
   IconCopy,
   IconEye,
   IconClock,
-  IconRefresh,
-  IconAlertCircle,
   IconArrowRight,
   IconCalendarClock,
   IconChartLine,
@@ -166,31 +165,11 @@ export default function RecentActivity() {
         <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-3">
           <div className={cn("space-y-4", activeTab === "all" ? "lg:col-span-2" : "lg:col-span-3")}>
             {loading ? (
-              <div className="flex items-center justify-center py-24">
-                <div className="flex flex-col items-center gap-3 text-muted-foreground">
-                  <IconRefresh className="size-8 animate-spin" />
-                  <span className="text-sm">Loading activity...</span>
-                </div>
-              </div>
+              <LoadingState message="Loading activity..." />
             ) : !grouped ? (
-              <div className="flex items-center justify-center py-24">
-                <div className="flex flex-col items-center gap-3 text-muted-foreground">
-                  <IconAlertCircle className="size-10" strokeWidth={1.5} />
-                  <div className="text-center">
-                    <p className="text-sm font-medium">Select a tab to view activity</p>
-                  </div>
-                </div>
-              </div>
+              <EmptyState title="Select a tab to view activity" />
             ) : Object.keys(grouped).length === 0 ? (
-              <div className="flex items-center justify-center py-24">
-                <div className="flex flex-col items-center gap-3 text-muted-foreground">
-                  <IconAlertCircle className="size-10" strokeWidth={1.5} />
-                  <div className="text-center">
-                    <p className="text-sm font-medium">No activity yet</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Start editing and copying prompts to see activity here</p>
-                  </div>
-                </div>
-              </div>
+              <EmptyState title="No activity yet" description="Start editing and copying prompts to see activity here" />
             ) : (
               <div className="space-y-6">
                 {Object.entries(grouped).map(([dateLabel, items]) => (

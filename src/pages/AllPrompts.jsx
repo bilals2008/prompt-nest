@@ -3,11 +3,8 @@ import { useSearchParams } from "react-router-dom"
 import { Library } from "lucide-react"
 import { PromptsToolbar } from "@/components/prompts-toolbar"
 import { PromptCard } from "@/components/prompt-card"
-import {
-  IconFiles,
-  IconAlertCircle,
-  IconRefresh,
-} from "@tabler/icons-react"
+import { LoadingState, EmptyState } from "@/components/loading-state"
+import { IconFiles } from "@tabler/icons-react"
 
 export default function AllPrompts() {
   const [searchParams] = useSearchParams()
@@ -117,24 +114,12 @@ export default function AllPrompts() {
 
         <div className="flex-1 overflow-auto p-6">
           {loading ? (
-            <div className="flex items-center justify-center py-24">
-              <div className="flex flex-col items-center gap-3 text-muted-foreground">
-                <IconRefresh className="size-8 animate-spin" />
-                <span className="text-sm">Loading prompts...</span>
-              </div>
-            </div>
+            <LoadingState message="Loading prompts..." />
           ) : filteredAndSorted.length === 0 ? (
-            <div className="flex items-center justify-center py-24">
-              <div className="flex flex-col items-center gap-3 text-muted-foreground">
-                <IconAlertCircle className="size-10" strokeWidth={1.5} />
-                <div className="text-center">
-                  <p className="text-sm font-medium">No prompts found</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {searchQuery || selectedCollection ? "Try adjusting your filters" : "Create your first prompt to get started"}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <EmptyState
+              title="No prompts found"
+              description={searchQuery || selectedCollection ? "Try adjusting your filters" : "Create your first prompt to get started"}
+            />
           ) : viewMode === "grid" ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredAndSorted.map((prompt) => (

@@ -2,12 +2,11 @@ import { useState, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { PromptCard } from "@/components/prompt-card"
 import { Badge } from "@/components/ui/badge"
+import { LoadingState, EmptyState } from "@/components/loading-state"
 import {
   IconSearch,
   IconX,
   IconHeartFilled,
-  IconRefresh,
-  IconAlertCircle,
   IconSortDescending,
 } from "@tabler/icons-react"
 import { Heart } from "lucide-react"
@@ -151,28 +150,12 @@ export default function Favorites() {
 
         <div className="flex-1 overflow-auto p-6">
           {loading ? (
-            <div className="flex items-center justify-center py-24">
-              <div className="flex flex-col items-center gap-3 text-muted-foreground">
-                <IconRefresh className="size-8 animate-spin" />
-                <span className="text-sm">Loading favorites...</span>
-              </div>
-            </div>
+            <LoadingState message="Loading favorites..." />
           ) : filteredAndSorted.length === 0 ? (
-            <div className="flex items-center justify-center py-24">
-              <div className="flex flex-col items-center gap-3 text-muted-foreground">
-                <IconAlertCircle className="size-10" strokeWidth={1.5} />
-                <div className="text-center">
-                  <p className="text-sm font-medium">
-                    {searchQuery ? "No matches found" : "No favorites yet"}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {searchQuery
-                      ? "Try a different search term"
-                      : "Favorite a prompt to see it here"}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <EmptyState
+              title={searchQuery ? "No matches found" : "No favorites yet"}
+              description={searchQuery ? "Try a different search term" : "Favorite a prompt to see it here"}
+            />
           ) : viewMode === "grid" ? (
             <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredAndSorted.map((prompt) => (
