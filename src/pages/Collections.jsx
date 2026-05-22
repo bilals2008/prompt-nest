@@ -145,7 +145,7 @@ export default function Collections() {
             action={<Button onClick={openCreateDialog}><IconPlus className="size-4" /> Create Collection</Button>}
           />
         ) : (
-          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {collections.map((col) => {
               const count = promptCount(col.id)
               const updated = lastUpdated(col.id)

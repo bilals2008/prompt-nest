@@ -183,8 +183,8 @@ export default function Search() {
             <p className="mt-1 text-xs text-muted-foreground">Try different keywords or adjust filters</p>
           </div>
         ) : (
-          <div className="mx-auto max-w-2xl p-4">
-            <div className="flex flex-col gap-1.5">
+          <div className="p-6">
+            <div className="mx-auto max-w-4xl flex flex-col gap-1.5">
               {results.map((prompt, index) => (
                 <div
                   key={prompt.id}
