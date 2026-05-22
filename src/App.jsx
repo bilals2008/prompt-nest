@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { DashboardCard } from "@/components/dashboard-card"
 import { StatCard } from "@/components/ui/stat-card"
 import { Badge } from "@/components/ui/badge"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import {
   Plus,
   Library,
@@ -16,6 +18,9 @@ import {
   Tags,
   GitFork,
   Zap,
+  Sparkles,
+  ChevronRight,
+  MessageSquare,
 } from "lucide-react"
 
 const cards = [
@@ -30,6 +35,15 @@ const cards = [
 ]
 
 function App() {
+  const [prompts, setPrompts] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    window.db.getAllPrompts().then((data) => {
+      setPrompts(data.slice(0, 5))
+    }).catch(console.error).finally(() => setLoading(false))
+  }, [])
+
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">
       <AppSidebar />
@@ -50,10 +64,59 @@ function App() {
             <StatCard label="This Week" value="34" icon={Zap} accent="orange" size="md" trend="+18%" />
           </div>
 
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="mx-auto mb-8 grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {cards.map((card) => (
               <DashboardCard key={card.title} {...card} />
             ))}
+          </div>
+
+          <div className="mx-auto max-w-6xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-base font-semibold">
+                <Sparkles className="size-4 text-primary" />
+                Recent Prompts
+              </h2>
+              <button className="flex cursor-pointer items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground">
+                View all
+                <ChevronRight className="size-3.5" />
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
+                Loading prompts...
+              </div>
+            ) : prompts.length === 0 ? (
+              <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
+                No prompts yet. Create your first one.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {prompts.map((prompt) => (
+                  <Card key={prompt.id} size="sm" className="group cursor-pointer transition-all hover:ring-1 hover:ring-primary/30">
+                    <CardHeader className="flex-row items-center gap-3 space-y-0">
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                        <MessageSquare className="size-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <CardTitle className="truncate text-sm">{prompt.title}</CardTitle>
+                        <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{prompt.content}</p>
+                      </div>
+                      {prompt.favorite ? (
+                        <Heart className="size-3.5 fill-chart-3 text-chart-3" />
+                      ) : null}
+                    </CardHeader>
+                    <CardContent className="flex flex-wrap gap-1.5 pt-0">
+                      {prompt.tags?.split(",").map((tag) => (
+                        <Badge key={tag.trim()} variant="secondary" className="text-[10px] font-normal">
+                          {tag.trim()}
+                        </Badge>
+                      ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>
