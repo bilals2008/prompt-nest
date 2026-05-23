@@ -23,9 +23,31 @@ const comingSoon = [
 
 const changelog = [
   {
+    version: "0.0.3-beta",
+    date: "May 23, 2026",
+    type: "beta",
+    changes: [
+      "Added download speed & total size display during updates",
+      "Pause / Resume download support",
+      "Markdown support in update changelog",
+      "Reduced setup size by ~20 MB",
+      "Performance improvements and bug fixes",
+    ],
+  },
+  {
+    version: "0.0.2-beta",
+    date: "May 23, 2026",
+    type: "beta",
+    changes: [
+      "Auto-update mechanism with GitHub Releases",
+      "Check for updates from sidebar",
+      "One-click download and install updates",
+    ],
+  },
+  {
     version: "0.0.1-beta",
     date: "May 2026",
-    type: "alpha",
+    type: "beta",
     changes: [
       "Initial beta release",
       "Create, edit, and delete prompts",
