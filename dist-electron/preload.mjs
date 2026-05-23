@@ -39,6 +39,8 @@ electron.contextBridge.exposeInMainWorld("db", {
 	getDatabaseStats: () => electron.ipcRenderer.invoke("db:getDatabaseStats"),
 	openDbFolder: () => electron.ipcRenderer.invoke("db:openDbFolder"),
 	backupDatabase: () => electron.ipcRenderer.invoke("db:backupDatabase"),
-	getAppVersion: () => electron.ipcRenderer.invoke("app:getVersion")
+	getAppVersion: () => electron.ipcRenderer.invoke("app:getVersion"),
+	getAutoStart: () => electron.ipcRenderer.invoke("app:getAutoStart"),
+	setAutoStart: (enable) => electron.ipcRenderer.invoke("app:setAutoStart", enable)
 });
 //#endregion

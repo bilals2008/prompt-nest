@@ -42,4 +42,6 @@ contextBridge.exposeInMainWorld('db', {
   openDbFolder: () => ipcRenderer.invoke('db:openDbFolder'),
   backupDatabase: () => ipcRenderer.invoke('db:backupDatabase'),
   getAppVersion: () => ipcRenderer.invoke('app:getVersion'),
+  getAutoStart: () => ipcRenderer.invoke('app:getAutoStart'),
+  setAutoStart: (enable) => ipcRenderer.invoke('app:setAutoStart', enable),
 })
