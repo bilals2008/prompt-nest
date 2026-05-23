@@ -397,7 +397,9 @@ function J() {
 	}), B.on("download-progress", (e) => {
 		q("download-progress", {
 			percent: e?.percent ?? 0,
-			total: e?.total ?? 0
+			total: e?.total ?? 0,
+			transferred: e?.transferred ?? 0,
+			bytesPerSecond: e?.bytesPerSecond ?? 0
 		});
 	}), B.on("update-downloaded", (e) => {
 		q("update-downloaded", { version: e?.version ?? "" });
@@ -456,7 +458,25 @@ function X() {
 		ok: !1,
 		devMode: !0,
 		message: "Packaged builds only."
-	} : (setImmediate(() => B.quitAndInstall(!1, !0)), { ok: !0 })), r.handle("db:openDbFolder", async () => {
+	} : (setImmediate(() => B.quitAndInstall(!1, !0)), { ok: !0 })), r.handle("updater:pause-download", () => {
+		try {
+			return B.pauseDownload(), { ok: !0 };
+		} catch (e) {
+			return {
+				ok: !1,
+				message: e.message
+			};
+		}
+	}), r.handle("updater:resume-download", () => {
+		try {
+			return B.resumeDownload(), { ok: !0 };
+		} catch (e) {
+			return {
+				ok: !1,
+				message: e.message
+			};
+		}
+	}), r.handle("db:openDbFolder", async () => {
 		let e = o.join(t.getPath("userData"), "PromptNest");
 		await i.openPath(e);
 	}), r.handle("db:backupDatabase", async () => {

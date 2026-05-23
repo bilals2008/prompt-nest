@@ -8,7 +8,19 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { IconLoader2, IconDownload, IconRefresh, IconCheck } from "@tabler/icons-react"
+import { IconLoader2, IconDownload, IconRefresh, IconCheck, IconPlayerPause, IconPlayerPlay } from "@tabler/icons-react"
+
+function formatBytes(bytes) {
+  if (!bytes || bytes === 0) return "0 B"
+  const units = ["B", "KB", "MB", "GB"]
+  const i = Math.floor(Math.log(bytes) / Math.log(1024))
+  return `${(bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1)} ${units[i]}`
+}
+
+function formatSpeed(bytesPerSecond) {
+  if (!bytesPerSecond || bytesPerSecond === 0) return ""
+  return `${formatBytes(bytesPerSecond)}/s`
+}
 
 function formatDate(dateStr) {
   if (!dateStr) return ""
@@ -40,7 +52,11 @@ export function UpdateDialog({ open, onOpenChange }) {
     fileSize: 0,
     changelogItems: [],
     downloadProgress: 0,
+    downloadSpeed: 0,
+    totalBytes: 0,
+    transferredBytes: 0,
     isDownloading: false,
+    isPaused: false,
     isReadyToInstall: false,
     isChecking: true,
     updateAvailable: false,
@@ -64,7 +80,11 @@ export function UpdateDialog({ open, onOpenChange }) {
       fileSize: 0,
       changelogItems: [],
       downloadProgress: 0,
+      downloadSpeed: 0,
+      totalBytes: 0,
+      transferredBytes: 0,
       isDownloading: false,
+      isPaused: false,
       isReadyToInstall: false,
       isChecking: true,
       updateAvailable: false,
@@ -102,6 +122,9 @@ export function UpdateDialog({ open, onOpenChange }) {
           setState((s) => ({
             ...s,
             downloadProgress: Math.round(payload.percent),
+            downloadSpeed: payload.bytesPerSecond || 0,
+            totalBytes: payload.total || 0,
+            transferredBytes: payload.transferred || 0,
             isDownloading: true,
           }))
           break
@@ -110,6 +133,7 @@ export function UpdateDialog({ open, onOpenChange }) {
             ...s,
             downloadProgress: 100,
             isDownloading: false,
+            isPaused: false,
             isReadyToInstall: true,
           }))
           break
@@ -135,6 +159,16 @@ export function UpdateDialog({ open, onOpenChange }) {
     const api = window.electronAPI?.updater
     if (!api) return
     await api.downloadUpdate()
+  }
+
+  const handlePause = async () => {
+    await window.electronAPI?.updater?.pauseDownload()
+    setState((s) => ({ ...s, isPaused: true }))
+  }
+
+  const handleResume = async () => {
+    await window.electronAPI?.updater?.resumeDownload()
+    setState((s) => ({ ...s, isPaused: false }))
   }
 
   const handleInstall = () => {
@@ -245,7 +279,9 @@ export function UpdateDialog({ open, onOpenChange }) {
               {state.isDownloading && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Downloading...</span>
+                    <span className="text-muted-foreground">
+                      {state.isPaused ? "Paused" : "Downloading..."}
+                    </span>
                     <span className="text-muted-foreground">{state.downloadProgress}%</span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -254,6 +290,24 @@ export function UpdateDialog({ open, onOpenChange }) {
                       style={{ width: `${state.downloadProgress}%` }}
                     />
                   </div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>
+                      {formatBytes(state.transferredBytes)} / {formatBytes(state.totalBytes)}
+                    </span>
+                    <span>{formatSpeed(state.downloadSpeed)}</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={state.isPaused ? handleResume : handlePause}
+                  >
+                    {state.isPaused ? (
+                      <><IconPlayerPlay className="size-3.5" /> Resume</>
+                    ) : (
+                      <><IconPlayerPause className="size-3.5" /> Pause</>
+                    )}
+                  </Button>
                 </div>
               )}
             </div>

@@ -52,6 +52,8 @@ function setupUpdater() {
     sendUpdaterEvent('download-progress', {
       percent: progress?.percent ?? 0,
       total: progress?.total ?? 0,
+      transferred: progress?.transferred ?? 0,
+      bytesPerSecond: progress?.bytesPerSecond ?? 0,
     })
   })
 
@@ -141,6 +143,14 @@ function registerIpcHandlers() {
     if (isDev) return { ok: false, devMode: true, message: 'Packaged builds only.' }
     setImmediate(() => autoUpdater.quitAndInstall(false, true))
     return { ok: true }
+  })
+  ipcMain.handle('updater:pause-download', () => {
+    try { autoUpdater.pauseDownload(); return { ok: true } }
+    catch (e) { return { ok: false, message: e.message } }
+  })
+  ipcMain.handle('updater:resume-download', () => {
+    try { autoUpdater.resumeDownload(); return { ok: true } }
+    catch (e) { return { ok: false, message: e.message } }
   })
   ipcMain.handle('db:openDbFolder', async () => {
     const dbDir = path.join(app.getPath('userData'), 'PromptNest')
