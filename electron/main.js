@@ -122,11 +122,12 @@ function registerIpcHandlers() {
     return app.getVersion()
   })
   ipcMain.handle('updater:check-for-updates', async () => {
-    if (isDev) return { ok: false, devMode: true, message: 'Packaged builds only.' }
+    if (isDev) { sendUpdaterEvent('update-not-available'); return { ok: false, devMode: true } }
     try {
       await autoUpdater.checkForUpdates()
       return { ok: true }
     } catch (error) {
+      sendUpdaterEvent('error', { message: error?.message })
       return { ok: false, message: error?.message }
     }
   })

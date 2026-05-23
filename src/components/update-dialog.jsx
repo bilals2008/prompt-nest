@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
+import Markdown from "react-markdown"
 import {
   Dialog,
   DialogContent,
@@ -35,22 +36,13 @@ function formatDate(dateStr) {
   }
 }
 
-function parseReleaseNotes(notes) {
-  if (!notes) return []
-  if (Array.isArray(notes)) return notes
-  return notes
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean)
-}
-
 export function UpdateDialog({ open, onOpenChange }) {
   const [state, setState] = useState({
     currentVersion: "",
     latestVersion: "",
     releaseDate: "",
     fileSize: 0,
-    changelogItems: [],
+    releaseNotes: "",
     downloadProgress: 0,
     downloadSpeed: 0,
     totalBytes: 0,
@@ -62,10 +54,68 @@ export function UpdateDialog({ open, onOpenChange }) {
     updateAvailable: false,
     checkFailed: false,
     errorMessage: "",
+    isDemo: false,
   })
+
+  const demoRef = useRef(null)
+
+  function resetDemoState() {
+    if (demoRef.current) { demoRef.current.stop(); demoRef.current = null }
+  }
+
+  function startDemo() {
+    resetDemoState()
+    setState({
+      currentVersion: "0.0.2-beta",
+      latestVersion: "0.0.3-beta",
+      releaseDate: "2026-05-23T10:00:00.000Z",
+      fileSize: 0,
+      releaseNotes: "- Added download speed & total size display\n- Pause / Resume download support\n- Performance improvements and bug fixes\n- **Markdown** support in changelog",
+      downloadProgress: 0,
+      downloadSpeed: 0,
+      totalBytes: 52428800,
+      transferredBytes: 0,
+      isDownloading: false,
+      isPaused: false,
+      isReadyToInstall: false,
+      isChecking: true,
+      updateAvailable: false,
+      checkFailed: false,
+      errorMessage: "",
+      isDemo: true,
+    })
+    setTimeout(() => {
+      setState((s) => ({ ...s, isChecking: false, updateAvailable: true }))
+    }, 1500)
+  }
+
+  function startDemoDownload() {
+    const total = 52428800
+    let transferred = 0
+    let paused = false
+    let speed = 2.5 * 1024 * 1024
+    setState((s) => ({ ...s, isDownloading: true, isPaused: false, downloadProgress: 0, transferredBytes: 0, downloadSpeed: speed }))
+    const interval = setInterval(() => {
+      if (paused) return
+      transferred += speed * 0.15
+      if (transferred >= total) {
+        clearInterval(interval); demoRef.current = null
+        setState((s) => ({ ...s, downloadProgress: 100, isDownloading: false, isPaused: false, transferredBytes: total, totalBytes: total, isReadyToInstall: true }))
+        return
+      }
+      speed = (2 + Math.random() * 1.5) * 1024 * 1024
+      setState((s) => ({ ...s, downloadProgress: Math.round((transferred / total) * 100), transferredBytes: Math.round(transferred), downloadSpeed: Math.round(speed) }))
+    }, 150)
+    demoRef.current = {
+      pause() { paused = true; setState((s) => ({ ...s, isPaused: true })) },
+      resume() { paused = false; setState((s) => ({ ...s, isPaused: false })) },
+      stop() { clearInterval(interval) },
+    }
+  }
 
   useEffect(() => {
     if (!open) return
+    resetDemoState()
     const api = window.electronAPI
     if (!api?.updater) {
       setState((s) => ({ ...s, isChecking: false, checkFailed: true, errorMessage: "Updater not available" }))
@@ -78,7 +128,7 @@ export function UpdateDialog({ open, onOpenChange }) {
       latestVersion: "",
       releaseDate: "",
       fileSize: 0,
-      changelogItems: [],
+      releaseNotes: "",
       downloadProgress: 0,
       downloadSpeed: 0,
       totalBytes: 0,
@@ -90,6 +140,7 @@ export function UpdateDialog({ open, onOpenChange }) {
       updateAvailable: false,
       checkFailed: false,
       errorMessage: "",
+      isDemo: false,
     }))
 
     api.updater.getAppVersion().then((version) => {
@@ -108,7 +159,8 @@ export function UpdateDialog({ open, onOpenChange }) {
             updateAvailable: true,
             latestVersion: payload.version,
             releaseDate: payload.releaseDate,
-            changelogItems: parseReleaseNotes(payload.releaseNotes),
+            releaseNotes: payload.releaseNotes || "",
+            totalBytes: payload.total || 0,
           }))
           break
         case "update-not-available":
@@ -152,21 +204,25 @@ export function UpdateDialog({ open, onOpenChange }) {
 
     return () => {
       if (typeof cleanup === "function") cleanup()
+      resetDemoState()
     }
   }, [open])
 
   const handleDownload = async () => {
+    if (state.isDemo) { startDemoDownload(); return }
     const api = window.electronAPI?.updater
     if (!api) return
     await api.downloadUpdate()
   }
 
   const handlePause = async () => {
+    if (demoRef.current) { demoRef.current.pause(); return }
     await window.electronAPI?.updater?.pauseDownload()
     setState((s) => ({ ...s, isPaused: true }))
   }
 
   const handleResume = async () => {
+    if (demoRef.current) { demoRef.current.resume(); return }
     await window.electronAPI?.updater?.resumeDownload()
     setState((s) => ({ ...s, isPaused: false }))
   }
@@ -176,6 +232,7 @@ export function UpdateDialog({ open, onOpenChange }) {
   }
 
   const handleRetry = () => {
+    if (state.isDemo) { startDemo(); return }
     setState((s) => ({
       ...s,
       isChecking: true,
@@ -255,17 +312,12 @@ export function UpdateDialog({ open, onOpenChange }) {
                 </p>
               )}
 
-              {state.changelogItems.length > 0 && (
+              {state.releaseNotes && (
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-foreground">What&apos;s New</p>
-                  <ul className="space-y-1">
-                    {state.changelogItems.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <span className="mt-1.5 block size-1 shrink-0 rounded-full bg-muted-foreground/40" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="prose prose-xs max-w-none text-xs text-muted-foreground [&_ul]:list-disc [&_ul]:pl-4 [&_li]:text-muted-foreground [&_strong]:text-foreground [&_a]:text-primary [&_a]:underline [&_p]:my-1">
+                    <Markdown>{state.releaseNotes}</Markdown>
+                  </div>
                 </div>
               )}
 
@@ -334,6 +386,11 @@ export function UpdateDialog({ open, onOpenChange }) {
         </div>
 
         <DialogFooter>
+          {import.meta.env.DEV && !state.isDemo && (
+            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={startDemo}>
+              Demo Mode
+            </Button>
+          )}
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
           </Button>
