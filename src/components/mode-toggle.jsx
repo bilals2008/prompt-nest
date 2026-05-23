@@ -14,7 +14,7 @@ const themes = [
   { value: "system", icon: Monitor, label: "System" },
 ]
 
-export function ModeToggle() {
+export function ModeToggle({ expanded }) {
   const { theme, setTheme } = useTheme()
 
   return (
@@ -22,13 +22,14 @@ export function ModeToggle() {
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            "flex h-11 w-11 items-center justify-center rounded-lg transition-all duration-200 cursor-pointer",
-            "text-muted-foreground hover:text-foreground hover:bg-accent"
+            "flex items-center rounded-lg transition-all duration-200 cursor-pointer gap-2",
+            "text-muted-foreground hover:text-foreground hover:bg-accent",
+            expanded ? "w-full px-3 h-10" : "h-11 w-11 justify-center"
           )}
         >
-          <Sun className="size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute size-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
+          <Sun className="size-5 shrink-0 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute size-5 shrink-0 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          {expanded && <span className="text-sm font-medium truncate">Theme</span>}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" side="right" sideOffset={12}>
