@@ -16,6 +16,7 @@ import {
   IconPlayerPlay,
   IconSparkles,
   IconLayoutGrid,
+  IconPower,
 } from "@tabler/icons-react"
 import { toast } from "sonner"
 import { Settings as SettingsIcon, Check, Copy, CheckCheck } from "lucide-react"
@@ -97,12 +98,14 @@ export default function Settings() {
   const [loading, setLoading] = useState(true)
   const [backupStatus, setBackupStatus] = useState(null)
   const [copied, setCopied] = useState(false)
+  const [autoStart, setAutoStart] = useState(false)
 
   useEffect(() => {
     window.db.getDatabaseStats()
       .then(setStats)
       .catch(console.error)
       .finally(() => setLoading(false))
+    window.electronAPI?.getAutoStart?.().then(setAutoStart).catch(() => {})
   }, [])
 
   const handleBackup = async () => {
@@ -121,6 +124,12 @@ export default function Settings() {
       toast.error("Backup failed")
     }
     setTimeout(() => setBackupStatus(null), 3000)
+  }
+
+  const handleAutoStart = async () => {
+    const next = !autoStart
+    setAutoStart(next)
+    await window.electronAPI?.setAutoStart?.(next)
   }
 
   const handleCopyPath = async (text) => {
@@ -181,11 +190,24 @@ export default function Settings() {
                   </SettingRow>
                   <Separator className="my-1" />
                   <SettingRow
-                    icon={IconPlayerPlay}
-                    label="Startup behavior"
-                    description="What to show on launch"
+                    icon={IconPower}
+                    label="Start on system boot"
+                    description="Launch app automatically when you log in"
                   >
-                    <ComingSoon />
+                    <button
+                      onClick={handleAutoStart}
+                      className={cn(
+                        "relative inline-flex h-6 w-10 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200",
+                        autoStart ? "bg-primary" : "bg-muted"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "inline-block size-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200",
+                          autoStart ? "translate-x-4" : "translate-x-0"
+                        )}
+                      />
+                    </button>
                   </SettingRow>
                 </div>
               </section>

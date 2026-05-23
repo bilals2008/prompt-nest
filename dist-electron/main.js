@@ -686,6 +686,13 @@ function registerIpcHandlers() {
 			};
 		}
 	});
+	ipcMain.handle("app:getAutoStart", () => {
+		return app.getLoginItemSettings().openAtLogin;
+	});
+	ipcMain.handle("app:setAutoStart", (_, enable) => {
+		app.setLoginItemSettings({ openAtLogin: enable });
+		return enable;
+	});
 	ipcMain.handle("db:openDbFolder", async () => {
 		const dbDir = path.join(app.getPath("userData"), "PromptNest");
 		await shell.openPath(dbDir);
