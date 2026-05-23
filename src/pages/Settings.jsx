@@ -409,17 +409,65 @@ export default function Settings() {
                   <h2 className="text-sm font-semibold">About</h2>
                   <p className="text-xs text-muted-foreground">Application information</p>
                 </div>
-                <div className="rounded-lg border border-border bg-card p-4">
+                <div className="rounded-lg border border-border bg-card p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium">Prompt Nest</p>
-                        <p className="text-xs text-muted-foreground">{APP_VERSION}</p>
+                      <p className="text-xs text-muted-foreground">{APP_VERSION}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="text-[10px] font-normal">Electron</Badge>
                       <Badge variant="secondary" className="text-[10px] font-normal">React</Badge>
                     </div>
                   </div>
+
+                  {stats ? (
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="rounded-lg border border-border bg-background p-2.5 text-center">
+                        <p className="text-base font-bold">{stats.prompts ?? "-"}</p>
+                        <p className="text-[10px] text-muted-foreground">Prompts</p>
+                      </div>
+                      <div className="rounded-lg border border-border bg-background p-2.5 text-center">
+                        <p className="text-base font-bold">{stats.collections ?? "-"}</p>
+                        <p className="text-[10px] text-muted-foreground">Collections</p>
+                      </div>
+                      <div className="rounded-lg border border-border bg-background p-2.5 text-center">
+                        <p className="text-base font-bold">{stats.favorites ?? "-"}</p>
+                        <p className="text-[10px] text-muted-foreground">Favorites</p>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {stats?.size ? (
+                    <div className="flex items-center justify-between rounded-lg border border-border bg-background p-2.5">
+                      <span className="text-xs text-muted-foreground">Database size</span>
+                      <span className="text-xs font-medium">{formatSize(stats.size)}</span>
+                    </div>
+                  ) : null}
+
+                  {stats?.path ? (
+                    <div className="flex items-center justify-between rounded-lg border border-border bg-background p-2.5">
+                      <span className="text-xs text-muted-foreground">Data path</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="max-w-40 truncate text-xs font-medium">{stats.path}</span>
+                        <button
+                          onClick={() => handleCopyPath(stats.path)}
+                          className="flex size-5 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-all cursor-pointer"
+                        >
+                          {copied ? <CheckCheck className="size-3 text-primary" /> : <Copy className="size-3" />}
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <a
+                    href="https://github.com/bilals2008/prompt-nest"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1.5 rounded-lg border border-border p-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-all no-underline"
+                  >
+                    View on GitHub
+                  </a>
                 </div>
                 <div className="mt-6 text-center text-[11px] text-muted-foreground">
                   Prompt Nest &copy; {new Date().getFullYear()}
