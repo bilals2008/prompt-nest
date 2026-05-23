@@ -94,7 +94,7 @@ export function AppSidebar({ expanded, onToggle }) {
           "flex h-16 w-full items-center border-b border-border gap-3",
           expanded ? "px-4 justify-start" : "justify-center"
         )}>
-          <img src={logo} alt="Prompt Nest" className="size-10 shrink-0" />
+          <img src={logo} alt="Prompt Nest" className={cn("shrink-0", expanded ? "size-11 object-contain" : "size-9 object-contain")} />
           {expanded && (
             <span className="text-sm font-semibold text-foreground truncate">Prompt Nest</span>
           )}
