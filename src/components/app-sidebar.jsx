@@ -1,3 +1,4 @@
+// File: src/components/app-sidebar.jsx
 import { useLocation, useNavigate } from "react-router-dom"
 import {
   LayoutDashboard,
