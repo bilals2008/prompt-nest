@@ -17,6 +17,8 @@ import {
   RefreshCw,
 } from "lucide-react"
 import logo from "@/assets/logo.png"
+import logoWhite from "@/assets/logo-white.png"
+import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
 import {
   Tooltip,
@@ -82,6 +84,8 @@ export function AppSidebar({ expanded, onToggle }) {
   const navigate = useNavigate()
   const [updateOpen, setUpdateOpen] = useState(false)
   const { updateAvailable } = useUpdateStatus()
+  const { theme } = useTheme()
+  const logoSrc = theme === "light" ? logoWhite : logo
 
   return (
     <>
@@ -94,7 +98,7 @@ export function AppSidebar({ expanded, onToggle }) {
           "flex h-16 w-full items-center border-b border-border gap-3",
           expanded ? "px-4 justify-start" : "justify-center"
         )}>
-          <img src={logo} alt="Prompt Nest" className={cn("shrink-0", expanded ? "size-11 object-contain" : "size-9 object-contain")} />
+          <img src={logoSrc} alt="Prompt Nest" className={cn("shrink-0", expanded ? "size-11 object-contain" : "size-9 object-contain")} />
           {expanded && (
             <span className="text-sm font-semibold text-foreground truncate">Prompt Nest</span>
           )}
