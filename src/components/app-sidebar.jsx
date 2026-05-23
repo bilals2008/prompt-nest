@@ -157,7 +157,7 @@ export function AppSidebar({ expanded, onToggle }) {
             expanded={expanded}
             onClick={onToggle}
           />
-          <ModeToggle />
+          <ModeToggle expanded={expanded} />
         </nav>
       </aside>
       </TooltipProvider>
