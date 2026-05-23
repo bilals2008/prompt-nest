@@ -706,11 +706,21 @@ function registerIpcHandlers() {
 		const timestamp = (/* @__PURE__ */ new Date()).toISOString().replace(/[:.]/g, "-");
 		const backupPath = path.join(dbDir, `promptnest-backup-${timestamp}.db`);
 		fs.copyFileSync(dbPath, backupPath);
+		updateLastBackup(timestamp);
 		return {
 			success: true,
 			path: backupPath
 		};
 	});
+}
+function updateLastBackup(timestamp) {
+	const metaPath = path.join(app.getPath("userData"), "PromptNest", "meta.json");
+	let meta = {};
+	try {
+		meta = JSON.parse(fs.readFileSync(metaPath, "utf8"));
+	} catch {}
+	meta.lastBackup = timestamp;
+	fs.writeFileSync(metaPath, JSON.stringify(meta));
 }
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {

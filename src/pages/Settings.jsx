@@ -24,6 +24,14 @@ import { APP_VERSION } from "@/lib/version"
 import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
 
+function formatUptime(ms) {
+  if (!ms) return "-"
+  const h = Math.floor(ms / 3600000)
+  const m = Math.floor((ms % 3600000) / 60000)
+  if (h > 0) return `${h}h ${m}m`
+  return `${m}m`
+}
+
 function formatSize(bytes) {
   if (bytes === 0) return "0 B"
   const k = 1024
@@ -99,6 +107,7 @@ export default function Settings() {
   const [backupStatus, setBackupStatus] = useState(null)
   const [copied, setCopied] = useState(false)
   const [autoStart, setAutoStart] = useState(false)
+  const [aboutData, setAboutData] = useState({ versions: null, uptime: 0, sessionCount: 0, lastBackup: null, totalActivity: 0, diskFree: 0 })
 
   useEffect(() => {
     window.db.getDatabaseStats()
@@ -106,6 +115,16 @@ export default function Settings() {
       .catch(console.error)
       .finally(() => setLoading(false))
     window.electronAPI?.getAutoStart?.().then(setAutoStart).catch(() => {})
+    Promise.all([
+      window.electronAPI?.getVersions?.(),
+      window.electronAPI?.getUptime?.(),
+      window.electronAPI?.getSessionCount?.(),
+      window.electronAPI?.getLastBackup?.(),
+      window.electronAPI?.getTotalActivity?.(),
+      window.electronAPI?.getDiskFree?.(),
+    ]).then(([versions, uptime, sessionCount, lastBackup, totalActivity, diskFree]) => {
+      setAboutData({ versions, uptime, sessionCount, lastBackup, totalActivity, diskFree })
+    }).catch(() => {})
   }, [])
 
   const handleBackup = async () => {
@@ -405,70 +424,92 @@ export default function Settings() {
 
             {activeSection === "about" && (
               <section>
-                <div className="mb-4">
-                  <h2 className="text-sm font-semibold">About</h2>
-                  <p className="text-xs text-muted-foreground">Application information</p>
+                <div className="mb-5 flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
+                    <IconInfoCircle className="size-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold">About</h2>
+                    <p className="text-xs text-muted-foreground">Application information</p>
+                  </div>
                 </div>
-                <div className="rounded-lg border border-border bg-card p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Prompt Nest</p>
-                      <p className="text-xs text-muted-foreground">{APP_VERSION}</p>
+
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-border bg-card p-5">
+                    <div className="mb-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-base font-bold">Prompt Nest</p>
+                        <p className="text-xs text-muted-foreground">{APP_VERSION}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Badge variant="secondary" className="text-[10px] font-normal">Electron {aboutData.versions?.electron}</Badge>
+                        <Badge variant="secondary" className="text-[10px] font-normal">React</Badge>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="text-[10px] font-normal">Electron</Badge>
-                      <Badge variant="secondary" className="text-[10px] font-normal">React</Badge>
+
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { label: "Prompts", value: stats?.prompts },
+                        { label: "Collections", value: stats?.collections },
+                        { label: "Session", value: aboutData.sessionCount },
+                        { label: "Actions", value: aboutData.totalActivity },
+                      ].map((item) => (
+                        <div key={item.label} className="rounded-lg border border-border bg-background p-2.5 text-center">
+                          <p className="text-base font-bold">{item.value ?? "-"}</p>
+                          <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  {stats ? (
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="rounded-lg border border-border bg-background p-2.5 text-center">
-                        <p className="text-base font-bold">{stats.prompts ?? "-"}</p>
-                        <p className="text-[10px] text-muted-foreground">Prompts</p>
+                  <div className="rounded-xl border border-border bg-card p-5">
+                    <div className="mb-3 flex items-center gap-2">
+                      <IconFolderOpen className="size-4 text-muted-foreground" />
+                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Storage</span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
+                        <span className="text-xs text-muted-foreground">Database</span>
+                        <span className="text-xs font-medium">{stats?.size ? formatSize(stats.size) : "-"}</span>
                       </div>
-                      <div className="rounded-lg border border-border bg-background p-2.5 text-center">
-                        <p className="text-base font-bold">{stats.collections ?? "-"}</p>
-                        <p className="text-[10px] text-muted-foreground">Collections</p>
+                      <div className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
+                        <span className="text-xs text-muted-foreground">Free disk space</span>
+                        <span className="text-xs font-medium">{aboutData.diskFree ? formatSize(aboutData.diskFree) : "-"}</span>
                       </div>
-                      <div className="rounded-lg border border-border bg-background p-2.5 text-center">
-                        <p className="text-base font-bold">{stats.favorites ?? "-"}</p>
-                        <p className="text-[10px] text-muted-foreground">Favorites</p>
+                      <div className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
+                        <span className="text-xs text-muted-foreground">Uptime</span>
+                        <span className="text-xs font-medium">{formatUptime(aboutData.uptime)}</span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
+                        <span className="text-xs text-muted-foreground">Last backup</span>
+                        <span className="text-xs font-medium">{aboutData.lastBackup ? new Date(aboutData.lastBackup).toLocaleDateString() : "Never"}</span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
+                        <span className="text-xs text-muted-foreground">Data path</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="max-w-36 truncate text-xs font-medium">{stats?.path ?? "-"}</span>
+                          <button onClick={() => handleCopyPath(stats?.path)} className="flex size-5 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
+                            {copied ? <CheckCheck className="size-3 text-primary" /> : <Copy className="size-3" />}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  ) : null}
+                  </div>
 
-                  {stats?.size ? (
-                    <div className="flex items-center justify-between rounded-lg border border-border bg-background p-2.5">
-                      <span className="text-xs text-muted-foreground">Database size</span>
-                      <span className="text-xs font-medium">{formatSize(stats.size)}</span>
+                  <div className="rounded-xl border border-border bg-card p-5">
+                    <div className="mb-3 flex items-center gap-2">
+                      <IconInfoCircle className="size-4 text-muted-foreground" />
+                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Resources</span>
                     </div>
-                  ) : null}
-
-                  {stats?.path ? (
-                    <div className="flex items-center justify-between rounded-lg border border-border bg-background p-2.5">
-                      <span className="text-xs text-muted-foreground">Data path</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="max-w-40 truncate text-xs font-medium">{stats.path}</span>
-                        <button
-                          onClick={() => handleCopyPath(stats.path)}
-                          className="flex size-5 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-all cursor-pointer"
-                        >
-                          {copied ? <CheckCheck className="size-3 text-primary" /> : <Copy className="size-3" />}
-                        </button>
-                      </div>
+                    <div className="space-y-1">
+                      <a href="https://github.com/bilals2008/prompt-nest" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-all no-underline">
+                        <svg className="size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                        View on GitHub
+                      </a>
                     </div>
-                  ) : null}
-
-                  <a
-                    href="https://github.com/bilals2008/prompt-nest"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-1.5 rounded-lg border border-border p-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-all no-underline"
-                  >
-                    View on GitHub
-                  </a>
+                  </div>
                 </div>
+
                 <div className="mt-6 text-center text-[11px] text-muted-foreground">
                   Prompt Nest &copy; {new Date().getFullYear()}
                 </div>
