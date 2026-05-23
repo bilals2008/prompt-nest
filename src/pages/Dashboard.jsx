@@ -5,6 +5,7 @@ import { DashboardCard } from "@/components/dashboard-card"
 import { StatCard } from "@/components/ui/stat-card"
 import { TagBadge } from "@/components/tag-badge"
 import { Badge } from "@/components/ui/badge"
+import { APP_VERSION } from "@/lib/version"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { LoadingState, EmptyState } from "@/components/loading-state"
 import { IconHistory, IconFileDescription, IconChevronRight } from "@tabler/icons-react"
@@ -60,7 +61,7 @@ export default function Dashboard() {
           <LayoutDashboard className="size-5" />
           Dashboard
         </h1>
-        <Badge variant="secondary" className="font-normal">v1.0.0</Badge>
+        <Badge variant="secondary" className="font-normal">v{APP_VERSION}</Badge>
       </header>
 
       <div className="flex-1 overflow-auto p-6">
