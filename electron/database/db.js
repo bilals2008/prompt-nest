@@ -117,6 +117,12 @@ export async function getDashboardStats() {
   }
 }
 
+export async function getTotalActivityCount() {
+  const d = getDatabase()
+  const result = await d.get('SELECT COUNT(*) as count FROM activity')
+  return result?.count || 0
+}
+
 export async function getDatabaseStats() {
   const d = getDatabase()
   const promptCount = await d.get('SELECT COUNT(*) as count FROM prompts')

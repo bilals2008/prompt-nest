@@ -4,7 +4,7 @@ import path from 'node:path'
 import fs from 'node:fs'
 import pkg from 'electron-updater'
 const { autoUpdater } = pkg
-import { initDatabase, closeDatabase, getDatabaseStats, getDashboardStats } from './database/db.js'
+import { initDatabase, closeDatabase, getDatabaseStats, getDashboardStats, getTotalActivityCount } from './database/db.js'
 import * as prompts from './database/prompts.js'
 import * as collections from './database/collections.js'
 import * as activity from './database/activity.js'
@@ -214,12 +214,8 @@ function registerAppInfoHandlers() {
     return meta.lastBackup || null
   })
   ipcMain.handle('app:getTotalActivity', async () => {
-    try {
-      const { getDatabase } = await import('./database/db.js')
-      const d = getDatabase()
-      const result = await d.get('SELECT COUNT(*) as count FROM activity')
-      return result?.count || 0
-    } catch { return 0 }
+    try { return await getTotalActivityCount() }
+    catch { return 0 }
   })
   ipcMain.handle('app:getDiskFree', async () => {
     try {
