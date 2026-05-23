@@ -4,6 +4,18 @@ import path from "node:path";
 import fs from "node:fs";
 import pkg from "electron-updater";
 import sqlite3 from "sqlite3";
+//#region \0rolldown/runtime.js
+var __defProp = Object.defineProperty;
+var __exportAll = (all, no_symbols) => {
+	let target = {};
+	for (var name in all) __defProp(target, name, {
+		get: all[name],
+		enumerable: true
+	});
+	if (!no_symbols) __defProp(target, Symbol.toStringTag, { value: "Module" });
+	return target;
+};
+//#endregion
 //#region electron/database/schema.js
 var SCHEMA = `
 CREATE TABLE IF NOT EXISTS prompts (
@@ -43,6 +55,13 @@ async function createTables() {
 }
 //#endregion
 //#region electron/database/db.js
+var db_exports = /* @__PURE__ */ __exportAll({
+	closeDatabase: () => closeDatabase,
+	getDashboardStats: () => getDashboardStats,
+	getDatabase: () => getDatabase,
+	getDatabaseStats: () => getDatabaseStats,
+	initDatabase: () => initDatabase
+});
 var db = null;
 function wrap(db) {
 	return {
@@ -713,6 +732,7 @@ function registerIpcHandlers() {
 		};
 	});
 }
+var APP_START_TIME = Date.now();
 function updateLastBackup(timestamp) {
 	const metaPath = path.join(app.getPath("userData"), "PromptNest", "meta.json");
 	let meta = {};
@@ -721,6 +741,59 @@ function updateLastBackup(timestamp) {
 	} catch {}
 	meta.lastBackup = timestamp;
 	fs.writeFileSync(metaPath, JSON.stringify(meta));
+}
+var sessionCount = 0;
+function initSessionCount() {
+	const metaPath = path.join(app.getPath("userData"), "PromptNest", "meta.json");
+	let meta = {};
+	try {
+		meta = JSON.parse(fs.readFileSync(metaPath, "utf8"));
+	} catch {}
+	sessionCount = (meta.sessionCount || 0) + 1;
+	meta.sessionCount = sessionCount;
+	fs.writeFileSync(metaPath, JSON.stringify(meta));
+}
+function getMeta() {
+	const metaPath = path.join(app.getPath("userData"), "PromptNest", "meta.json");
+	try {
+		return JSON.parse(fs.readFileSync(metaPath, "utf8"));
+	} catch {
+		return {};
+	}
+}
+function registerAppInfoHandlers() {
+	ipcMain.handle("app:getVersions", () => ({
+		electron: process.versions.electron,
+		chrome: process.versions.chrome,
+		node: process.versions.node,
+		v8: process.versions.v8
+	}));
+	ipcMain.handle("app:getUptime", () => Date.now() - APP_START_TIME);
+	ipcMain.handle("app:getSessionCount", () => sessionCount);
+	ipcMain.handle("app:getLastBackup", () => {
+		return getMeta().lastBackup || null;
+	});
+	ipcMain.handle("app:getTotalActivity", async () => {
+		try {
+			const { getDatabase } = await Promise.resolve().then(() => db_exports);
+			return (await getDatabase().get("SELECT COUNT(*) as count FROM activity"))?.count || 0;
+		} catch {
+			return 0;
+		}
+	});
+	ipcMain.handle("app:getDiskFree", async () => {
+		try {
+			const userDataPath = app.getPath("userData");
+			const { execSync } = await import("node:child_process");
+			const out = execSync(`powershell -Command "(Get-PSDrive -Name $((Get-Item '${userDataPath.replace(/'/g, "''")}').PSDrive.Name)).Free"`, {
+				encoding: "utf8",
+				timeout: 3e3
+			}).trim();
+			return parseInt(out, 10) || 0;
+		} catch {
+			return 0;
+		}
+	});
 }
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {
@@ -733,7 +806,9 @@ app.on("activate", () => {
 });
 app.whenReady().then(async () => {
 	await initDatabase();
+	initSessionCount();
 	registerIpcHandlers();
+	registerAppInfoHandlers();
 	createWindow();
 });
 app.on("will-quit", () => {

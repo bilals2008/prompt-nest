@@ -41,6 +41,12 @@ electron.contextBridge.exposeInMainWorld("db", {
 	backupDatabase: () => electron.ipcRenderer.invoke("db:backupDatabase"),
 	getAppVersion: () => electron.ipcRenderer.invoke("app:getVersion"),
 	getAutoStart: () => electron.ipcRenderer.invoke("app:getAutoStart"),
-	setAutoStart: (enable) => electron.ipcRenderer.invoke("app:setAutoStart", enable)
+	setAutoStart: (enable) => electron.ipcRenderer.invoke("app:setAutoStart", enable),
+	getVersions: () => electron.ipcRenderer.invoke("app:getVersions"),
+	getUptime: () => electron.ipcRenderer.invoke("app:getUptime"),
+	getSessionCount: () => electron.ipcRenderer.invoke("app:getSessionCount"),
+	getLastBackup: () => electron.ipcRenderer.invoke("app:getLastBackup"),
+	getTotalActivity: () => electron.ipcRenderer.invoke("app:getTotalActivity"),
+	getDiskFree: () => electron.ipcRenderer.invoke("app:getDiskFree")
 });
 //#endregion
