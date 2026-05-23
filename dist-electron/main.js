@@ -175,11 +175,14 @@ async function getDashboardStats() {
 	const collections = await d.get("SELECT COUNT(*) as count FROM collections");
 	const totalTemplates = await d.get("SELECT COUNT(*) as count FROM prompts WHERE is_template = 1");
 	const thisWeek = await d.get("SELECT COUNT(*) as count FROM prompts WHERE is_template = 0 AND created_at >= datetime('now', '-7 days')");
+	const prevWeek = await d.get("SELECT COUNT(*) as count FROM prompts WHERE is_template = 0 AND created_at >= datetime('now', '-14 days') AND created_at < datetime('now', '-7 days')");
+	await d.get("SELECT COUNT(*) as count FROM prompts WHERE is_template = 0 AND created_at >= datetime('now', '-14 days') AND created_at < datetime('now', '-7 days')");
 	return {
 		totalPrompts: totalPrompts?.count || 0,
 		collections: collections?.count || 0,
 		totalTemplates: totalTemplates?.count || 0,
-		thisWeek: thisWeek?.count || 0
+		thisWeek: thisWeek?.count || 0,
+		prevWeekPrompts: prevWeek?.count || 0
 	};
 }
 async function getDatabaseStats() {

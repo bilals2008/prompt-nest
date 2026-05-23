@@ -41,7 +41,7 @@ const cards = [
 export default function Dashboard() {
   const navigate = useNavigate()
   const [prompts, setPrompts] = useState([])
-  const [stats, setStats] = useState({ totalPrompts: 0, collections: 0, totalTemplates: 0, thisWeek: 0 })
+  const [stats, setStats] = useState({ totalPrompts: 0, collections: 0, totalTemplates: 0, thisWeek: 0, prevWeekPrompts: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -53,6 +53,9 @@ export default function Dashboard() {
       setStats(s)
     }).catch(console.error).finally(() => setLoading(false))
   }, [])
+
+  const weekDiff = stats.thisWeek - stats.prevWeekPrompts
+  const promptTrend = weekDiff !== 0 ? `${weekDiff > 0 ? "+" : ""}${weekDiff} vs last week` : undefined
 
   return (
     <>
@@ -66,10 +69,10 @@ export default function Dashboard() {
 
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto mb-6 grid max-w-6xl grid-cols-4 gap-4">
-          <StatCard label="Total Prompts" value={String(stats.totalPrompts)} icon={FileStack} accent="blue" size="md" />
-          <StatCard label="Templates" value={String(stats.totalTemplates)} icon={FileText} accent="primary" size="md" />
-          <StatCard label="Collections" value={String(stats.collections)} icon={GitFork} accent="purple" size="md" />
-          <StatCard label="This Week" value={String(stats.thisWeek)} icon={Zap} accent="orange" size="md" />
+          <StatCard label="Total Prompts" value={String(stats.totalPrompts)} icon={FileStack} accent="blue" size="md" trend={promptTrend} desc="All prompts in your library" />
+          <StatCard label="Templates" value={String(stats.totalTemplates)} icon={FileText} accent="primary" size="md" desc="Reusable prompt blueprints" />
+          <StatCard label="Collections" value={String(stats.collections)} icon={GitFork} accent="purple" size="md" desc="Organized prompt groups" />
+          <StatCard label="This Week" value={String(stats.thisWeek)} icon={Zap} accent="orange" size="md" desc="New prompts added this week" />
         </div>
 
         <div className="mx-auto mb-8 grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
