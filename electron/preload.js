@@ -44,4 +44,10 @@ contextBridge.exposeInMainWorld('db', {
   getAppVersion: () => ipcRenderer.invoke('app:getVersion'),
   getAutoStart: () => ipcRenderer.invoke('app:getAutoStart'),
   setAutoStart: (enable) => ipcRenderer.invoke('app:setAutoStart', enable),
+  getVersions: () => ipcRenderer.invoke('app:getVersions'),
+  getUptime: () => ipcRenderer.invoke('app:getUptime'),
+  getSessionCount: () => ipcRenderer.invoke('app:getSessionCount'),
+  getLastBackup: () => ipcRenderer.invoke('app:getLastBackup'),
+  getTotalActivity: () => ipcRenderer.invoke('app:getTotalActivity'),
+  getDiskFree: () => ipcRenderer.invoke('app:getDiskFree'),
 })

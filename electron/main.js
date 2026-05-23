@@ -170,7 +170,65 @@ function registerIpcHandlers() {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
     const backupPath = path.join(dbDir, `promptnest-backup-${timestamp}.db`)
     fs.copyFileSync(dbPath, backupPath)
+    updateLastBackup(timestamp)
     return { success: true, path: backupPath }
+  })
+}
+
+const APP_START_TIME = Date.now()
+
+function updateLastBackup(timestamp) {
+  const metaPath = path.join(app.getPath('userData'), 'PromptNest', 'meta.json')
+  let meta = {}
+  try { meta = JSON.parse(fs.readFileSync(metaPath, 'utf8')) } catch {}
+  meta.lastBackup = timestamp
+  fs.writeFileSync(metaPath, JSON.stringify(meta))
+}
+
+let sessionCount = 0
+function initSessionCount() {
+  const metaPath = path.join(app.getPath('userData'), 'PromptNest', 'meta.json')
+  let meta = {}
+  try { meta = JSON.parse(fs.readFileSync(metaPath, 'utf8')) } catch {}
+  sessionCount = (meta.sessionCount || 0) + 1
+  meta.sessionCount = sessionCount
+  fs.writeFileSync(metaPath, JSON.stringify(meta))
+}
+
+function getMeta() {
+  const metaPath = path.join(app.getPath('userData'), 'PromptNest', 'meta.json')
+  try { return JSON.parse(fs.readFileSync(metaPath, 'utf8')) } catch { return {} }
+}
+
+function registerAppInfoHandlers() {
+  ipcMain.handle('app:getVersions', () => ({
+    electron: process.versions.electron,
+    chrome: process.versions.chrome,
+    node: process.versions.node,
+    v8: process.versions.v8,
+  }))
+  ipcMain.handle('app:getUptime', () => Date.now() - APP_START_TIME)
+  ipcMain.handle('app:getSessionCount', () => sessionCount)
+  ipcMain.handle('app:getLastBackup', () => {
+    const meta = getMeta()
+    return meta.lastBackup || null
+  })
+  ipcMain.handle('app:getTotalActivity', async () => {
+    try {
+      const { getDatabase } = await import('./database/db.js')
+      const d = getDatabase()
+      const result = await d.get('SELECT COUNT(*) as count FROM activity')
+      return result?.count || 0
+    } catch { return 0 }
+  })
+  ipcMain.handle('app:getDiskFree', async () => {
+    try {
+      const userDataPath = app.getPath('userData')
+      const { execSync } = await import('node:child_process')
+      const cmd = `powershell -Command "(Get-PSDrive -Name $((Get-Item '${userDataPath.replace(/'/g, "''")}').PSDrive.Name)).Free"`
+      const out = execSync(cmd, { encoding: 'utf8', timeout: 3000 }).trim()
+      return parseInt(out, 10) || 0
+    } catch { return 0 }
   })
 }
 
@@ -189,7 +247,9 @@ app.on('activate', () => {
 
 app.whenReady().then(async () => {
   await initDatabase()
+  initSessionCount()
   registerIpcHandlers()
+  registerAppInfoHandlers()
   createWindow()
 })
 
