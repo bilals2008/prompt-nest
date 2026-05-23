@@ -4,18 +4,6 @@ import path from "node:path";
 import fs from "node:fs";
 import pkg from "electron-updater";
 import sqlite3 from "sqlite3";
-//#region \0rolldown/runtime.js
-var __defProp = Object.defineProperty;
-var __exportAll = (all, no_symbols) => {
-	let target = {};
-	for (var name in all) __defProp(target, name, {
-		get: all[name],
-		enumerable: true
-	});
-	if (!no_symbols) __defProp(target, Symbol.toStringTag, { value: "Module" });
-	return target;
-};
-//#endregion
 //#region electron/database/schema.js
 var SCHEMA = `
 CREATE TABLE IF NOT EXISTS prompts (
@@ -55,13 +43,6 @@ async function createTables() {
 }
 //#endregion
 //#region electron/database/db.js
-var db_exports = /* @__PURE__ */ __exportAll({
-	closeDatabase: () => closeDatabase,
-	getDashboardStats: () => getDashboardStats,
-	getDatabase: () => getDatabase,
-	getDatabaseStats: () => getDatabaseStats,
-	initDatabase: () => initDatabase
-});
 var db = null;
 function wrap(db) {
 	return {
@@ -203,6 +184,9 @@ async function getDashboardStats() {
 		thisWeek: thisWeek?.count || 0,
 		prevWeekPrompts: prevWeek?.count || 0
 	};
+}
+async function getTotalActivityCount() {
+	return (await getDatabase().get("SELECT COUNT(*) as count FROM activity"))?.count || 0;
 }
 async function getDatabaseStats() {
 	const d = getDatabase();
@@ -775,8 +759,7 @@ function registerAppInfoHandlers() {
 	});
 	ipcMain.handle("app:getTotalActivity", async () => {
 		try {
-			const { getDatabase } = await Promise.resolve().then(() => db_exports);
-			return (await getDatabase().get("SELECT COUNT(*) as count FROM activity"))?.count || 0;
+			return await getTotalActivityCount();
 		} catch {
 			return 0;
 		}

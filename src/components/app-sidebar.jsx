@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
 import { ModeToggle } from "@/components/mode-toggle"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { UpdateDialog, useUpdateStatus } from "@/components/update-dialog"
 
 const topNavItems = [
@@ -86,6 +86,12 @@ export function AppSidebar({ expanded, onToggle }) {
   const { updateAvailable } = useUpdateStatus()
   const { theme } = useTheme()
   const logoSrc = theme === "light" ? logoWhite : logo
+
+  useEffect(() => {
+    const handler = () => setUpdateOpen(true)
+    window.addEventListener('open-update-dialog', handler)
+    return () => window.removeEventListener('open-update-dialog', handler)
+  }, [])
 
   return (
     <>
