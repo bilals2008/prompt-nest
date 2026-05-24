@@ -9,7 +9,6 @@ import {
   IconDatabase,
   IconInfoCircle,
   IconMoon,
-  IconSun,
   IconFolderOpen,
   IconRefresh,
   IconFileExport,
@@ -22,7 +21,7 @@ import {
 import { toast } from "sonner"
 import { Settings as SettingsIcon, Check, Copy, CheckCheck } from "lucide-react"
 import { APP_VERSION } from "@/lib/version"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/hooks/use-theme"
 import { cn } from "@/lib/utils"
 
 function formatUptime(ms) {
@@ -254,7 +253,7 @@ export default function Settings() {
                     >
                       <span
                         className={cn(
-                          "inline-block size-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200",
+                          "inline-block size-5 rounded-full bg-background shadow-sm ring-0 transition-transform duration-200",
                           autoStart ? "translate-x-4" : "translate-x-0"
                         )}
                       />
@@ -277,7 +276,10 @@ export default function Settings() {
                         <Button
                           key={opt.id}
                           variant="outline"
-                          onClick={() => setTheme(opt.id)}
+                          onClick={() => {
+                            setTheme(opt.id)
+                            toast.success(`${opt.label} theme applied`)
+                          }}
                           className={cn(
                             "flex items-center justify-center p-0 h-9 transition-all duration-300 ease-out",
                             theme === opt.id && "border-primary ring ring-primary/40"

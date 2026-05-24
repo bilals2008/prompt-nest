@@ -19,7 +19,7 @@ import "./index.css"
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <ThemeProvider attribute="class" defaultTheme="dark" disableTransitionOnChange>
+    <ThemeProvider defaultTheme="dark">
       <HashRouter>
         <Routes>
           <Route path="/" element={<App />}>
