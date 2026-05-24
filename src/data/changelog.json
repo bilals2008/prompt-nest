@@ -1,0 +1,109 @@
+{
+  "comingSoon": [
+    { "label": "Trash / Soft Delete", "desc": "Deleted prompts go to trash, restore anytime", "icon": "Trash2" },
+    { "label": "Batch Select & Actions", "desc": "Multi-select prompts to delete, move, or favorite in bulk", "icon": "GitCommit" },
+    { "label": "Markdown Preview", "desc": "Live preview tab in the prompt editor", "icon": "FileText" },
+    { "label": "Auto-Save Drafts", "desc": "Editor auto-saves so you never lose changes", "icon": "Megaphone" },
+    { "label": "Prompt Stats", "desc": "Per-prompt copy count, edit count, view count", "icon": "Sparkles" },
+    { "label": "Tag Management", "desc": "Merge, rename, and delete tags", "icon": "Hash" },
+    { "label": "Global Search (Cmd+K)", "desc": "Quick search overlay from anywhere", "icon": "SearchIcon" },
+    { "label": "Prompt Variables", "desc": "Use {{variable}} placeholders in prompts", "icon": "Variable" }
+  ],
+  "releases": [
+    {
+      "version": "0.0.7-beta",
+      "date": "May 24, 2026",
+      "type": "beta",
+      "changes": [
+        "Refactored theme system: custom ThemeProvider with data-theme attribute",
+        "Replaced next-themes with zero-dependency custom hook (useTheme)",
+        "Multi-theme support: Light, Dark, Forest, Ocean, System (auto OS)",
+        "Theme persists via localStorage, loads automatically on startup",
+        "CSS variable architecture for all shadcn semantic tokens",
+        "Smooth theme transitions (150ms ease on bg, border, color)",
+        "Fixed hardcoded colors across all UI components (overlays, inputs, toggles)",
+        "Professional SaaS-style theming with type-to-scale contrast",
+        "Prepared architecture for adding unlimited new themes"
+      ]
+    },
+    {
+      "version": "0.0.6-beta",
+      "date": "May 24, 2026",
+      "type": "beta",
+      "changes": [
+        "Added custom app icon and branding assets",
+        "White logo variant for light mode in sidebar",
+        "Update dialog improvements: speed display, pause/resume, release notes",
+        "Added Check for Updates button in Settings > About",
+        "Enhanced Settings: auto-start toggle, disk free, uptime, session count"
+      ]
+    },
+    {
+      "version": "0.0.5-beta",
+      "date": "May 24, 2026",
+      "type": "beta",
+      "changes": [
+        "Templates system: create, reuse, and delete prompt templates",
+        "Dashboard stats with trend indicators and descriptions",
+        "Data pagination for All Prompts page",
+        "Export and import functionality",
+        "Notes field added to prompts schema",
+        "Color-coded collection tags",
+        "Reusable loading and empty state components"
+      ]
+    },
+    {
+      "version": "0.0.4-beta",
+      "date": "May 24, 2026",
+      "type": "beta",
+      "changes": [
+        "Settings page with sections: General, Appearance, Database, About",
+        "Keyboard shortcuts reference",
+        "Database backup and folder access",
+        "Start on system boot toggle (Windows)",
+        "About section with app info, versions, storage stats",
+        "GitHub repository link",
+        "Improved sidebar: collapsible, tooltips, theme label"
+      ]
+    },
+    {
+      "version": "0.0.3-beta",
+      "date": "May 24, 2026",
+      "type": "beta",
+      "changes": [
+        "Quick Patch updates (small differential downloads instead of full installer)",
+        "Download speed and file size display",
+        "Pause / Resume download functionality",
+        "Markdown changelog in update dialog",
+        "Fixed 'Invalid package' error handling"
+      ]
+    },
+    {
+      "version": "0.0.2-beta",
+      "date": "May 23, 2026",
+      "type": "beta",
+      "changes": [
+        "Auto-update system with electron-updater",
+        "Changelog page with version history",
+        "Activity logging and recent activity page",
+        "Search functionality with filters",
+        "Favorites page",
+        "Collection management"
+      ]
+    },
+    {
+      "version": "0.0.1-beta",
+      "date": "May 23, 2026",
+      "type": "beta",
+      "changes": [
+        "Initial beta release",
+        "Prompt management and organization",
+        "Collections and favorites",
+        "Import / Export support",
+        "Light/Dark mode with refined color palette",
+        "Self-hosted Outfit font",
+        "SQLite3 database backend"
+      ]
+    }
+  ]
+}
