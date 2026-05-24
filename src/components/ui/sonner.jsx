@@ -1,15 +1,18 @@
-import { useTheme } from "next-themes"
+import { useTheme } from "@/hooks/use-theme"
 import { Toaster as Sonner } from "sonner";
 import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from "lucide-react"
+
+const TOASTER_THEMES = { light: "light", dark: "dark", forest: "dark", ocean: "dark" }
 
 const Toaster = ({
   ...props
 }) => {
   const { theme = "system" } = useTheme()
+  const sonnerTheme = theme === "system" ? "system" : (TOASTER_THEMES[theme] || "dark")
 
   return (
     <Sonner
-      theme={theme}
+      theme={sonnerTheme}
       className="toaster group"
       icons={{
         success: (

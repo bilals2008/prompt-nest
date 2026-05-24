@@ -18,7 +18,7 @@ import {
 } from "lucide-react"
 import logo from "@/assets/logo.png"
 import logoWhite from "@/assets/logo-white.png"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/hooks/use-theme"
 import { cn } from "@/lib/utils"
 import {
   Tooltip,

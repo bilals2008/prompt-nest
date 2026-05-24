@@ -1,5 +1,5 @@
-import { useTheme } from "next-themes"
-import { Sun, Moon, Monitor } from "lucide-react"
+import { useTheme } from "@/hooks/use-theme"
+import { Sun, Moon, Monitor, Trees, Waves } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,11 +11,14 @@ import { cn } from "@/lib/utils"
 const themes = [
   { value: "light", icon: Sun, label: "Light" },
   { value: "dark", icon: Moon, label: "Dark" },
+  { value: "forest", icon: Trees, label: "Forest" },
+  { value: "ocean", icon: Waves, label: "Ocean" },
   { value: "system", icon: Monitor, label: "System" },
 ]
 
 export function ModeToggle({ expanded }) {
   const { theme, setTheme } = useTheme()
+  const CurrentIcon = themes.find((t) => t.value === theme)?.icon || Sun
 
   return (
     <DropdownMenu>
@@ -27,8 +30,7 @@ export function ModeToggle({ expanded }) {
             expanded ? "w-full px-3 h-10" : "h-11 w-11 justify-center"
           )}
         >
-          <Sun className="size-5 shrink-0 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute size-5 shrink-0 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <CurrentIcon className="size-5 shrink-0" />
           {expanded && <span className="text-sm font-medium truncate">Theme</span>}
         </button>
       </DropdownMenuTrigger>
