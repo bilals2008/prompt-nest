@@ -1,18 +1,21 @@
 {
-  "name": "electron-js",
+  "name": "prompt-nest",
   "productName": "Prompt Nest",
+  "description": "A prompt management and organization tool",
+  "author": "Bilal S.",
   "private": true,
-  "version": "0.0.3-beta",
+  "version": "0.0.7-beta",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build && electron-builder",
     "dist:win": "vite build && electron-builder --win nsis",
     "dist:win:publish": "vite build && electron-builder --win nsis --publish always",
+    "release": "node scripts/release-full.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "postinstall": "electron-rebuild -f",
-    "rebuild": "electron-rebuild -f"
+    "postinstall": "electron-builder install-app-deps",
+    "rebuild": "electron-builder install-app-deps"
   },
   "dependencies": {
     "electron-updater": "^6.8.3",
@@ -21,7 +24,6 @@
   },
   "devDependencies": {
     "@base-ui/react": "^1.5.0",
-    "@electron/rebuild": "^4.0.4",
     "@eslint/js": "^9.27.0",
     "@fontsource-variable/geist": "^5.2.9",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
@@ -35,6 +37,7 @@
     "cmdk": "^1.1.1",
     "date-fns": "^4.2.1",
     "electron": "^42.2.0",
+    "@electron/asar": "^3.2.0",
     "electron-builder": "^26.8.1",
     "embla-carousel-react": "^8.6.0",
     "eslint": "^10.4.0",
@@ -79,6 +82,7 @@
     },
     "win": {
       "icon": "build/icon.png",
+      "artifactName": "Prompt-Nest-Setup-${version}.${ext}",
       "target": [
         {
           "target": "nsis",
@@ -90,7 +94,8 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "differentialPackage": true
     },
     "publish": [
       {
@@ -98,6 +103,7 @@
         "owner": "bilals2008",
         "repo": "prompt-nest"
       }
-    ]
+    ],
+    "generateUpdatesFilesForAllChannels": true
   }
 }

@@ -1,5 +1,7 @@
+// File: src/pages/Settings.jsx
 import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { LoadingState } from "@/components/loading-state"
@@ -8,7 +10,6 @@ import {
   IconInfoCircle,
   IconMoon,
   IconSun,
-  IconDeviceLaptop,
   IconFolderOpen,
   IconRefresh,
   IconFileExport,
@@ -163,9 +164,40 @@ export default function Settings() {
   }
 
   const themeOptions = [
-    { id: "light", icon: IconSun, label: "Light" },
-    { id: "dark", icon: IconMoon, label: "Dark" },
-    { id: "system", icon: IconDeviceLaptop, label: "System" },
+    {
+      id: "light",
+      label: "Light",
+      bg: "#ffffff",
+      fg: "#0f1729",
+      accent: "#6366f1",
+    },
+    {
+      id: "dark",
+      label: "Dark",
+      bg: "#0c0c14",
+      fg: "#ededee",
+      accent: "#6366f1",
+    },
+    {
+      id: "forest",
+      label: "Forest",
+      bg: "#0d1a0d",
+      fg: "#e2f0e2",
+      accent: "#4ade80",
+    },
+    {
+      id: "ocean",
+      label: "Ocean",
+      bg: "#0a1628",
+      fg: "#dce8f5",
+      accent: "#38bdf8",
+    },
+  ]
+
+  const upcomingThemes = [
+    "Midnight", "Sunset", "Lavender", "Rose",
+    "Mocha", "Nord", "Dracula", "Catppuccin",
+    "Tokyo Night", "Minimal",
   ]
 
   return (
@@ -238,30 +270,40 @@ export default function Settings() {
                   <h2 className="text-sm font-semibold">Appearance</h2>
                   <p className="text-xs text-muted-foreground">Theme, animations, and layout density</p>
                 </div>
-                <div className="rounded-lg border border-border bg-card p-4 space-y-1">
+                <div className="rounded-sm border border-border bg-card p-4 space-y-1">
                   <SettingRow icon={IconMoon} label="Theme">
-                    <div className="flex rounded-lg border border-border overflow-hidden">
-                      {themeOptions.map((opt) => {
-                        const Icon = opt.icon
-                        const active = theme === opt.id
-                        return (
-                          <button
-                            key={opt.id}
-                            onClick={() => setTheme(opt.id)}
-                            className={cn(
-                              "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-all cursor-pointer",
-                              active
-                                ? "bg-primary text-primary-foreground"
-                                : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                            )}
-                          >
-                            <Icon className="size-3.5" />
-                            {opt.label}
-                          </button>
-                        )
-                      })}
+                    <div className="grid grid-cols-4 gap-3 w-72">
+                      {themeOptions.map((opt) => (
+                        <Button
+                          key={opt.id}
+                          variant="outline"
+                          onClick={() => setTheme(opt.id)}
+                          className={cn(
+                            "flex items-center justify-center p-0 h-9 transition-all duration-300 ease-out",
+                            theme === opt.id && "border-primary ring ring-primary/40"
+                          )}
+                          style={{ backgroundColor: opt.bg, color: opt.fg }}
+                        >
+                          <span className="text-xs font-medium">{opt.label}</span>
+                        </Button>
+                      ))}
                     </div>
                   </SettingRow>
+                  <Separator className="my-2" />
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">More themes coming soon</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {upcomingThemes.map((name) => (
+                        <span
+                          key={name}
+                          className="rounded-md border border-border bg-muted/30 px-2.5 py-1 text-xs text-muted-foreground cursor-default"
+                        >
+                          {name}
+                          <span className="ml-1.5 text-[10px] text-muted-foreground/50">&#8226; Soon</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                   <Separator className="my-1" />
                   <SettingRow
                     icon={IconSparkles}

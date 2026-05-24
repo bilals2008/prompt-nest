@@ -30,17 +30,19 @@ function sendUpdaterEvent(type, payload = {}) {
 
 function setupUpdater() {
   autoUpdater.autoDownload = false
-  autoUpdater.autoInstallOnAppQuit = true
+  autoUpdater.autoInstallOnAppQuit = false
 
   autoUpdater.on('checking-for-update', () => {
     sendUpdaterEvent('checking-for-update')
   })
 
   autoUpdater.on('update-available', (info) => {
+    const hasBlockMap = info.files?.some(f => f.blockMapSize > 0)
     sendUpdaterEvent('update-available', {
-      version: info?.version ?? '',
-      releaseDate: info?.releaseDate ?? '',
-      releaseNotes: info?.releaseNotes ?? '',
+      version: info.version,
+      releaseDate: info.releaseDate,
+      releaseNotes: info.releaseNotes,
+      updateType: hasBlockMap ? 'patch' : 'full',
     })
   })
 
@@ -50,19 +52,19 @@ function setupUpdater() {
 
   autoUpdater.on('download-progress', (progress) => {
     sendUpdaterEvent('download-progress', {
-      percent: progress?.percent ?? 0,
-      total: progress?.total ?? 0,
-      transferred: progress?.transferred ?? 0,
-      bytesPerSecond: progress?.bytesPerSecond ?? 0,
+      percent: progress.percent,
+      total: progress.total,
+      transferred: progress.transferred,
+      bytesPerSecond: progress.bytesPerSecond,
     })
   })
 
   autoUpdater.on('update-downloaded', (info) => {
-    sendUpdaterEvent('update-downloaded', { version: info?.version ?? '' })
+    sendUpdaterEvent('update-downloaded', { version: info.version })
   })
 
   autoUpdater.on('error', (error) => {
-    sendUpdaterEvent('error', { message: error?.message || 'Auto update failed.' })
+    sendUpdaterEvent('error', { message: error?.message || 'Update error' })
   })
 }
 
@@ -124,31 +126,36 @@ function registerIpcHandlers() {
   ipcMain.handle('updater:check-for-updates', async () => {
     if (isDev) { sendUpdaterEvent('update-not-available'); return { ok: false, devMode: true } }
     try {
-      await autoUpdater.checkForUpdates()
+      autoUpdater.checkForUpdates()
       return { ok: true }
     } catch (error) {
-      sendUpdaterEvent('error', { message: error?.message })
+      sendUpdaterEvent('error', { message: error?.message || 'Update check failed' })
       return { ok: false, message: error?.message }
     }
   })
+
   ipcMain.handle('updater:download-update', async () => {
     if (isDev) return { ok: false, devMode: true, message: 'Packaged builds only.' }
     try {
-      await autoUpdater.downloadUpdate()
+      autoUpdater.downloadUpdate()
       return { ok: true }
     } catch (error) {
+      sendUpdaterEvent('error', { message: error?.message || 'Download failed' })
       return { ok: false, message: error?.message }
     }
   })
+
   ipcMain.handle('updater:quit-and-install', () => {
     if (isDev) return { ok: false, devMode: true, message: 'Packaged builds only.' }
     setImmediate(() => autoUpdater.quitAndInstall(false, true))
     return { ok: true }
   })
+
   ipcMain.handle('updater:pause-download', () => {
     try { autoUpdater.pauseDownload(); return { ok: true } }
     catch (e) { return { ok: false, message: e.message } }
   })
+
   ipcMain.handle('updater:resume-download', () => {
     try { autoUpdater.resumeDownload(); return { ok: true } }
     catch (e) { return { ok: false, message: e.message } }
