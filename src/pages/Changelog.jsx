@@ -1,58 +1,14 @@
 import { APP_VERSION, APP_NAME } from "@/lib/version"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { IconHistory, IconRocket, IconListCheck, IconStar, IconCode } from "@tabler/icons-react"
 import {
-  IconHistory,
-  IconRocket,
-  IconListCheck,
-  IconStar,
-  IconCode,
-} from "@tabler/icons-react"
-import { FileText, GitCommit, Megaphone, Trash2, Sparkles, Search as SearchIcon, Variable, Hash } from "lucide-react"
+  FileText, GitCommit, Megaphone, Trash2, Sparkles,
+  Search as SearchIcon, Variable, Hash
+} from "lucide-react"
+import changelogData from "@/data/changelog.json"
 
-const comingSoon = [
-  { icon: Trash2, label: "Trash / Soft Delete", desc: "Deleted prompts go to trash, restore anytime" },
-  { icon: GitCommit, label: "Batch Select & Actions", desc: "Multi-select prompts to delete, move, or favorite in bulk" },
-  { icon: FileText, label: "Markdown Preview", desc: "Live preview tab in the prompt editor" },
-  { icon: Megaphone, label: "Auto-Save Drafts", desc: "Editor auto-saves so you never lose changes" },
-  { icon: Sparkles, label: "Prompt Stats", desc: "Per-prompt copy count, edit count, view count" },
-  { icon: Hash, label: "Tag Management", desc: "Merge, rename, and delete tags" },
-  { icon: SearchIcon, label: "Global Search (Cmd+K)", desc: "Quick search overlay from anywhere" },
-  { icon: Variable, label: "Prompt Variables", desc: "Use {{variable}} placeholders in prompts" },
-]
-
-const changelog = [
-  {
-    version: "0.0.3-beta",
-    date: "May 24, 2026",
-    type: "beta",
-    changes: [
-      "Fixed update error handling (no more 'Invalid package' errors)",
-      "Improved patch update reliability",
-      "Performance improvements and bug fixes",
-    ],
-  },
-  {
-    version: "0.0.2-beta",
-    date: "May 23, 2026",
-    type: "beta",
-    changes: [
-      "Quick Patch updates (small downloads instead of full installer)",
-    ],
-  },
-  {
-    version: "0.0.1-beta",
-    date: "May 23, 2026",
-    type: "beta",
-    changes: [
-      "Initial beta release",
-      "Prompt management and organization",
-      "Collections and favorites",
-      "Import / Export support",
-      "Quick Patch updates (small downloads instead of full installer)",
-    ],
-  },
-]
+const ICON_MAP = { Trash2, GitCommit, FileText, Megaphone, Sparkles, Hash, SearchIcon, Variable }
 
 function VersionBadge({ type }) {
   const styles = {
@@ -69,7 +25,7 @@ function VersionBadge({ type }) {
 
 export default function Changelog() {
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col overflow-hidden">
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-card/50 px-4">
         <h1 className="flex items-center gap-2 text-base font-bold tracking-tight text-primary">
           <IconHistory className="size-4" />
@@ -94,12 +50,12 @@ export default function Changelog() {
               </div>
             </div>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {comingSoon.map((item) => {
-                const Icon = item.icon
+              {changelogData.comingSoon.map((item) => {
+                const Icon = ICON_MAP[item.icon]
                 return (
                   <div key={item.label} className="flex items-start gap-2 rounded-lg border border-dashed border-border bg-background/50 p-2">
                     <div className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                      <Icon className="size-3.5" />
+                      {Icon ? <Icon className="size-3.5" /> : <Sparkles className="size-3.5" />}
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-medium">{item.label}</p>
@@ -111,33 +67,37 @@ export default function Changelog() {
             </div>
           </div>
 
-          {changelog.map((release) => (
-            <div key={release.version}>
-              <div className="mb-2 flex items-center gap-2.5">
-                <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <IconStar className="size-3.5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold">{release.version}</h3>
-                    <VersionBadge type={release.type} />
-                  </div>
-                  <p className="text-xs text-muted-foreground">{release.date}</p>
-                </div>
-              </div>
-
-              <div className="ml-10 space-y-0.5">
-                {release.changes.map((change, i) => (
-                  <div key={i} className="flex items-start gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-accent/30">
-                    <div className="mt-0.5 flex size-3.5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      <IconListCheck className="size-2.5" />
+          <div className="space-y-4">
+            {changelogData.releases.map((release, idx) => {
+              const isLatest = idx === 0
+              return (
+                <div key={release.version} className="rounded-xl border border-border bg-card p-4">
+                  <div className="mb-2 flex items-center gap-2.5">
+                    <div className={`flex size-7 items-center justify-center rounded-lg ${isLatest ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'}`}>
+                      <IconStar className="size-3.5" />
                     </div>
-                    <span className="text-sm text-muted-foreground">{change}</span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-semibold">{release.version}</h3>
+                        <VersionBadge type={release.type} />
+                      </div>
+                      <p className="text-xs text-muted-foreground">{release.date}</p>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          ))}
+                  <div className="ml-10 space-y-0.5">
+                    {release.changes.map((change, i) => (
+                      <div key={i} className="flex items-start gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-accent/30">
+                        <div className="mt-0.5 flex size-3.5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                          <IconListCheck className="size-2.5" />
+                        </div>
+                        <span className="text-sm text-muted-foreground">{change}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
 
           <div className="pb-6 text-center text-xs text-muted-foreground">
             {APP_NAME} &copy; {new Date().getFullYear()}
