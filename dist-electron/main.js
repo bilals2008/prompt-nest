@@ -550,15 +550,17 @@ function sendUpdaterEvent(type, payload = {}) {
 }
 function setupUpdater() {
 	autoUpdater.autoDownload = false;
-	autoUpdater.autoInstallOnAppQuit = true;
+	autoUpdater.autoInstallOnAppQuit = false;
 	autoUpdater.on("checking-for-update", () => {
 		sendUpdaterEvent("checking-for-update");
 	});
 	autoUpdater.on("update-available", (info) => {
+		const hasBlockMap = info.files?.some((f) => f.blockMapSize > 0);
 		sendUpdaterEvent("update-available", {
-			version: info?.version ?? "",
-			releaseDate: info?.releaseDate ?? "",
-			releaseNotes: info?.releaseNotes ?? ""
+			version: info.version,
+			releaseDate: info.releaseDate,
+			releaseNotes: info.releaseNotes,
+			updateType: hasBlockMap ? "patch" : "full"
 		});
 	});
 	autoUpdater.on("update-not-available", () => {
@@ -566,17 +568,17 @@ function setupUpdater() {
 	});
 	autoUpdater.on("download-progress", (progress) => {
 		sendUpdaterEvent("download-progress", {
-			percent: progress?.percent ?? 0,
-			total: progress?.total ?? 0,
-			transferred: progress?.transferred ?? 0,
-			bytesPerSecond: progress?.bytesPerSecond ?? 0
+			percent: progress.percent,
+			total: progress.total,
+			transferred: progress.transferred,
+			bytesPerSecond: progress.bytesPerSecond
 		});
 	});
 	autoUpdater.on("update-downloaded", (info) => {
-		sendUpdaterEvent("update-downloaded", { version: info?.version ?? "" });
+		sendUpdaterEvent("update-downloaded", { version: info.version });
 	});
 	autoUpdater.on("error", (error) => {
-		sendUpdaterEvent("error", { message: error?.message || "Auto update failed." });
+		sendUpdaterEvent("error", { message: error?.message || "Update error" });
 	});
 }
 function createWindow() {
@@ -635,10 +637,10 @@ function registerIpcHandlers() {
 			};
 		}
 		try {
-			await autoUpdater.checkForUpdates();
+			autoUpdater.checkForUpdates();
 			return { ok: true };
 		} catch (error) {
-			sendUpdaterEvent("error", { message: error?.message });
+			sendUpdaterEvent("error", { message: error?.message || "Update check failed" });
 			return {
 				ok: false,
 				message: error?.message
@@ -652,9 +654,10 @@ function registerIpcHandlers() {
 			message: "Packaged builds only."
 		};
 		try {
-			await autoUpdater.downloadUpdate();
+			autoUpdater.downloadUpdate();
 			return { ok: true };
 		} catch (error) {
+			sendUpdaterEvent("error", { message: error?.message || "Download failed" });
 			return {
 				ok: false,
 				message: error?.message

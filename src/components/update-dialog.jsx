@@ -9,7 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { IconLoader2, IconDownload, IconRefresh, IconCheck, IconPlayerPause, IconPlayerPlay } from "@tabler/icons-react"
+import { IconLoader2, IconDownload, IconRefresh, IconCheck } from "@tabler/icons-react"
 
 function formatBytes(bytes) {
   if (!bytes || bytes === 0) return "0 B"
@@ -21,6 +21,14 @@ function formatBytes(bytes) {
 function formatSpeed(bytesPerSecond) {
   if (!bytesPerSecond || bytesPerSecond === 0) return ""
   return `${formatBytes(bytesPerSecond)}/s`
+}
+
+function stripHtml(text) {
+  if (!text || !text.includes("<")) return text
+  return text
+    .replace(/<[^>]+>/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
 }
 
 function formatDate(dateStr) {
@@ -48,74 +56,39 @@ export function UpdateDialog({ open, onOpenChange }) {
     totalBytes: 0,
     transferredBytes: 0,
     isDownloading: false,
-    isPaused: false,
     isReadyToInstall: false,
     isChecking: true,
     updateAvailable: false,
     checkFailed: false,
     errorMessage: "",
     isDemo: false,
+    updateType: "full",
   })
 
-  const demoRef = useRef(null)
-
-  function resetDemoState() {
-    if (demoRef.current) { demoRef.current.stop(); demoRef.current = null }
-  }
+  const speedCalcRef = useRef({ lastBytes: 0, lastTime: 0 })
 
   function startDemo() {
-    resetDemoState()
-    setState({
-      currentVersion: "0.0.2-beta",
-      latestVersion: "0.0.3-beta",
-      releaseDate: "2026-05-23T10:00:00.000Z",
-      fileSize: 0,
-      releaseNotes: "- Added download speed & total size display\n- Pause / Resume download support\n- Performance improvements and bug fixes\n- **Markdown** support in changelog",
-      downloadProgress: 0,
-      downloadSpeed: 0,
-      totalBytes: 52428800,
-      transferredBytes: 0,
-      isDownloading: false,
-      isPaused: false,
-      isReadyToInstall: false,
+    setState((s) => ({
+      ...s,
       isChecking: true,
       updateAvailable: false,
       checkFailed: false,
       errorMessage: "",
       isDemo: true,
-    })
+      currentVersion: "0.0.5-beta",
+      latestVersion: "0.0.6-beta",
+      releaseDate: "2026-05-24T10:00:00.000Z",
+      releaseNotes: "- Performance improvements\n- Bug fixes",
+      totalBytes: 52428800,
+      updateType: "full",
+    }))
     setTimeout(() => {
       setState((s) => ({ ...s, isChecking: false, updateAvailable: true }))
-    }, 1500)
-  }
-
-  function startDemoDownload() {
-    const total = 52428800
-    let transferred = 0
-    let paused = false
-    let speed = 2.5 * 1024 * 1024
-    setState((s) => ({ ...s, isDownloading: true, isPaused: false, downloadProgress: 0, transferredBytes: 0, downloadSpeed: speed }))
-    const interval = setInterval(() => {
-      if (paused) return
-      transferred += speed * 0.15
-      if (transferred >= total) {
-        clearInterval(interval); demoRef.current = null
-        setState((s) => ({ ...s, downloadProgress: 100, isDownloading: false, isPaused: false, transferredBytes: total, totalBytes: total, isReadyToInstall: true }))
-        return
-      }
-      speed = (2 + Math.random() * 1.5) * 1024 * 1024
-      setState((s) => ({ ...s, downloadProgress: Math.round((transferred / total) * 100), transferredBytes: Math.round(transferred), downloadSpeed: Math.round(speed) }))
-    }, 150)
-    demoRef.current = {
-      pause() { paused = true; setState((s) => ({ ...s, isPaused: true })) },
-      resume() { paused = false; setState((s) => ({ ...s, isPaused: false })) },
-      stop() { clearInterval(interval) },
-    }
+    }, 1000)
   }
 
   useEffect(() => {
     if (!open) return
-    resetDemoState()
     const api = window.electronAPI
     if (!api?.updater) {
       setState((s) => ({ ...s, isChecking: false, checkFailed: true, errorMessage: "Updater not available" }))
@@ -124,24 +97,20 @@ export function UpdateDialog({ open, onOpenChange }) {
 
     setState((s) => ({
       ...s,
-      currentVersion: "",
-      latestVersion: "",
-      releaseDate: "",
-      fileSize: 0,
       releaseNotes: "",
       downloadProgress: 0,
       downloadSpeed: 0,
       totalBytes: 0,
       transferredBytes: 0,
       isDownloading: false,
-      isPaused: false,
       isReadyToInstall: false,
       isChecking: true,
       updateAvailable: false,
       checkFailed: false,
       errorMessage: "",
-      isDemo: false,
     }))
+
+    speedCalcRef.current = { lastBytes: 0, lastTime: 0 }
 
     api.updater.getAppVersion().then((version) => {
       setState((s) => ({ ...s, currentVersion: version || "" }))
@@ -159,8 +128,9 @@ export function UpdateDialog({ open, onOpenChange }) {
             updateAvailable: true,
             latestVersion: payload.version,
             releaseDate: payload.releaseDate,
-            releaseNotes: payload.releaseNotes || "",
+            releaseNotes: stripHtml(payload.releaseNotes || ""),
             totalBytes: payload.total || 0,
+            updateType: payload.updateType || "full",
           }))
           break
         case "update-not-available":
@@ -171,21 +141,33 @@ export function UpdateDialog({ open, onOpenChange }) {
           }))
           break
         case "download-progress":
-          setState((s) => ({
-            ...s,
-            downloadProgress: Math.round(payload.percent),
-            downloadSpeed: payload.bytesPerSecond || 0,
-            totalBytes: payload.total || 0,
-            transferredBytes: payload.transferred || 0,
-            isDownloading: true,
-          }))
+          setState((s) => {
+            const now = Date.now()
+            const ref = speedCalcRef.current
+            let speed = payload.bytesPerSecond || 0
+            if (ref.lastTime && ref.lastBytes > 0) {
+              const elapsed = (now - ref.lastTime) / 1000
+              if (elapsed > 0) {
+                speed = Math.round((payload.transferred - ref.lastBytes) / elapsed)
+              }
+            }
+            ref.lastBytes = payload.transferred || 0
+            ref.lastTime = now
+            return {
+              ...s,
+              downloadProgress: Math.round(payload.percent),
+              downloadSpeed: speed,
+              totalBytes: payload.total || 0,
+              transferredBytes: payload.transferred || 0,
+              isDownloading: true,
+            }
+          })
           break
         case "update-downloaded":
           setState((s) => ({
             ...s,
             downloadProgress: 100,
             isDownloading: false,
-            isPaused: false,
             isReadyToInstall: true,
           }))
           break
@@ -193,8 +175,8 @@ export function UpdateDialog({ open, onOpenChange }) {
           setState((s) => ({
             ...s,
             isChecking: false,
-            checkFailed: true,
-            errorMessage: payload.message,
+            checkFailed: !s.isReadyToInstall,
+            errorMessage: s.isReadyToInstall ? "" : payload.message,
           }))
           break
       }
@@ -204,27 +186,13 @@ export function UpdateDialog({ open, onOpenChange }) {
 
     return () => {
       if (typeof cleanup === "function") cleanup()
-      resetDemoState()
     }
   }, [open])
 
   const handleDownload = async () => {
-    if (state.isDemo) { startDemoDownload(); return }
-    const api = window.electronAPI?.updater
-    if (!api) return
-    await api.downloadUpdate()
-  }
-
-  const handlePause = async () => {
-    if (demoRef.current) { demoRef.current.pause(); return }
-    await window.electronAPI?.updater?.pauseDownload()
-    setState((s) => ({ ...s, isPaused: true }))
-  }
-
-  const handleResume = async () => {
-    if (demoRef.current) { demoRef.current.resume(); return }
-    await window.electronAPI?.updater?.resumeDownload()
-    setState((s) => ({ ...s, isPaused: false }))
+    if (state.isDemo) return
+    speedCalcRef.current = { lastBytes: 0, lastTime: 0 }
+    await window.electronAPI?.updater?.downloadUpdate()
   }
 
   const handleInstall = () => {
@@ -260,7 +228,7 @@ export function UpdateDialog({ open, onOpenChange }) {
             </div>
           )}
 
-          {state.checkFailed && (
+          {state.checkFailed && !state.isReadyToInstall && (
             <div className="flex flex-col items-center gap-3 py-4 text-center">
               <IconRefresh className="size-8 text-muted-foreground" />
               <div>
@@ -306,11 +274,16 @@ export function UpdateDialog({ open, onOpenChange }) {
                 </div>
               </div>
 
-              {state.releaseDate && (
-                <p className="text-xs text-muted-foreground">
-                  Released: {formatDate(state.releaseDate)}
-                </p>
-              )}
+              <div className="flex items-center gap-2">
+                {state.releaseDate && (
+                  <p className="text-xs text-muted-foreground">
+                    Released: {formatDate(state.releaseDate)}
+                  </p>
+                )}
+                <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${state.updateType === "patch" ? "bg-blue-500/10 text-blue-600 dark:text-blue-400" : "bg-amber-500/10 text-amber-600 dark:text-amber-400"}`}>
+                  {state.updateType === "patch" ? "Quick Patch" : "Full Installer"}
+                </span>
+              </div>
 
               {state.releaseNotes && (
                 <div className="space-y-1">
@@ -324,16 +297,16 @@ export function UpdateDialog({ open, onOpenChange }) {
               {!state.isDownloading && (
                 <Button className="w-full" onClick={handleDownload}>
                   <IconDownload className="size-4" />
-                  Download Update
+                  {state.updateType === "patch"
+                    ? `Download Patch${state.totalBytes ? ` (${formatBytes(state.totalBytes)})` : ""}`
+                    : `Download Update${state.totalBytes ? ` (${formatBytes(state.totalBytes)})` : ""}`}
                 </Button>
               )}
 
               {state.isDownloading && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      {state.isPaused ? "Paused" : "Downloading..."}
-                    </span>
+                    <span className="text-muted-foreground">Downloading...</span>
                     <span className="text-muted-foreground">{state.downloadProgress}%</span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -348,18 +321,6 @@ export function UpdateDialog({ open, onOpenChange }) {
                     </span>
                     <span>{formatSpeed(state.downloadSpeed)}</span>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={state.isPaused ? handleResume : handlePause}
-                  >
-                    {state.isPaused ? (
-                      <><IconPlayerPlay className="size-3.5" /> Resume</>
-                    ) : (
-                      <><IconPlayerPause className="size-3.5" /> Pause</>
-                    )}
-                  </Button>
                 </div>
               )}
             </div>
@@ -424,6 +385,8 @@ export function useUpdateStatus() {
             latestVersion: payload.version,
             isChecking: false,
           }))
+          break
+        case "checking-for-update":
           break
         case "update-not-available":
           setState((s) => ({ ...s, updateAvailable: false, isChecking: false }))

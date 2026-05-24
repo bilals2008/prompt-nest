@@ -27,7 +27,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
-import { ModeToggle } from "@/components/mode-toggle"
+
 import { useState, useEffect } from "react"
 import { UpdateDialog, useUpdateStatus } from "@/components/update-dialog"
 
@@ -163,7 +163,6 @@ export function AppSidebar({ expanded, onToggle }) {
             expanded={expanded}
             onClick={onToggle}
           />
-          <ModeToggle expanded={expanded} />
         </nav>
       </aside>
       </TooltipProvider>

@@ -144,6 +144,76 @@
   --sidebar-ring: #6366f1;
 }
 
+.forest {
+  --background: #0d1a0d;
+  --foreground: #e2f0e2;
+  --card: #142414;
+  --card-foreground: #e2f0e2;
+  --popover: #142414;
+  --popover-foreground: #e2f0e2;
+  --primary: #4ade80;
+  --primary-foreground: #0a1a0a;
+  --secondary: #1c381c;
+  --secondary-foreground: #e2f0e2;
+  --muted: #1c381c;
+  --muted-foreground: #7ea87e;
+  --accent: #285828;
+  --accent-foreground: #e2f0e2;
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: #ffffff;
+  --border: #1e3a1e;
+  --input: #1e3a1e;
+  --ring: #4ade80;
+  --chart-1: oklch(0.546 0.245 262.881);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: #0a150a;
+  --sidebar-foreground: #e2f0e2;
+  --sidebar-primary: #4ade80;
+  --sidebar-primary-foreground: #0a1a0a;
+  --sidebar-accent: #285828;
+  --sidebar-accent-foreground: #e2f0e2;
+  --sidebar-border: #1e3a1e;
+  --sidebar-ring: #4ade80;
+}
+
+.ocean {
+  --background: #0a1628;
+  --foreground: #dce8f5;
+  --card: #12203a;
+  --card-foreground: #dce8f5;
+  --popover: #12203a;
+  --popover-foreground: #dce8f5;
+  --primary: #38bdf8;
+  --primary-foreground: #0a1628;
+  --secondary: #183050;
+  --secondary-foreground: #dce8f5;
+  --muted: #183050;
+  --muted-foreground: #7098c0;
+  --accent: #1e4070;
+  --accent-foreground: #dce8f5;
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: #ffffff;
+  --border: #1a3560;
+  --input: #1a3560;
+  --ring: #38bdf8;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: #081220;
+  --sidebar-foreground: #dce8f5;
+  --sidebar-primary: #38bdf8;
+  --sidebar-primary-foreground: #0a1628;
+  --sidebar-accent: #1e4070;
+  --sidebar-accent-foreground: #dce8f5;
+  --sidebar-border: #1a3560;
+  --sidebar-ring: #38bdf8;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
