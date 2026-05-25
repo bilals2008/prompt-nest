@@ -9,7 +9,6 @@ import {
   IconSearch,
 } from "@tabler/icons-react"
 import { toast } from "sonner"
-import { FileText } from "lucide-react"
 
 export default function Templates() {
   const navigate = useNavigate()
@@ -53,7 +52,7 @@ export default function Templates() {
     <>
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-card/50 px-4">
         <h1 className="flex items-center gap-2 text-base font-bold tracking-tight text-primary">
-          <FileText className="size-4" />
+          <IconFileText className="size-4" />
           Templates
         </h1>
         <div className="relative w-56">

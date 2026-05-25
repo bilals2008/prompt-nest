@@ -19,7 +19,7 @@ import {
   IconPin,
   IconFolder,
 } from "@tabler/icons-react"
-import { Heart } from "lucide-react"
+import { IconHeart } from "@tabler/icons-react"
 
 export function PromptCard({ prompt, viewMode = "grid", onToggleFavorite, onDelete, onDuplicate, onEdit }) {
   const [copied, setCopied] = useState(false)
@@ -63,7 +63,7 @@ export function PromptCard({ prompt, viewMode = "grid", onToggleFavorite, onDele
     return (
       <div className="group flex cursor-pointer items-center gap-4 rounded-lg border border-border bg-card px-4 py-3 transition-all hover:bg-accent/50 hover:ring-1 hover:ring-primary/20">
         <button onClick={handleFavorite} className="shrink-0 cursor-pointer">
-          <Heart className={cn("size-4 transition-colors", prompt.favorite ? "fill-chart-3 text-chart-3" : "text-muted-foreground hover:text-chart-3")} />
+          <IconHeart className={cn("size-4 transition-colors", prompt.favorite ? "fill-chart-3 text-chart-3" : "text-muted-foreground hover:text-chart-3")} />
         </button>
 
         <div className="min-w-0 flex-1">
@@ -141,7 +141,7 @@ export function PromptCard({ prompt, viewMode = "grid", onToggleFavorite, onDele
             })()}
           </div>
           <button onClick={handleFavorite} className="shrink-0 cursor-pointer">
-            <Heart className={cn("size-4 transition-colors", prompt.favorite ? "fill-chart-3 text-chart-3" : "text-muted-foreground hover:text-chart-3")} />
+            <IconHeart className={cn("size-4 transition-colors", prompt.favorite ? "fill-chart-3 text-chart-3" : "text-muted-foreground hover:text-chart-3")} />
           </button>
         </div>
 

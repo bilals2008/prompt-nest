@@ -1,5 +1,5 @@
 import { useTheme } from "@/hooks/use-theme"
-import { Sun, Moon, Monitor, Trees, Waves } from "lucide-react"
+import { IconSun, IconMoon, IconMonitor, IconTrees, IconDroplet } from "@tabler/icons-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,16 +9,16 @@ import {
 import { cn } from "@/lib/utils"
 
 const themes = [
-  { value: "light", icon: Sun, label: "Light" },
-  { value: "dark", icon: Moon, label: "Dark" },
-  { value: "forest", icon: Trees, label: "Forest" },
-  { value: "ocean", icon: Waves, label: "Ocean" },
-  { value: "system", icon: Monitor, label: "System" },
+  { value: "light", icon: IconSun, label: "Light" },
+  { value: "dark", icon: IconMoon, label: "Dark" },
+  { value: "forest", icon: IconTrees, label: "Forest" },
+  { value: "ocean", icon: IconDroplet, label: "Ocean" },
+  { value: "system", icon: IconMonitor, label: "System" },
 ]
 
 export function ModeToggle({ expanded }) {
   const { theme, setTheme } = useTheme()
-  const CurrentIcon = themes.find((t) => t.value === theme)?.icon || Sun
+  const CurrentIcon = themes.find((t) => t.value === theme)?.icon || IconSun
 
   return (
     <DropdownMenu>

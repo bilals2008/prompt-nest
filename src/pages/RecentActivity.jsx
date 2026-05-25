@@ -14,7 +14,6 @@ import {
   IconTrendingUp,
   IconHistory,
 } from "@tabler/icons-react"
-import { Clock } from "lucide-react"
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
@@ -184,7 +183,7 @@ export default function RecentActivity() {
     <>
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card/50 px-6">
         <h1 className="flex items-center gap-2 text-lg font-bold tracking-tight text-primary">
-          <Clock className="size-5" />
+          <IconClock className="size-5" />
           Recent Activity
         </h1>
       </header>

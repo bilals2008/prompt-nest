@@ -15,7 +15,6 @@ import {
   IconHistory,
 } from "@tabler/icons-react"
 import { toast } from "sonner"
-import { Download, Upload } from "lucide-react"
 
 const exportFormats = [
   { id: "json", label: "JSON", icon: IconFileCode, desc: "Full backup with prompts and collections", color: "text-chart-4 bg-chart-4/10" },
@@ -75,7 +74,7 @@ export default function ExportImport() {
     <>
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card/50 px-6">
         <h1 className="flex items-center gap-2 text-lg font-bold tracking-tight text-primary">
-          <Download className="size-5" />
+          <IconDownload className="size-5" />
           Export / Import
         </h1>
       </header>

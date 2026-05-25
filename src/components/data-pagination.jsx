@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from "react"
-import { ChevronsLeft, ChevronsRight } from "lucide-react"
+import { IconChevronsLeft, IconChevronsRight } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -79,7 +79,7 @@ function DataPagination({
                 onClick={() => goToPage(1)}
                 disabled={currentPage <= 1}
               >
-                <ChevronsLeft className="size-4" />
+                <IconChevronsLeft className="size-4" />
               </Button>
             </PaginationItem>
             <PaginationItem>
@@ -133,7 +133,7 @@ function DataPagination({
                 onClick={() => goToPage(pageCount)}
                 disabled={currentPage >= pageCount}
               >
-                <ChevronsRight className="size-4" />
+                <IconChevronsRight className="size-4" />
               </Button>
             </PaginationItem>
           </PaginationContent>

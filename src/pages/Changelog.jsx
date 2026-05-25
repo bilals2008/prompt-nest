@@ -3,12 +3,12 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { IconHistory, IconRocket, IconListCheck, IconStar, IconCode } from "@tabler/icons-react"
 import {
-  FileText, GitCommit, Megaphone, Trash2, Sparkles,
-  Search as SearchIcon, Variable, Hash
-} from "lucide-react"
+  IconFileText, IconGitCommit, IconSpeakerphone, IconTrash, IconSparkles,
+  IconSearch, IconVariable, IconHash
+} from "@tabler/icons-react"
 import changelogData from "@/data/changelog.json"
 
-const ICON_MAP = { Trash2, GitCommit, FileText, Megaphone, Sparkles, Hash, SearchIcon, Variable }
+const ICON_MAP = { Trash2: IconTrash, GitCommit: IconGitCommit, FileText: IconFileText, Megaphone: IconSpeakerphone, Sparkles: IconSparkles, Hash: IconHash, SearchIcon: IconSearch, Variable: IconVariable }
 
 function VersionBadge({ type }) {
   const styles = {
@@ -55,7 +55,7 @@ export default function Changelog() {
                 return (
                   <div key={item.label} className="flex items-start gap-2 rounded-lg border border-dashed border-border bg-background/50 p-2">
                     <div className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                      {Icon ? <Icon className="size-3.5" /> : <Sparkles className="size-3.5" />}
+                      {Icon ? <Icon className="size-3.5" /> : <IconSparkles className="size-3.5" />}
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-medium">{item.label}</p>

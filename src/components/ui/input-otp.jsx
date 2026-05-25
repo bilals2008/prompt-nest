@@ -4,7 +4,7 @@ import * as React from "react"
 import { OTPInput, OTPInputContext } from "input-otp"
 
 import { cn } from "@/lib/utils"
-import { MinusIcon } from "lucide-react"
+import { IconMinus } from "@tabler/icons-react"
 
 function InputOTP({
   className,
@@ -76,7 +76,7 @@ function InputOTPSeparator({
       className="flex items-center [&_svg:not([class*='size-'])]:size-4"
       role="separator"
       {...props}>
-      <MinusIcon />
+      <IconMinus />
     </div>
   );
 }

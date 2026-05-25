@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-import { TrendingUp, TrendingDown } from "lucide-react"
+import { IconTrendingUp, IconTrendingDown } from "@tabler/icons-react"
 
 const accentStyles = {
   blue: { iconWrap: "bg-chart-1/12 text-chart-1", badge: "bg-chart-1/12 text-chart-1 border-chart-1/25" },
@@ -92,7 +92,7 @@ export function StatCard({
           </p>
           {trend ? (
             <p className={cn("flex items-center gap-1", dims.hint, trend.startsWith("+") ? "text-chart-2" : "text-destructive")}>
-              {trend.startsWith("+") ? <TrendingUp className={dims.hintIcon} /> : <TrendingDown className={dims.hintIcon} />}
+              {trend.startsWith("+") ? <IconTrendingUp className={dims.hintIcon} /> : <IconTrendingDown className={dims.hintIcon} />}
               {trend}
             </p>
           ) : desc ? (

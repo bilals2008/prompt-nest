@@ -2,12 +2,11 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
-import { Library } from "lucide-react"
+import { IconLibrary, IconFiles } from "@tabler/icons-react"
 import { PromptsToolbar } from "@/components/prompts-toolbar"
 import { PromptCard } from "@/components/prompt-card"
 import { LoadingState, EmptyState } from "@/components/loading-state"
 import { DataPagination } from "@/components/data-pagination"
-import { IconFiles } from "@tabler/icons-react"
 
 export default function AllPrompts() {
   const navigate = useNavigate()
@@ -109,7 +108,7 @@ export default function AllPrompts() {
     <>
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card/50 px-6">
         <h1 className="flex items-center gap-2 text-lg font-bold tracking-tight text-primary">
-          <Library className="size-5" />
+          <IconLibrary className="size-5" />
           Prompt Library
         </h1>
         <span className="text-xs text-muted-foreground">
