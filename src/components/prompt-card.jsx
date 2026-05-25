@@ -68,6 +68,7 @@ export function PromptCard({ prompt, viewMode = "grid", selected = false, onSele
   if (viewMode === "list") {
     return (
       <div
+        onClick={handleCopy}
         className={cn(
           "group flex cursor-pointer items-center gap-4 rounded-lg border px-4 py-3 transition-all hover:bg-accent/50 hover:ring-1 hover:ring-primary/20",
           selected ? "border-primary/40 bg-primary/[0.03] ring-1 ring-primary/20" : "border-border bg-card"
@@ -136,6 +137,7 @@ export function PromptCard({ prompt, viewMode = "grid", selected = false, onSele
 
   return (
     <div
+      onClick={handleCopy}
       className={cn(
         "group flex cursor-pointer flex-col rounded-xl border transition-all hover:ring-1 hover:ring-primary/30",
         selected ? "border-primary/40 bg-primary/[0.03] ring-1 ring-primary/20" : "border-border bg-card"
