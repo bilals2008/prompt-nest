@@ -10,6 +10,8 @@ import { getTagColorDot, parseTag, colorNames } from "@/lib/tag-colors"
 import { getCollectionIcon, getCollectionColor } from "@/lib/collection-config"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 import {
   IconArrowLeft,
   IconCopy,
@@ -20,8 +22,6 @@ import {
   IconDeviceFloppy,
   IconHeart,
   IconHeartFilled,
-  IconEye,
-  IconEyeOff,
   IconFileText,
   IconTags,
   IconFolderOpen,
@@ -39,7 +39,7 @@ export default function PromptEditor() {
   const navigate = useNavigate()
   const isNew = !id
   const [collections, setCollections] = useState([])
-  const [showPreview, setShowPreview] = useState(false)
+  const [viewMode, setViewMode] = useState("edit")
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
 
@@ -320,25 +320,52 @@ export default function PromptEditor() {
                 className="h-10 rounded-lg border-border bg-transparent px-2.5 text-xl font-bold focus-visible:border-primary/50 focus-visible:ring-1"
               />
 
-              <div className="relative">
-                <Textarea
-                  placeholder="Write your prompt content here..."
-                  value={form.content}
-                  onChange={(e) => updateField("content", e.target.value)}
-                  className="min-h-[300px] resize-y border-border bg-card/30 p-4 text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-primary/20"
-                />
-                <div className="mt-2 flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+              <div className="space-y-2">
+                <div className="flex items-center gap-4 border-b border-border">
+                  <button
+                    onClick={() => setViewMode("edit")}
+                    className={cn(
+                      "relative -mb-px cursor-pointer px-1 pb-2 text-xs font-medium transition-colors",
+                      viewMode === "edit"
+                        ? "text-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => setViewMode("preview")}
+                    className={cn(
+                      "relative -mb-px cursor-pointer px-1 pb-2 text-xs font-medium transition-colors",
+                      viewMode === "preview"
+                        ? "text-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Preview
+                  </button>
+                </div>
+
+                {viewMode === "edit" ? (
+                  <Textarea
+                    placeholder="Write your prompt content here..."
+                    value={form.content}
+                    onChange={(e) => updateField("content", e.target.value)}
+                    className="min-h-[300px] resize-y border-border bg-card/30 p-4 text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-primary/20"
+                  />
+                ) : (
+                  <div className="prose-markdown min-h-[300px] rounded-lg border border-border bg-card/30 p-4 text-sm leading-relaxed">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {form.content || "*No content to preview*"}
+                    </ReactMarkdown>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-3">
                     <span>{wordCount} words</span>
                     <span>{charCount} characters</span>
                   </div>
-                  <button
-                    onClick={() => setShowPreview(!showPreview)}
-                    className="flex cursor-pointer items-center gap-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {showPreview ? <IconEyeOff className="size-3" /> : <IconEye className="size-3" />}
-                    {showPreview ? "Hide preview" : "Preview"}
-                  </button>
                 </div>
               </div>
 
