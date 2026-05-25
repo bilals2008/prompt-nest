@@ -22,7 +22,7 @@ import {
 } from "@tabler/icons-react"
 import { IconHeart } from "@tabler/icons-react"
 
-export function PromptCard({ prompt, viewMode = "grid", selected = false, onSelect, onToggleFavorite, onDelete, onDuplicate, onEdit }) {
+export function PromptCard({ prompt, viewMode = "grid", selected = false, onSelect, onToggleFavorite, onTogglePin, onDelete, onDuplicate, onEdit }) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async (e) => {
@@ -86,6 +86,7 @@ export function PromptCard({ prompt, viewMode = "grid", selected = false, onSele
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
+            {prompt.pinned ? <IconPin className="size-3.5 shrink-0 -rotate-45 text-primary" /> : null}
             <span className="truncate text-sm font-medium">{prompt.title}</span>
             {prompt.collection_id && (() => {
               const colColor = getCollectionColor(prompt.collection_color, prompt.collection_icon)
@@ -129,8 +130,8 @@ export function PromptCard({ prompt, viewMode = "grid", selected = false, onSele
             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onDuplicate?.(prompt.id) }}>
               <IconCopy className="size-3.5" /> Duplicate
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation() }}>
-              <IconPin className="size-3.5" /> Pin
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onTogglePin?.(prompt.id) }}>
+              <IconPin className={cn("size-3.5", prompt.pinned && "text-primary")} /> {prompt.pinned ? "Pinned" : "Pin"}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={(e) => { e.stopPropagation(); onDelete?.(prompt.id) }}>
@@ -173,6 +174,9 @@ export function PromptCard({ prompt, viewMode = "grid", selected = false, onSele
           <button onClick={handleFavorite} className="shrink-0 cursor-pointer">
             <IconHeart className={cn("size-4 transition-colors", prompt.favorite ? "fill-chart-3 text-chart-3" : "text-muted-foreground hover:text-chart-3")} />
           </button>
+          {prompt.pinned ? (
+            <IconPin className="size-3.5 shrink-0 -rotate-45 text-primary" />
+          ) : null}
         </div>
 
         <p className="line-clamp-2 text-xs text-muted-foreground">{prompt.content}</p>
@@ -210,8 +214,8 @@ export function PromptCard({ prompt, viewMode = "grid", selected = false, onSele
               <DropdownMenuItem onClick={() => onDuplicate?.(prompt.id)}>
                 <IconCopy className="size-3.5" /> Duplicate
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconPin className="size-3.5" /> Pin
+              <DropdownMenuItem onClick={() => onTogglePin?.(prompt.id)}>
+                <IconPin className={cn("size-3.5", prompt.pinned && "text-primary")} /> {prompt.pinned ? "Pinned" : "Pin"}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onClick={() => onDelete?.(prompt.id)}>

@@ -49,4 +49,9 @@ export async function createTables() {
   if (!hasColor) {
     await db.run("ALTER TABLE collections ADD COLUMN color TEXT DEFAULT 'blue'")
   }
+
+  const hasPinned = columns.some((c) => c.name === 'pinned')
+  if (!hasPinned) {
+    await db.run('ALTER TABLE prompts ADD COLUMN pinned INTEGER DEFAULT 0')
+  }
 }
