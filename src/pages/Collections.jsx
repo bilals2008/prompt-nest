@@ -174,6 +174,13 @@ export default function Collections() {
         <div className="flex items-center gap-2">
           {selectMode ? (
             <>
+              <span className="text-xs text-muted-foreground">{selectedIds.size} selected</span>
+              <button
+                onClick={selectedIds.size === collections.length ? handleClearSelection : handleSelectAll}
+                className="cursor-pointer text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+              >
+                {selectedIds.size === collections.length ? "Clear all" : "Select all"}
+              </button>
               <Button variant="outline" size="sm" onClick={() => { setSelectMode(false); setSelectedIds(new Set()) }}>
                 Cancel
               </Button>
