@@ -258,12 +258,14 @@ export default function Collections() {
                     ) : (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
                             onClick={(e) => e.stopPropagation()}
-                            className="flex cursor-pointer items-center justify-center rounded-lg p-1 text-muted-foreground opacity-0 transition-all hover:bg-accent hover:text-foreground group-hover:opacity-100"
+                            className="opacity-0 text-muted-foreground group-hover:opacity-100"
                           >
                             <IconDotsVertical className="size-4" />
-                          </button>
+                          </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-32">
                           <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEditDialog(col) }}>
@@ -327,18 +329,20 @@ export default function Collections() {
                   const active = formIcon === opt.value
                   const color = getCollectionColor(formColor, opt.value)
                   return (
-                    <button
+                    <Button
                       key={opt.value}
+                      variant="outline"
+                      size="sm"
                       onClick={() => setFormIcon(opt.value)}
                       className={cn(
-                        "flex size-9 cursor-pointer items-center justify-center rounded-lg border transition-all",
+                        "flex size-9 cursor-pointer items-center justify-center p-0",
                         active
                           ? [color.bg, color.text, "border-current"]
-                          : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                          : "text-muted-foreground hover:border-primary/50 hover:text-foreground"
                       )}
                     >
                       <opt.icon className="size-4" />
-                    </button>
+                    </Button>
                   )
                 })}
               </div>
@@ -348,20 +352,21 @@ export default function Collections() {
               <div className="flex gap-1.5">
                 {colorNames.map((c) => {
                   const active = formColor === c
-                  const color = getCollectionColor(c)
                   return (
-                    <button
+                    <Button
                       key={c}
+                      variant="outline"
+                      size="sm"
                       onClick={() => setFormColor(c)}
                       className={cn(
-                        "flex size-8 cursor-pointer items-center justify-center rounded-full border transition-all",
+                        "flex size-8 cursor-pointer items-center justify-center rounded-full p-0",
                         active
                           ? "border-ring ring-2 ring-ring ring-offset-1"
                           : "border-border hover:border-muted-foreground"
                       )}
                     >
                       <span className={cn("block size-4 rounded-full", getTagColorDot(c))} />
-                    </button>
+                    </Button>
                   )
                 })}
               </div>
