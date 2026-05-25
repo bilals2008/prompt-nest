@@ -1,4 +1,3 @@
-/* eslint-env node */
 import { readFileSync, statSync, existsSync } from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
@@ -10,7 +9,8 @@ const { version } = pkg
 const productName = pkg.build?.productName || pkg.productName || pkg.name
 const tag = `v${version}`
 
-const repo = "bilals2008/prompt-nest"
+const { owner, repo: repoName } = pkg.build?.publish?.[0] || {}
+const repo = `${owner}/${repoName}`
 const token = process.env.GH_TOKEN
 if (!token) { console.error("GH_TOKEN not set"); process.exit(1) }
 
