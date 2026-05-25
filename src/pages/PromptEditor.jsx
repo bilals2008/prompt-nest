@@ -376,7 +376,7 @@ export default function PromptEditor() {
                   </label>
                   <Input
                     placeholder="react, component, frontend"
-                    value={cleanTagsDisplay || form.tags}
+                    value={form.tags}
                     onChange={(e) => updateField("tags", e.target.value)}
                     className="border-border bg-card/30 text-sm"
                   />
