@@ -40,6 +40,9 @@ export default function AllPrompts() {
     }
 
     result.sort((a, b) => {
+      const aPinned = a.pinned ? 1 : 0
+      const bPinned = b.pinned ? 1 : 0
+      if (aPinned !== bPinned) return bPinned - aPinned
       if (sortBy === "title") return a.title.localeCompare(b.title)
       if (sortBy === "favorite") return (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0)
       return new Date(b[sortBy] || b.updated_at) - new Date(a[sortBy] || a.updated_at)
@@ -89,6 +92,14 @@ export default function AllPrompts() {
     if (updated) {
       setPrompts((prev) => prev.map((p) => (p.id === id ? updated : p)))
       toast.success(updated.favorite ? "Added to favorites" : "Removed from favorites")
+    }
+  }
+
+  const handleTogglePin = async (id) => {
+    const updated = await window.db.togglePin(id)
+    if (updated) {
+      setPrompts((prev) => prev.map((p) => (p.id === id ? updated : p)))
+      toast.success(updated.pinned ? "Prompt pinned" : "Prompt unpinned")
     }
   }
 
@@ -215,33 +226,35 @@ export default function AllPrompts() {
               {viewMode === "grid" ? (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {paginatedResults.map((prompt) => (
-                    <PromptCard
-                      key={prompt.id}
-                      prompt={prompt}
-                      viewMode="grid"
-                      selected={selectedIds.has(prompt.id)}
-                      onSelect={handleSelect}
-                      onEdit={handleEdit}
-                      onToggleFavorite={handleToggleFavorite}
-                      onDelete={handleDelete}
-                      onDuplicate={handleDuplicate}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col gap-2">
-                  {paginatedResults.map((prompt) => (
-                    <PromptCard
-                      key={prompt.id}
-                      prompt={prompt}
-                      viewMode="list"
-                      selected={selectedIds.has(prompt.id)}
-                      onSelect={handleSelect}
-                      onEdit={handleEdit}
-                      onToggleFavorite={handleToggleFavorite}
-                      onDelete={handleDelete}
-                      onDuplicate={handleDuplicate}
-                    />
+                      <PromptCard
+                        key={prompt.id}
+                        prompt={prompt}
+                        viewMode="grid"
+                        selected={selectedIds.has(prompt.id)}
+                        onSelect={handleSelect}
+                        onEdit={handleEdit}
+                        onToggleFavorite={handleToggleFavorite}
+                        onTogglePin={handleTogglePin}
+                        onDelete={handleDelete}
+                        onDuplicate={handleDuplicate}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {paginatedResults.map((prompt) => (
+                      <PromptCard
+                        key={prompt.id}
+                        prompt={prompt}
+                        viewMode="list"
+                        selected={selectedIds.has(prompt.id)}
+                        onSelect={handleSelect}
+                        onEdit={handleEdit}
+                        onToggleFavorite={handleToggleFavorite}
+                        onTogglePin={handleTogglePin}
+                        onDelete={handleDelete}
+                        onDuplicate={handleDuplicate}
+                      />
                   ))}
                 </div>
               )}

@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('db', {
   updatePrompt: (id, data) => ipcRenderer.invoke('db:updatePrompt', id, data),
   deletePrompt: (id) => ipcRenderer.invoke('db:deletePrompt', id),
   toggleFavorite: (id) => ipcRenderer.invoke('db:toggleFavorite', id),
+  togglePin: (id) => ipcRenderer.invoke('db:togglePin', id),
   getFavorites: () => ipcRenderer.invoke('db:getFavorites'),
   createCollection: (data) => ipcRenderer.invoke('db:createCollection', data),
   getCollections: () => ipcRenderer.invoke('db:getCollections'),

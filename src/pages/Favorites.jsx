@@ -46,9 +46,13 @@ export default function Favorites() {
         (p.tags && p.tags.toLowerCase().includes(q))
       )
     }
-    if (sortBy === "title") {
-      result.sort((a, b) => a.title.localeCompare(b.title))
-    }
+    result.sort((a, b) => {
+      const aPinned = a.pinned ? 1 : 0
+      const bPinned = b.pinned ? 1 : 0
+      if (aPinned !== bPinned) return bPinned - aPinned
+      if (sortBy === "title") return a.title.localeCompare(b.title)
+      return 0
+    })
     return result
   }, [prompts, searchQuery, sortBy])
 
@@ -63,6 +67,14 @@ export default function Favorites() {
       toast.success("Removed from favorites")
     } else if (updated) {
       setPrompts((prev) => prev.map((p) => (p.id === id ? updated : p)))
+    }
+  }
+
+  const handleTogglePin = async (id) => {
+    const updated = await window.db.togglePin(id)
+    if (updated) {
+      setPrompts((prev) => prev.map((p) => (p.id === id ? updated : p)))
+      toast.success(updated.pinned ? "Prompt pinned" : "Prompt unpinned")
     }
   }
 
@@ -236,26 +248,28 @@ export default function Favorites() {
                   key={prompt.id}
                   prompt={prompt}
                   viewMode="grid"
-                  selected={selectedIds.has(prompt.id)}
-                  onSelect={handleSelect}
-                  onToggleFavorite={handleToggleFavorite}
-                  onDelete={handleDelete}
-                  onDuplicate={handleDuplicate}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {filteredAndSorted.map((prompt) => (
-                <PromptCard
-                  key={prompt.id}
-                  prompt={prompt}
-                  viewMode="list"
-                  selected={selectedIds.has(prompt.id)}
-                  onSelect={handleSelect}
-                  onToggleFavorite={handleToggleFavorite}
-                  onDelete={handleDelete}
-                  onDuplicate={handleDuplicate}
+                    selected={selectedIds.has(prompt.id)}
+                    onSelect={handleSelect}
+                    onToggleFavorite={handleToggleFavorite}
+                    onTogglePin={handleTogglePin}
+                    onDelete={handleDelete}
+                    onDuplicate={handleDuplicate}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {filteredAndSorted.map((prompt) => (
+                  <PromptCard
+                    key={prompt.id}
+                    prompt={prompt}
+                    viewMode="list"
+                    selected={selectedIds.has(prompt.id)}
+                    onSelect={handleSelect}
+                    onToggleFavorite={handleToggleFavorite}
+                    onTogglePin={handleTogglePin}
+                    onDelete={handleDelete}
+                    onDuplicate={handleDuplicate}
                 />
               ))}
             </div>

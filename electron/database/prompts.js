@@ -61,6 +61,15 @@ export async function deletePrompt(id) {
   return { success: true }
 }
 
+export async function togglePin(id) {
+  const db = getDatabase()
+  const prompt = await getPromptById(id)
+  if (!prompt) return null
+  const newVal = prompt.pinned ? 0 : 1
+  await db.run('UPDATE prompts SET pinned = ?, updated_at = ? WHERE id = ?', [newVal, new Date().toISOString(), id])
+  return getPromptById(id)
+}
+
 export async function toggleFavorite(id) {
   const db = getDatabase()
   const prompt = await getPromptById(id)
