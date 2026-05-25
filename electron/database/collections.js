@@ -31,3 +31,12 @@ export async function deleteCollection(id) {
   await db.run('DELETE FROM collections WHERE id = ?', [id])
   return { success: true }
 }
+
+export async function batchDeleteCollections(ids) {
+  if (!ids.length) return { success: true }
+  const db = getDatabase()
+  const placeholders = ids.map(() => '?').join(',')
+  await db.run(`UPDATE prompts SET collection_id = NULL WHERE collection_id IN (${placeholders})`, ids)
+  await db.run(`DELETE FROM collections WHERE id IN (${placeholders})`, ids)
+  return { success: true }
+}

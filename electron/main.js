@@ -103,6 +103,7 @@ function registerIpcHandlers() {
   ipcMain.handle('db:getCollections', () => collections.getCollections())
   ipcMain.handle('db:updateCollection', (_, id, data) => collections.updateCollection(id, data))
   ipcMain.handle('db:deleteCollection', (_, id) => collections.deleteCollection(id))
+  ipcMain.handle('db:batchDeleteCollections', (_, ids) => collections.batchDeleteCollections(ids))
   ipcMain.handle('db:logActivity', (_, promptId, action) => activity.logActivity(promptId, action))
   ipcMain.handle('db:getActivity', (_, limit) => activity.getActivity(limit))
   ipcMain.handle('db:exportData', (_, format) => io.exportData(format))

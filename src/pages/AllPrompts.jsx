@@ -210,6 +210,10 @@ export default function AllPrompts() {
             onMoveToCollection={handleBatchMove}
             onDelete={handleBatchDelete}
             collections={collections}
+            promptCollectionIds={Array.from(selectedIds).map((id) => {
+              const p = prompts.find((p) => p.id === id)
+              return p ? p.collection_id : null
+            }).filter(Boolean)}
           />
         )}
 
