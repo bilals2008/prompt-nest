@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { PromptCard } from "@/components/prompt-card"
+import { BatchActionsBar } from "@/components/batch-actions-bar"
 import { Badge } from "@/components/ui/badge"
 import { LoadingState, EmptyState } from "@/components/loading-state"
 import {
@@ -15,17 +16,22 @@ import { toast } from "sonner"
 export default function Favorites() {
   const navigate = useNavigate()
   const [prompts, setPrompts] = useState([])
+  const [collections, setCollections] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState("updated_at")
   const [viewMode, setViewMode] = useState("grid")
+  const [selectedIds, setSelectedIds] = useState(new Set())
 
   const loadData = () => {
     setLoading(true)
-    window.db.getFavorites()
-      .then((data) => setPrompts(Array.isArray(data) ? data : []))
-      .catch(console.error)
-      .finally(() => setLoading(false))
+    Promise.all([
+      window.db.getFavorites().catch(() => []),
+      window.db.getCollections().catch(() => []),
+    ]).then(([promptsData, collectionsData]) => {
+      setPrompts(Array.isArray(promptsData) ? promptsData : [])
+      setCollections(Array.isArray(collectionsData) ? collectionsData : [])
+    }).catch(console.error).finally(() => setLoading(false))
   }
 
   useEffect(() => { loadData() }, [])
@@ -45,6 +51,10 @@ export default function Favorites() {
     }
     return result
   }, [prompts, searchQuery, sortBy])
+
+  useEffect(() => {
+    setSelectedIds(new Set())
+  }, [searchQuery, sortBy])
 
   const handleToggleFavorite = async (id) => {
     const updated = await window.db.toggleFavorite(id)
@@ -72,6 +82,51 @@ export default function Favorites() {
     })
     loadData()
     toast.success("Prompt duplicated")
+  }
+
+  const handleSelect = useCallback((id, isSelected) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (isSelected) next.add(id)
+      else next.delete(id)
+      return next
+    })
+  }, [])
+
+  const handleSelectAll = useCallback(() => {
+    setSelectedIds(new Set(filteredAndSorted.map((p) => p.id)))
+  }, [filteredAndSorted])
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedIds(new Set())
+  }, [])
+
+  const handleBatchUnfavorite = async () => {
+    const ids = Array.from(selectedIds)
+    if (!ids.length) return
+    await window.db.batchSetFavorite(ids, false)
+    setPrompts((prev) => prev.filter((p) => !ids.includes(p.id)))
+    toast.success(`${ids.length} prompt${ids.length !== 1 ? "s" : ""} removed from favorites`)
+    handleClearSelection()
+  }
+
+  const handleBatchMove = async (collectionId) => {
+    const ids = Array.from(selectedIds)
+    if (!ids.length) return
+    await window.db.batchSetCollection(ids, collectionId)
+    const updatedPrompts = await window.db.getFavorites().catch(() => [])
+    setPrompts(Array.isArray(updatedPrompts) ? updatedPrompts : [])
+    toast.success(`${ids.length} prompt${ids.length !== 1 ? "s" : ""} moved`)
+    handleClearSelection()
+  }
+
+  const handleBatchDelete = async () => {
+    const ids = Array.from(selectedIds)
+    if (!ids.length) return
+    await window.db.batchDeletePrompts(ids)
+    setPrompts((prev) => prev.filter((p) => !ids.includes(p.id)))
+    toast.success(`${ids.length} prompt${ids.length !== 1 ? "s" : ""} deleted`)
+    handleClearSelection()
   }
 
   return (
@@ -152,6 +207,20 @@ export default function Favorites() {
           </div>
         </div>
 
+        {selectedIds.size > 0 && (
+          <BatchActionsBar
+            selectedCount={selectedIds.size}
+            totalCount={filteredAndSorted.length}
+            allSelected={selectedIds.size === filteredAndSorted.length && filteredAndSorted.length > 0}
+            onSelectAll={handleSelectAll}
+            onClearSelection={handleClearSelection}
+            onFavorite={handleBatchUnfavorite}
+            onMoveToCollection={handleBatchMove}
+            onDelete={handleBatchDelete}
+            collections={collections}
+          />
+        )}
+
         <div className="flex-1 overflow-auto p-6">
           {loading ? (
             <LoadingState message="Loading favorites..." />
@@ -161,12 +230,14 @@ export default function Favorites() {
               description={searchQuery ? "Try a different search term" : "Favorite a prompt to see it here"}
             />
           ) : viewMode === "grid" ? (
-            <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredAndSorted.map((prompt) => (
                 <PromptCard
                   key={prompt.id}
                   prompt={prompt}
                   viewMode="grid"
+                  selected={selectedIds.has(prompt.id)}
+                  onSelect={handleSelect}
                   onToggleFavorite={handleToggleFavorite}
                   onDelete={handleDelete}
                   onDuplicate={handleDuplicate}
@@ -174,12 +245,14 @@ export default function Favorites() {
               ))}
             </div>
           ) : (
-            <div className="mx-auto flex max-w-4xl flex-col gap-2">
+            <div className="flex flex-col gap-2">
               {filteredAndSorted.map((prompt) => (
                 <PromptCard
                   key={prompt.id}
                   prompt={prompt}
                   viewMode="list"
+                  selected={selectedIds.has(prompt.id)}
+                  onSelect={handleSelect}
                   onToggleFavorite={handleToggleFavorite}
                   onDelete={handleDelete}
                   onDuplicate={handleDuplicate}

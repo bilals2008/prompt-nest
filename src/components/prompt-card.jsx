@@ -3,6 +3,7 @@ import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { TagBadge } from "@/components/tag-badge"
 import { collectionIcons, getCollectionColor } from "@/lib/collection-config"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -21,7 +22,7 @@ import {
 } from "@tabler/icons-react"
 import { IconHeart } from "@tabler/icons-react"
 
-export function PromptCard({ prompt, viewMode = "grid", onToggleFavorite, onDelete, onDuplicate, onEdit }) {
+export function PromptCard({ prompt, viewMode = "grid", selected = false, onSelect, onToggleFavorite, onDelete, onDuplicate, onEdit }) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async (e) => {
@@ -59,9 +60,26 @@ export function PromptCard({ prompt, viewMode = "grid", onToggleFavorite, onDele
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
   }
 
+  const handleCheckClick = (e) => {
+    e.stopPropagation()
+    onSelect?.(prompt.id, !selected)
+  }
+
   if (viewMode === "list") {
     return (
-      <div className="group flex cursor-pointer items-center gap-4 rounded-lg border border-border bg-card px-4 py-3 transition-all hover:bg-accent/50 hover:ring-1 hover:ring-primary/20">
+      <div
+        className={cn(
+          "group flex cursor-pointer items-center gap-4 rounded-lg border px-4 py-3 transition-all hover:bg-accent/50 hover:ring-1 hover:ring-primary/20",
+          selected ? "border-primary/40 bg-primary/[0.03] ring-1 ring-primary/20" : "border-border bg-card"
+        )}
+      >
+        <div onClick={handleCheckClick} className="flex shrink-0 items-center">
+          <Checkbox
+            checked={selected}
+            onCheckedChange={(checked) => onSelect?.(prompt.id, !!checked)}
+            className="cursor-pointer"
+          />
+        </div>
         <button onClick={handleFavorite} className="shrink-0 cursor-pointer">
           <IconHeart className={cn("size-4 transition-colors", prompt.favorite ? "fill-chart-3 text-chart-3" : "text-muted-foreground hover:text-chart-3")} />
         </button>
@@ -125,9 +143,21 @@ export function PromptCard({ prompt, viewMode = "grid", onToggleFavorite, onDele
   }
 
   return (
-    <div className="group flex cursor-pointer flex-col rounded-xl border border-border bg-card transition-all hover:ring-1 hover:ring-primary/30">
+    <div
+      className={cn(
+        "group flex cursor-pointer flex-col rounded-xl border transition-all hover:ring-1 hover:ring-primary/30",
+        selected ? "border-primary/40 bg-primary/[0.03] ring-1 ring-primary/20" : "border-border bg-card"
+      )}
+    >
       <div className="flex flex-col gap-2 p-4">
         <div className="flex items-start justify-between gap-2">
+          <div onClick={handleCheckClick} className="flex shrink-0 items-center pt-0.5">
+            <Checkbox
+              checked={selected}
+              onCheckedChange={(checked) => onSelect?.(prompt.id, !!checked)}
+              className="cursor-pointer"
+            />
+          </div>
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-sm font-medium">{prompt.title}</h3>
             {prompt.collection_id && (() => {

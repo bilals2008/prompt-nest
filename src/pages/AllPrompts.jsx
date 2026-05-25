@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import { IconLibrary, IconFiles } from "@tabler/icons-react"
 import { PromptsToolbar } from "@/components/prompts-toolbar"
 import { PromptCard } from "@/components/prompt-card"
+import { BatchActionsBar } from "@/components/batch-actions-bar"
 import { LoadingState, EmptyState } from "@/components/loading-state"
 import { DataPagination } from "@/components/data-pagination"
 
@@ -20,6 +21,7 @@ export default function AllPrompts() {
   const [selectedCollection, setSelectedCollection] = useState(searchParams.get("collection") || null)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(16)
+  const [selectedIds, setSelectedIds] = useState(new Set())
 
   const filteredAndSorted = useMemo(() => {
     let result = [...prompts]
@@ -54,6 +56,10 @@ export default function AllPrompts() {
   useEffect(() => {
     setCurrentPage(1)
   }, [searchQuery, sortBy, selectedCollection, pageSize])
+
+  useEffect(() => {
+    setSelectedIds(new Set())
+  }, [searchQuery, sortBy, selectedCollection])
 
   const handleEdit = useCallback((id) => {
     navigate(`/prompts/${id}/edit`)
@@ -104,6 +110,57 @@ export default function AllPrompts() {
     toast.success("Prompt duplicated")
   }
 
+  const handleSelect = useCallback((id, isSelected) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (isSelected) next.add(id)
+      else next.delete(id)
+      return next
+    })
+  }, [])
+
+  const handleSelectAll = useCallback(() => {
+    const allIds = paginatedResults.map((p) => p.id)
+    setSelectedIds(new Set(allIds))
+  }, [paginatedResults])
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedIds(new Set())
+  }, [])
+
+  const handleBatchFavorite = async () => {
+    const ids = Array.from(selectedIds)
+    if (!ids.length) return
+    const anyUnfavorited = ids.some((id) => {
+      const p = prompts.find((p) => p.id === id)
+      return p && !p.favorite
+    })
+    await window.db.batchSetFavorite(ids, anyUnfavorited)
+    const updatedPrompts = await window.db.getAllPrompts().catch(() => [])
+    setPrompts(Array.isArray(updatedPrompts) ? updatedPrompts : [])
+    toast.success(`${ids.length} prompt${ids.length !== 1 ? "s" : ""} ${anyUnfavorited ? "favorited" : "unfavorited"}`)
+    handleClearSelection()
+  }
+
+  const handleBatchMove = async (collectionId) => {
+    const ids = Array.from(selectedIds)
+    if (!ids.length) return
+    await window.db.batchSetCollection(ids, collectionId)
+    const updatedPrompts = await window.db.getAllPrompts().catch(() => [])
+    setPrompts(Array.isArray(updatedPrompts) ? updatedPrompts : [])
+    toast.success(`${ids.length} prompt${ids.length !== 1 ? "s" : ""} moved`)
+    handleClearSelection()
+  }
+
+  const handleBatchDelete = async () => {
+    const ids = Array.from(selectedIds)
+    if (!ids.length) return
+    await window.db.batchDeletePrompts(ids)
+    setPrompts((prev) => prev.filter((p) => !ids.includes(p.id)))
+    toast.success(`${ids.length} prompt${ids.length !== 1 ? "s" : ""} deleted`)
+    handleClearSelection()
+  }
+
   return (
     <>
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card/50 px-6">
@@ -131,6 +188,20 @@ export default function AllPrompts() {
           />
         </div>
 
+        {selectedIds.size > 0 && (
+          <BatchActionsBar
+            selectedCount={selectedIds.size}
+            totalCount={filteredAndSorted.length}
+            allSelected={selectedIds.size === filteredAndSorted.length && filteredAndSorted.length > 0}
+            onSelectAll={handleSelectAll}
+            onClearSelection={handleClearSelection}
+            onFavorite={handleBatchFavorite}
+            onMoveToCollection={handleBatchMove}
+            onDelete={handleBatchDelete}
+            collections={collections}
+          />
+        )}
+
         <div className="flex-1 overflow-auto p-6">
           {loading ? (
             <LoadingState message="Loading prompts..." />
@@ -148,6 +219,8 @@ export default function AllPrompts() {
                       key={prompt.id}
                       prompt={prompt}
                       viewMode="grid"
+                      selected={selectedIds.has(prompt.id)}
+                      onSelect={handleSelect}
                       onEdit={handleEdit}
                       onToggleFavorite={handleToggleFavorite}
                       onDelete={handleDelete}
@@ -162,6 +235,8 @@ export default function AllPrompts() {
                       key={prompt.id}
                       prompt={prompt}
                       viewMode="list"
+                      selected={selectedIds.has(prompt.id)}
+                      onSelect={handleSelect}
                       onEdit={handleEdit}
                       onToggleFavorite={handleToggleFavorite}
                       onDelete={handleDelete}
