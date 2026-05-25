@@ -68,7 +68,7 @@ npm run preview          # Vite preview (serves built files)
 # 1. Bump version in package.json (e.g. 0.0.4-beta)
 # 2. Commit and push
 # 3. Run release (builds + uploads everything):
-export GH_TOKEN="ghp_..."
+export GH_TOKEN="<your-github-token>"
 npm run release
 # 4. Verify at https://github.com/bilals2008/prompt-nest/releases
 
@@ -110,11 +110,6 @@ $env:DEBUG="electron-updater:*"
 - Main process loads Vite dev URL in dev mode, `dist/index.html` in production
 - `dist-electron/main.js` is the production electron entry (set in package.json `"main"`)
 
-## Boilerplate Copy
-A clean boilerplate copy of this project is kept at:
-`D:\backup\OneDrive\Desktop\electron-js`
-
----
 
 # Frontend & UI Rules
 
