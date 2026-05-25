@@ -1,21 +1,21 @@
 // File: src/components/app-sidebar.jsx
 import { useLocation, useNavigate } from "react-router-dom"
 import {
-  LayoutDashboard,
-  Plus,
-  Library,
-  Heart,
-  FolderOpen,
-  Search,
-  Clock,
-  Download,
-  FileText,
-  Settings,
-  PanelLeft,
-  PanelLeftClose,
-  History,
-  RefreshCw,
-} from "lucide-react"
+  IconLayoutDashboard,
+  IconPlus,
+  IconLibrary,
+  IconHeart,
+  IconFolderOpen,
+  IconSearch,
+  IconClock,
+  IconDownload,
+  IconFileText,
+  IconSettings,
+  IconLayoutSidebarLeftExpandFilled,
+  IconLayoutSidebarLeftCollapseFilled,
+  IconHistory,
+  IconRefresh,
+} from "@tabler/icons-react"
 import logo from "@/assets/logo.png"
 import logoWhite from "@/assets/logo-white.png"
 import { useTheme } from "@/hooks/use-theme"
@@ -32,20 +32,20 @@ import { useState, useEffect } from "react"
 import { UpdateDialog, useUpdateStatus } from "@/components/update-dialog"
 
 const topNavItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: Plus, label: "New Prompt", path: "/prompts/new" },
-  { icon: Library, label: "Prompt Library", path: "/prompts" },
-  { icon: Heart, label: "Favorites", path: "/favorites" },
-  { icon: FolderOpen, label: "Collections", path: "/collections" },
-  { icon: Search, label: "Search", path: "/search" },
-  { icon: Clock, label: "Activity", path: "/activity" },
-  { icon: Download, label: "Export", path: "/export" },
-  { icon: FileText, label: "Templates", path: "/templates" },
+  { icon: IconLayoutDashboard, label: "Dashboard", path: "/" },
+  { icon: IconPlus, label: "New Prompt", path: "/prompts/new" },
+  { icon: IconLibrary, label: "Prompt Library", path: "/prompts" },
+  { icon: IconHeart, label: "Favorites", path: "/favorites" },
+  { icon: IconFolderOpen, label: "Collections", path: "/collections" },
+  { icon: IconSearch, label: "Search", path: "/search" },
+  { icon: IconClock, label: "Activity", path: "/activity" },
+  { icon: IconDownload, label: "Export", path: "/export" },
+  { icon: IconFileText, label: "Templates", path: "/templates" },
 ]
 
 const bottomNavItems = [
-  { icon: History, label: "Changelog", path: "/changelog" },
-  { icon: Settings, label: "Settings", path: "/settings" },
+  { icon: IconHistory, label: "Changelog", path: "/changelog" },
+  { icon: IconSettings, label: "Settings", path: "/settings" },
 ]
 
 function SidebarButton({ icon: Icon, label, active, onClick, expanded }) {
@@ -142,7 +142,7 @@ export function AppSidebar({ expanded, onToggle }) {
           ))}
           <div className={cn("relative", !expanded && "flex justify-center")}>
             <SidebarButton
-              icon={RefreshCw}
+              icon={IconRefresh}
               label="Check for Updates"
               expanded={expanded}
               onClick={() => setUpdateOpen(true)}
@@ -158,7 +158,7 @@ export function AppSidebar({ expanded, onToggle }) {
             )}
           </div>
           <SidebarButton
-            icon={expanded ? PanelLeftClose : PanelLeft}
+            icon={expanded ? IconLayoutSidebarLeftCollapseFilled : IconLayoutSidebarLeftExpandFilled}
             label={expanded ? "Collapse" : "Expand"}
             expanded={expanded}
             onClick={onToggle}

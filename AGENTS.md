@@ -43,7 +43,7 @@ index.html         # Entry HTML, references src/main.jsx
 - **CSS** — Tailwind v4 with CSS variables for theming; add custom theme tokens via `@theme inline` in `index.css`
 - **Electron** — main process entry: `electron/main.js`; preload: `electron/preload.js`
 - **Explicit file extensions** — all imports include `.jsx` / `.js` extension
-- **Icons** — use `@tabler/icons-react` (`Icon*` components); fall back to `lucide-react` for existing shadcn-generated components
+- **Icons** — use `@tabler/icons-react` (`Icon*` components) exclusively
 
 ## Available Scripts
 ```bash
@@ -93,7 +93,7 @@ $env:DEBUG="electron-updater:*"
 ```
 
 ## shadcn/ui Usage
-- Config: `components.json` (tsx: false, style: radix-nova, iconLibrary: lucide)
+- Config: `components.json` (tsx: false, style: radix-nova, iconLibrary: tabler)
 - Add new components: `npx shadcn@latest add <component-name>`
 - All generated components go to `src/components/ui/`
 - Uses `radix-ui` unified package (but individual `@radix-ui/*` packages remain as transitive deps)

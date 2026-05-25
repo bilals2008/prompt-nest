@@ -8,9 +8,9 @@ import {
   IconX,
   IconHeartFilled,
   IconSortDescending,
+  IconHeart,
 } from "@tabler/icons-react"
 import { toast } from "sonner"
-import { Heart } from "lucide-react"
 
 export default function Favorites() {
   const navigate = useNavigate()
@@ -78,7 +78,7 @@ export default function Favorites() {
     <>
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card/50 px-6">
         <h1 className="flex items-center gap-2 text-lg font-bold tracking-tight text-primary">
-          <Heart className="size-5 fill-chart-3 text-chart-3" />
+          <IconHeart className="size-5 fill-chart-3 text-chart-3" />
           Favorites
         </h1>
         <div className="flex items-center gap-3">

@@ -8,34 +8,23 @@ import { Badge } from "@/components/ui/badge"
 import { APP_VERSION } from "@/lib/version"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { LoadingState, EmptyState } from "@/components/loading-state"
-import { IconHistory, IconFileDescription, IconChevronRight } from "@tabler/icons-react"
 import {
-  Plus,
-  Library,
-  Heart,
-  FolderOpen,
-  Search,
-  Clock,
-  Download,
-  FileText,
-  LayoutDashboard,
-  FileStack,
-  Tags,
-  GitFork,
-  Zap,
-  Settings,
-} from "lucide-react"
+  IconHistory, IconFileDescription, IconChevronRight,
+  IconPlus, IconLibrary, IconHeart, IconFolderOpen,
+  IconSearch, IconClock, IconDownload, IconFileText,
+  IconLayoutDashboard, IconFiles, IconGitFork, IconBolt, IconSettings,
+} from "@tabler/icons-react"
 
 const cards = [
-  { icon: Plus, title: "New Prompt", accent: "primary", description: "Create a new prompt", path: "/prompts/new" },
-  { icon: Library, title: "Prompt Library", accent: "blue", description: "Browse all prompts", path: "/prompts" },
-  { icon: Heart, title: "Favorites", accent: "yellow", description: "Your saved prompts", path: "/favorites" },
-  { icon: FolderOpen, title: "Collections", accent: "purple", description: "Organized groups", path: "/collections" },
-  { icon: Search, title: "Search Prompts", accent: "green", description: "Find anything", path: "/search" },
-  { icon: Clock, title: "Recent Activity", accent: "orange", description: "Latest changes", path: "/activity" },
-  { icon: Download, title: "Export Prompts", accent: "muted", description: "Download as file", path: "/export" },
-  { icon: FileText, title: "Templates", accent: "primary", description: "Starter templates", path: "/templates" },
-  { icon: Settings, title: "Settings", accent: "primary", description: "Configure app", path: "/settings" },
+  { icon: IconPlus, title: "New Prompt", accent: "primary", description: "Create a new prompt", path: "/prompts/new" },
+  { icon: IconLibrary, title: "Prompt Library", accent: "blue", description: "Browse all prompts", path: "/prompts" },
+  { icon: IconHeart, title: "Favorites", accent: "yellow", description: "Your saved prompts", path: "/favorites" },
+  { icon: IconFolderOpen, title: "Collections", accent: "purple", description: "Organized groups", path: "/collections" },
+  { icon: IconSearch, title: "Search Prompts", accent: "green", description: "Find anything", path: "/search" },
+  { icon: IconClock, title: "Recent Activity", accent: "orange", description: "Latest changes", path: "/activity" },
+  { icon: IconDownload, title: "Export Prompts", accent: "muted", description: "Download as file", path: "/export" },
+  { icon: IconFileText, title: "Templates", accent: "primary", description: "Starter templates", path: "/templates" },
+  { icon: IconSettings, title: "Settings", accent: "primary", description: "Configure app", path: "/settings" },
 ]
 
 export default function Dashboard() {
@@ -61,7 +50,7 @@ export default function Dashboard() {
     <>
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card/50 px-6">
         <h1 className="flex items-center gap-2 text-lg font-bold tracking-tight text-primary">
-          <LayoutDashboard className="size-5" />
+          <IconLayoutDashboard className="size-5" />
           Dashboard
         </h1>
         <Badge variant="secondary" className="font-normal">v{APP_VERSION}</Badge>
@@ -69,10 +58,10 @@ export default function Dashboard() {
 
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto mb-6 grid max-w-6xl grid-cols-4 gap-4">
-          <StatCard label="Total Prompts" value={String(stats.totalPrompts)} icon={FileStack} accent="blue" size="md" trend={promptTrend} desc="All prompts in your library" />
-          <StatCard label="Templates" value={String(stats.totalTemplates)} icon={FileText} accent="primary" size="md" desc="Reusable prompt blueprints" />
-          <StatCard label="Collections" value={String(stats.collections)} icon={GitFork} accent="purple" size="md" desc="Organized prompt groups" />
-          <StatCard label="This Week" value={String(stats.thisWeek)} icon={Zap} accent="orange" size="md" desc="New prompts added this week" />
+          <StatCard label="Total Prompts" value={String(stats.totalPrompts)} icon={IconFiles} accent="blue" size="md" trend={promptTrend} desc="All prompts in your library" />
+          <StatCard label="Templates" value={String(stats.totalTemplates)} icon={IconFileText} accent="primary" size="md" desc="Reusable prompt blueprints" />
+          <StatCard label="Collections" value={String(stats.collections)} icon={IconGitFork} accent="purple" size="md" desc="Organized prompt groups" />
+          <StatCard label="This Week" value={String(stats.thisWeek)} icon={IconBolt} accent="orange" size="md" desc="New prompts added this week" />
         </div>
 
         <div className="mx-auto mb-8 grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -113,7 +102,7 @@ export default function Dashboard() {
                       <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{prompt.content}</p>
                     </div>
                     {prompt.favorite ? (
-                      <Heart className="size-3.5 fill-chart-3 text-chart-3" />
+                      <IconHeart className="size-3.5 fill-chart-3 text-chart-3" />
                     ) : null}
                   </CardHeader>
                   <CardContent className="flex flex-wrap gap-1.5 pt-0">

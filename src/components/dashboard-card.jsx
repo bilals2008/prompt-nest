@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-import { TrendingUp, TrendingDown } from "lucide-react"
+import { IconTrendingUp, IconTrendingDown } from "@tabler/icons-react"
 
 const accentStyles = {
   primary: "bg-primary/12 text-primary",
@@ -13,7 +13,7 @@ const accentStyles = {
 
 export function DashboardCard({ icon: Icon, title, description, accent = "primary", trend, onClick }) {
   const isUp = trend?.startsWith("+")
-  const TrendIcon = isUp ? TrendingUp : TrendingDown
+  const TrendIcon = isUp ? IconTrendingUp : IconTrendingDown
   const tone = accentStyles[accent] || accentStyles.primary
 
   return (

@@ -19,7 +19,7 @@ import {
   IconPower,
 } from "@tabler/icons-react"
 import { toast } from "sonner"
-import { Settings as SettingsIcon, Check, Copy, CheckCheck } from "lucide-react"
+import { IconSettings, IconCheck, IconCopy, IconChecks } from "@tabler/icons-react"
 import { APP_VERSION } from "@/lib/version"
 import { useTheme } from "@/hooks/use-theme"
 import { cn } from "@/lib/utils"
@@ -203,7 +203,7 @@ export default function Settings() {
     <div className="flex h-full flex-col">
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-card/50 px-4">
         <h1 className="flex items-center gap-2 text-base font-bold tracking-tight text-primary">
-          <SettingsIcon className="size-4" />
+          <IconSettings className="size-4" />
           Settings
         </h1>
       </header>
@@ -362,7 +362,7 @@ export default function Settings() {
                           className="ml-2 flex size-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all cursor-pointer"
                           title="Copy path"
                         >
-                          {copied ? <CheckCheck className="size-3.5 text-primary" /> : <Copy className="size-3.5" />}
+                          {copied ? <IconChecks className="size-3.5 text-primary" /> : <IconCopy className="size-3.5" />}
                         </button>
                       </div>
 
@@ -403,7 +403,7 @@ export default function Settings() {
                       {backupStatus === "backingup" ? (
                         <><IconRefresh className="size-3 animate-spin" /> Backing up</>
                       ) : backupStatus === "success" ? (
-                        <><Check className="size-3" /> Done</>
+                        <><IconCheck className="size-3" /> Done</>
                       ) : backupStatus === "error" ? (
                         <>Failed</>
                       ) : (
@@ -533,7 +533,7 @@ export default function Settings() {
                         <div className="flex items-center gap-1.5">
                           <span className="max-w-36 truncate text-xs font-medium">{stats?.path ?? "-"}</span>
                           <button onClick={() => handleCopyPath(stats?.path)} className="flex size-5 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
-                            {copied ? <CheckCheck className="size-3 text-primary" /> : <Copy className="size-3" />}
+                            {copied ? <IconChecks className="size-3 text-primary" /> : <IconCopy className="size-3" />}
                           </button>
                         </div>
                       </div>

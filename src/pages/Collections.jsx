@@ -22,9 +22,9 @@ import {
   IconPencil,
   IconTrash,
   IconDotsVertical,
+  IconFolderOpen,
 } from "@tabler/icons-react"
 import { toast } from "sonner"
-import { FolderOpen } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -128,7 +128,7 @@ export default function Collections() {
     <>
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card/50 px-6">
         <h1 className="flex items-center gap-2 text-lg font-bold tracking-tight text-primary">
-          <FolderOpen className="size-5" />
+          <IconFolderOpen className="size-5" />
           Collections
         </h1>
         <Button onClick={openCreateDialog}>

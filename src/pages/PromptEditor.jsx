@@ -23,8 +23,9 @@ import {
   IconEye,
   IconEyeOff,
   IconFileText,
+  IconTags,
+  IconFolderOpen,
 } from "@tabler/icons-react"
-import { FileText, Tags, FolderOpen } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -344,7 +345,7 @@ export default function PromptEditor() {
               <div className="space-y-4">
                 <div>
                   <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                    <Tags className="size-3.5" /> Tags
+                    <IconTags className="size-3.5" /> Tags
                   </label>
                   <Input
                     placeholder="react, component, frontend"
@@ -393,7 +394,7 @@ export default function PromptEditor() {
 
                 <div>
                   <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                    <FolderOpen className="size-3.5" /> Collection
+                    <IconFolderOpen className="size-3.5" /> Collection
                   </label>
                   <select
                     value={form.collection_id}
@@ -409,7 +410,7 @@ export default function PromptEditor() {
 
                 <div>
                   <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                    <FileText className="size-3.5" /> Notes
+                    <IconFileText className="size-3.5" /> Notes
                   </label>
                   <Textarea
                     placeholder="Add internal notes..."
