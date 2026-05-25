@@ -88,15 +88,6 @@ export function PromptCard({ prompt, viewMode = "grid", selected = false, onSele
           <div className="flex items-center gap-2">
             {prompt.pinned ? <IconPin className="size-3.5 shrink-0 -rotate-45 text-primary" /> : null}
             <span className="truncate text-sm font-medium">{prompt.title}</span>
-            {prompt.collection_id && (() => {
-              const colColor = getCollectionColor(prompt.collection_color, prompt.collection_icon)
-              return (
-                <span className={cn("inline-flex shrink-0 items-center gap-1 rounded-4xl border px-2 py-0.5 text-[10px] font-normal", colColor.bg, colColor.text, colColor.border)}>
-                  {(() => { const Icon = collectionIcons[prompt.collection_icon]?.icon || IconFolder; return <Icon className="size-3" /> })()}
-                  {prompt.collection_name || "Collection"}
-                </span>
-              )
-            })()}
           </div>
           <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{prompt.content}</p>
         </div>
@@ -161,15 +152,6 @@ export function PromptCard({ prompt, viewMode = "grid", selected = false, onSele
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-sm font-medium">{prompt.title}</h3>
-            {prompt.collection_id && (() => {
-              const colColor = getCollectionColor(prompt.collection_color, prompt.collection_icon)
-              return (
-                <span className={cn("mt-1 inline-flex items-center gap-1 rounded-4xl border px-2 py-0.5 text-[10px] font-normal", colColor.bg, colColor.text, colColor.border)}>
-                  {(() => { const Icon = collectionIcons[prompt.collection_icon]?.icon || IconFolder; return <Icon className="size-3" /> })()}
-                  {prompt.collection_name || "Collection"}
-                </span>
-              )
-            })()}
           </div>
           <button onClick={handleFavorite} className="shrink-0 cursor-pointer">
             <IconHeart className={cn("size-4 transition-colors", prompt.favorite ? "fill-chart-3 text-chart-3" : "text-muted-foreground hover:text-chart-3")} />
