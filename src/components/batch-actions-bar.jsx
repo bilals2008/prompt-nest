@@ -35,6 +35,7 @@ export function BatchActionsBar({
   onMoveToCollection,
   onDelete,
   collections = [],
+  promptCollectionIds = [],
 }) {
   const [showMoveDialog, setShowMoveDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -113,6 +114,7 @@ export function BatchActionsBar({
             ) : (
               collections.map((col) => {
                 const ColIcon = getCollectionIcon(col.icon)
+                const alreadyCount = promptCollectionIds.filter((cid) => cid === col.id).length
                 return (
                   <button
                     key={col.id}
@@ -125,11 +127,19 @@ export function BatchActionsBar({
                   >
                     <ColIcon className="size-4 shrink-0 text-muted-foreground" />
                     <span className="font-medium">{col.name}</span>
+                    {alreadyCount > 0 && (
+                      <span className="ml-auto text-xs text-chart-3">{alreadyCount} already</span>
+                    )}
                   </button>
                 )
               })
             )}
           </div>
+          {selectedCollectionId && promptCollectionIds.filter((cid) => cid === selectedCollectionId).length > 0 && (
+            <p className="text-xs text-chart-3">
+              {promptCollectionIds.filter((cid) => cid === selectedCollectionId).length} prompt{promptCollectionIds.filter((cid) => cid === selectedCollectionId).length !== 1 ? "s" : ""} already in this collection
+            </p>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowMoveDialog(false)}>Cancel</Button>
             <Button onClick={handleMoveConfirm} disabled={!selectedCollectionId}>Move</Button>
