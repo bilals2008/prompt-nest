@@ -111,6 +111,9 @@ function registerIpcHandlers() {
   ipcMain.handle('db:getTemplates', () => prompts.getTemplates())
   ipcMain.handle('db:createTemplate', (_, data) => prompts.createTemplate(data))
   ipcMain.handle('db:deleteTemplate', (_, id) => prompts.deleteTemplate(id))
+  ipcMain.handle('db:batchDeletePrompts', (_, ids) => prompts.batchDeletePrompts(ids))
+  ipcMain.handle('db:batchSetFavorite', (_, ids, favorite) => prompts.batchSetFavorite(ids, favorite))
+  ipcMain.handle('db:batchSetCollection', (_, ids, collectionId) => prompts.batchSetCollection(ids, collectionId))
   ipcMain.handle('db:getDatabaseStats', () => getDatabaseStats())
   ipcMain.handle('app:getVersion', () => app.getVersion())
   ipcMain.handle('updater:get-app-version', () => {

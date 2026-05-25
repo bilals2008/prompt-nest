@@ -92,6 +92,33 @@ export async function deleteTemplate(id) {
   return { success: true }
 }
 
+export async function batchDeletePrompts(ids) {
+  if (!ids.length) return { success: true }
+  const db = getDatabase()
+  const placeholders = ids.map(() => '?').join(',')
+  await db.run(`DELETE FROM prompts WHERE id IN (${placeholders})`, ids)
+  return { success: true }
+}
+
+export async function batchSetFavorite(ids, favorite) {
+  if (!ids.length) return { success: true }
+  const db = getDatabase()
+  const placeholders = ids.map(() => '?').join(',')
+  const now = new Date().toISOString()
+  const favVal = favorite ? 1 : 0
+  await db.run(`UPDATE prompts SET favorite = ?, updated_at = ? WHERE id IN (${placeholders})`, [favVal, now, ...ids])
+  return { success: true }
+}
+
+export async function batchSetCollection(ids, collectionId) {
+  if (!ids.length) return { success: true }
+  const db = getDatabase()
+  const placeholders = ids.map(() => '?').join(',')
+  const now = new Date().toISOString()
+  await db.run(`UPDATE prompts SET collection_id = ?, updated_at = ? WHERE id IN (${placeholders})`, [collectionId, now, ...ids])
+  return { success: true }
+}
+
 export async function searchPrompts(query, filter = 'all') {
   const db = getDatabase()
   const q = `%${query}%`
