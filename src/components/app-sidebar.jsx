@@ -32,12 +32,12 @@ import { useState, useEffect } from "react"
 import { UpdateDialog, useUpdateStatus } from "@/components/update-dialog"
 
 const topNavItems = [
-  { icon: IconLayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: IconPlus, label: "New Prompt", path: "/prompts/new" },
+  { icon: IconLayoutDashboard, label: "Dashboard", path: "/", tourId: "tour-dashboard" },
+  { icon: IconPlus, label: "New Prompt", path: "/prompts/new", tourId: "tour-new-prompt" },
   { icon: IconLibrary, label: "Prompt Library", path: "/prompts" },
   { icon: IconHeart, label: "Favorites", path: "/favorites" },
-  { icon: IconFolderOpen, label: "Collections", path: "/collections" },
-  { icon: IconSearch, label: "Search", path: "/search" },
+  { icon: IconFolderOpen, label: "Collections", path: "/collections", tourId: "tour-collections" },
+  { icon: IconSearch, label: "Search", path: "/search", tourId: "tour-search" },
   { icon: IconClock, label: "Activity", path: "/activity" },
   { icon: IconDownload, label: "Export", path: "/export" },
   { icon: IconFileText, label: "Templates", path: "/templates" },
@@ -45,13 +45,14 @@ const topNavItems = [
 
 const bottomNavItems = [
   { icon: IconHistory, label: "Changelog", path: "/changelog" },
-  { icon: IconSettings, label: "Settings", path: "/settings" },
+  { icon: IconSettings, label: "Settings", path: "/settings", tourId: "tour-settings" },
 ]
 
-function SidebarButton({ icon: Icon, label, active, onClick, expanded }) {
+function SidebarButton({ icon: Icon, label, active, onClick, expanded, tourId }) {
   const button = (
     <button
       onClick={onClick}
+      data-tour={tourId}
       className={cn(
         "flex items-center gap-3 rounded-lg transition-all duration-200 cursor-pointer",
         expanded
@@ -121,6 +122,7 @@ export function AppSidebar({ expanded, onToggle }) {
               expanded={expanded}
               active={item.path ? location.pathname === item.path : false}
               onClick={item.path ? () => navigate(item.path) : undefined}
+              tourId={item.tourId}
             />
           ))}
         </nav>
@@ -138,6 +140,7 @@ export function AppSidebar({ expanded, onToggle }) {
               expanded={expanded}
               active={item.path ? location.pathname === item.path : false}
               onClick={item.path ? () => navigate(item.path) : undefined}
+              tourId={item.tourId}
             />
           ))}
           <div className={cn("relative", !expanded && "flex justify-center")}>
