@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import Markdown from "react-markdown"
+import rehypeRaw from "rehype-raw"
 import {
   Dialog,
   DialogContent,
@@ -21,14 +22,6 @@ function formatBytes(bytes) {
 function formatSpeed(bytesPerSecond) {
   if (!bytesPerSecond || bytesPerSecond === 0) return ""
   return `${formatBytes(bytesPerSecond)}/s`
-}
-
-function stripHtml(text) {
-  if (!text || !text.includes("<")) return text
-  return text
-    .replace(/<[^>]+>/g, "")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim()
 }
 
 function formatDate(dateStr) {
@@ -128,7 +121,7 @@ export function UpdateDialog({ open, onOpenChange }) {
             updateAvailable: true,
             latestVersion: payload.version,
             releaseDate: payload.releaseDate,
-            releaseNotes: stripHtml(payload.releaseNotes || ""),
+            releaseNotes: payload.releaseNotes || "",
             totalBytes: payload.total || 0,
             updateType: payload.updateType || "full",
           }))
@@ -289,7 +282,7 @@ export function UpdateDialog({ open, onOpenChange }) {
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-foreground">What&apos;s New</p>
                   <div className="prose prose-xs max-w-none text-xs text-muted-foreground [&_ul]:list-disc [&_ul]:pl-4 [&_li]:text-muted-foreground [&_strong]:text-foreground [&_a]:text-primary [&_a]:underline [&_p]:my-1">
-                    <Markdown>{state.releaseNotes}</Markdown>
+                    <Markdown rehypePlugins={[rehypeRaw]}>{state.releaseNotes}</Markdown>
                   </div>
                 </div>
               )}
