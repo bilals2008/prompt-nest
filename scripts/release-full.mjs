@@ -141,7 +141,7 @@ if (existsSync(ymlPath)) {
   execSync(`gh release upload ${tag} --repo ${repo} "${ymlPath}" --clobber`, { stdio: "inherit" })
 }
 
-// 6. Upload exe(s) via API directly (avoids gh CLI timeout on large files)
+// 6. Upload exe(s) via curl with progress bar
 for (const url of urls) {
   if (!url.endsWith(".exe")) continue
   const localPath = path.join(dir, url)
@@ -150,26 +150,14 @@ for (const url of urls) {
     process.exit(1)
   }
   const stat = statSync(localPath)
-  const buf = readFileSync(localPath)
   const uploadUrl = `https://uploads.github.com/repos/${repo}/releases/${releaseId}/assets?name=${encodeURIComponent(url)}`
-  console.log(`Uploading ${url} (${(stat.size / 1024 / 1024).toFixed(1)} MB)...`)
-  const start = Date.now()
-  const resp = await fetch(uploadUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/octet-stream",
-      "Content-Length": String(stat.size),
-      Authorization: `Bearer ${token}`,
-    },
-    body: buf,
-  })
-  if (!resp.ok) {
-    const text = await resp.text()
-    console.error(`Upload failed (${resp.status}): ${text.slice(0, 200)}`)
-    process.exit(1)
-  }
-  const elapsed = ((Date.now() - start) / 1000).toFixed(1)
-  console.log(`  Done in ${elapsed}s`)
+  const authHeader = `Authorization: Bearer ${token}`
+  console.log(`\nUploading ${url} (${(stat.size / 1024 / 1024).toFixed(1)} MB)...`)
+  execSync(
+    `curl.exe --progress-bar -T "${localPath}" -H "${authHeader}" -H "Content-Type: application/octet-stream" --connect-timeout 60 --max-time 7200 "${uploadUrl}"`,
+    { stdio: "inherit", cwd: dir, shell: true, timeout: 7200000 }
+  )
+  console.log(`  Upload complete: ${url}`)
 }
 
 console.log(`\nDone! https://github.com/${repo}/releases/tag/${tag}`)
