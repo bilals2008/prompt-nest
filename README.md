@@ -1,5 +1,7 @@
 # PromptNest
 
+[![Download Latest Release](https://img.shields.io/badge/Download-v0.0.7--beta-blue?style=for-the-badge&logo=github)](https://github.com/bilals2008/prompt-nest/releases/tag/v0.0.7-beta)
+
 A modern desktop application for saving, organizing, and managing prompts with a clean productivity-focused experience.
 
 ## Overview
@@ -13,6 +15,12 @@ The application focuses on:
 - organization
 - offline-first experience
 - clean desktop UI
+
+## Download
+
+You can download the latest installer for Windows from the [releases page](https://github.com/bilals2008/prompt-nest/releases/tag/v0.0.7-beta).
+
+> **Note:** macOS and Linux builds are not yet available.
 
 ---
 
