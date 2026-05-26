@@ -49,6 +49,7 @@ if (!urls.length) {
 
 // Add blockmap files to latest.yml if missing (electron-builder sometimes omits them)
 let ymlModified = false
+ymlText = ymlText.replace(/\r\n/g, "\n")
 for (const url of [...urls]) {
   if (url.endsWith(".exe")) {
     const blockmapUrl = url + ".blockmap"
