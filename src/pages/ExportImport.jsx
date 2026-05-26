@@ -1,6 +1,6 @@
-import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import {
   IconFileCode,
@@ -13,6 +13,7 @@ import {
   IconRefresh,
   IconFileImport,
   IconHistory,
+  IconX,
 } from "@tabler/icons-react"
 import { toast } from "sonner"
 
@@ -27,6 +28,13 @@ export default function ExportImport() {
   const [importing, setImporting] = useState(false)
   const [result, setResult] = useState(null)
 
+  useEffect(() => {
+    if (result) {
+      const t = setTimeout(() => setResult(null), 6000)
+      return () => clearTimeout(t)
+    }
+  }, [result])
+
   const handleExport = async (format) => {
     setExporting(format)
     setResult(null)
@@ -37,7 +45,7 @@ export default function ExportImport() {
         return
       }
       if (res.success) {
-        setResult({ type: "success", message: `Exported successfully`, detail: res.filePath })
+        setResult({ type: "success", message: "Exported successfully", detail: res.filePath })
         toast.success(`Exported as ${format.toUpperCase()}`)
       }
     } catch (err) {
@@ -80,27 +88,30 @@ export default function ExportImport() {
       </header>
 
       <div className="flex-1 overflow-auto p-6">
-        <div className="space-y-8">
+        <div className="mx-auto max-w-3xl space-y-8">
           {result && (
             <div className={cn(
-              "flex items-start gap-3 rounded-xl border px-4 py-3",
+              "relative flex items-start gap-3 rounded-xl border px-4 py-3 pr-10",
               result.type === "success" ? "border-chart-2/30 bg-chart-2/5" : "border-destructive/30 bg-destructive/5"
             )}>
               {result.type === "success" ? (
-                <IconCheck className="mt-0.5 size-4 text-chart-2" />
+                <IconCheck className="mt-0.5 size-4 shrink-0 text-chart-2" />
               ) : (
-                <IconAlertCircle className="mt-0.5 size-4 text-destructive" />
+                <IconAlertCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
               )}
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">{result.message}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground break-all">{result.detail}</p>
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">{result.detail}</p>
               </div>
+              <button onClick={() => setResult(null)} className="absolute right-2 top-2 flex cursor-pointer items-center justify-center rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground">
+                <IconX className="size-3.5" />
+              </button>
             </div>
           )}
 
           <section>
-            <div className="mb-4 flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <IconDownload className="size-4" />
               </div>
               <div>
@@ -113,13 +124,12 @@ export default function ExportImport() {
                 const Icon = fmt.icon
                 const isLoading = exporting === fmt.id
                 return (
-                  <button
+                  <Button
                     key={fmt.id}
+                    variant="outline"
                     onClick={() => handleExport(fmt.id)}
                     disabled={exporting !== null}
-                    className={cn(
-                      "group flex cursor-pointer flex-col gap-3 rounded-xl border border-border bg-card p-5 text-left transition-all hover:ring-1 hover:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                    )}
+                    className="group flex-col items-start gap-3 p-5 text-left h-auto cursor-pointer"
                   >
                     <div className={cn("flex size-10 items-center justify-center rounded-xl", fmt.color)}>
                       {isLoading ? (
@@ -128,7 +138,7 @@ export default function ExportImport() {
                         <Icon className="size-5" />
                       )}
                     </div>
-                    <div>
+                    <div className="w-full">
                       <h3 className="text-sm font-semibold">{fmt.label}</h3>
                       <p className="mt-1 text-xs text-muted-foreground">{fmt.desc}</p>
                     </div>
@@ -136,27 +146,30 @@ export default function ExportImport() {
                       <IconDownload className="size-3" />
                       Export {fmt.label}
                     </div>
-                  </button>
+                  </Button>
                 )
               })}
             </div>
           </section>
 
+          <Separator />
+
           <section>
-            <div className="mb-4 flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-chart-2/10 text-chart-2">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex size-9 items-center justify-center rounded-xl bg-chart-2/10 text-chart-2">
                 <IconUpload className="size-4" />
               </div>
               <div>
                 <h2 className="text-sm font-semibold">Import</h2>
-                <p className="text-xs text-muted-foreground">Restore from a JSON backup or bulk import prompts</p>
+                <p className="text-xs text-muted-foreground">Restore from a backup or bulk import prompts</p>
               </div>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <button
+              <Button
+                variant="outline"
                 onClick={handleImport}
                 disabled={importing}
-                className="group flex cursor-pointer flex-col gap-3 rounded-xl border border-border bg-card p-5 text-left transition-all hover:ring-1 hover:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group flex-col items-start gap-3 p-5 text-left h-auto cursor-pointer"
               >
                 <div className="flex size-10 items-center justify-center rounded-xl bg-chart-2/10 text-chart-2">
                   {importing ? (
@@ -165,7 +178,7 @@ export default function ExportImport() {
                     <IconFileImport className="size-5" />
                   )}
                 </div>
-                <div>
+                <div className="w-full">
                   <h3 className="text-sm font-semibold">Restore Backup</h3>
                   <p className="mt-1 text-xs text-muted-foreground">Import from a previously exported JSON backup</p>
                 </div>
@@ -173,7 +186,7 @@ export default function ExportImport() {
                   <IconUpload className="size-3" />
                   Choose file
                 </div>
-              </button>
+              </Button>
 
               <div className="flex cursor-not-allowed flex-col gap-3 rounded-xl border border-dashed border-border bg-card/30 p-5 opacity-50">
                 <div className="flex size-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
@@ -191,4 +204,8 @@ export default function ExportImport() {
       </div>
     </>
   )
+}
+
+function Separator() {
+  return <hr className="border-border" />
 }
