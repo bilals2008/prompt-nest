@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { UpdateDialog, useUpdateStatus } from "@/components/update-dialog"
 
 const topNavItems = [
@@ -84,7 +84,8 @@ export function AppSidebar({ expanded, onToggle }) {
   const location = useLocation()
   const navigate = useNavigate()
   const [updateOpen, setUpdateOpen] = useState(false)
-  const { updateAvailable } = useUpdateStatus()
+  const { updateAvailable, latestVersion } = useUpdateStatus()
+  const notifiedVersion = useRef(null)
   const { theme } = useTheme()
   const logoSrc = theme === "light" ? logoWhite : logo
 
@@ -93,6 +94,13 @@ export function AppSidebar({ expanded, onToggle }) {
     window.addEventListener('open-update-dialog', handler)
     return () => window.removeEventListener('open-update-dialog', handler)
   }, [])
+
+  useEffect(() => {
+    if (updateAvailable && latestVersion && notifiedVersion.current !== latestVersion) {
+      notifiedVersion.current = latestVersion
+      setTimeout(() => setUpdateOpen(true), 500)
+    }
+  }, [updateAvailable, latestVersion])
 
   return (
     <>
