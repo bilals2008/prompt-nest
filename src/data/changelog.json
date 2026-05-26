@@ -1,8 +1,6 @@
 {
   "comingSoon": [
     { "label": "Trash / Soft Delete", "desc": "Deleted prompts go to trash, restore anytime", "icon": "Trash2" },
-    { "label": "Batch Select & Actions", "desc": "Multi-select prompts to delete, move, or favorite in bulk", "icon": "GitCommit" },
-    { "label": "Markdown Preview", "desc": "Live preview tab in the prompt editor", "icon": "FileText" },
     { "label": "Auto-Save Drafts", "desc": "Editor auto-saves so you never lose changes", "icon": "Megaphone" },
     { "label": "Prompt Stats", "desc": "Per-prompt copy count, edit count, view count", "icon": "Sparkles" },
     { "label": "Tag Management", "desc": "Merge, rename, and delete tags", "icon": "Hash" },
@@ -10,6 +8,18 @@
     { "label": "Prompt Variables", "desc": "Use {{variable}} placeholders in prompts", "icon": "Variable" }
   ],
   "releases": [
+    {
+      "version": "0.0.8-beta",
+      "date": "May 26, 2026",
+      "type": "beta",
+      "changes": [
+        "Migrated from lucide-react to @tabler/icons-react for all icons",
+        "Markdown support & preview mode in the prompt editor",
+        "Prompt pinning — pin important prompts to the top",
+        "Prompt batch actions — bulk delete, favorite/unfavorite, move to collections",
+        "Collection batch delete — remove multiple collections at once"
+      ]
+    },
     {
       "version": "0.0.7-beta",
       "date": "May 24, 2026",
