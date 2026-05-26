@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Outlet } from "react-router-dom"
 import { AppSidebar } from "@/components/app-sidebar"
+import OnboardingTour from "@/components/onboarding-tour"
 import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
 
@@ -19,6 +20,7 @@ function App() {
       )}>
         <Outlet />
       </main>
+      <OnboardingTour />
       <Toaster />
     </div>
   )
