@@ -79,6 +79,16 @@
     "extraMetadata": {
       "main": "dist-electron/main.js"
     },
+    "mac": {
+      "icon": "build/icon.png",
+      "artifactName": "Prompt-Nest-${version}.${ext}",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ]
+    },
     "win": {
       "icon": "build/icon.png",
       "artifactName": "Prompt-Nest-Setup-${version}.${ext}",
