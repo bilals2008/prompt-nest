@@ -9,6 +9,17 @@
   ],
   "releases": [
     {
+      "version": "0.0.9-beta",
+      "date": "May 26, 2026",
+      "type": "beta",
+      "changes": [
+        "Onboarding tour with interactive step-by-step guide (react-joyride)",
+        "Rich HTML rendering in update dialog release notes",
+        "Auto-open update dialog when a new version is detected",
+        "Stable asset uploads using curl instead of native fetch"
+      ]
+    },
+    {
       "version": "0.0.8-beta",
       "date": "May 26, 2026",
       "type": "beta",
