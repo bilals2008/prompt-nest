@@ -44,6 +44,8 @@ contextBridge.exposeInMainWorld('db', {
   batchSetFavorite: (ids, favorite) => ipcRenderer.invoke('db:batchSetFavorite', ids, favorite),
   batchSetCollection: (ids, collectionId) => ipcRenderer.invoke('db:batchSetCollection', ids, collectionId),
   getDatabaseStats: () => ipcRenderer.invoke('db:getDatabaseStats'),
+  getSetting: (key) => ipcRenderer.invoke('db:getSetting', key),
+  setSetting: (key, value) => ipcRenderer.invoke('db:setSetting', key, value),
   openDbFolder: () => ipcRenderer.invoke('db:openDbFolder'),
   backupDatabase: () => ipcRenderer.invoke('db:backupDatabase'),
   getAppVersion: () => ipcRenderer.invoke('app:getVersion'),

@@ -93,6 +93,17 @@ async function seedData() {
   await db.run(tplInsert, [crypto.randomUUID(), 'Brainstorming Session', '## Problem Statement\n\n## Ideas\n- \n- \n- \n\n## Constraints\n- \n- \n\n## Next Steps\n1. \n2. ', 'creative, brainstorming', now, now])
 }
 
+export async function getSetting(key) {
+  const d = getDatabase()
+  const row = await d.get('SELECT value FROM settings WHERE key = ?', [key])
+  return row?.value ?? null
+}
+
+export async function setSetting(key, value) {
+  const d = getDatabase()
+  await d.run('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', [key, value])
+}
+
 export function closeDatabase() {
   if (db) {
     db.run('PRAGMA optimize')
