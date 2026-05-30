@@ -1,7 +1,6 @@
 // File: src/pages/Settings.jsx
 import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { LoadingState } from "@/components/loading-state"
@@ -14,7 +13,6 @@ import {
   IconFileExport,
   IconKeyboard,
   IconPlayerPlay,
-  IconSparkles,
   IconLayoutGrid,
   IconPower,
 } from "@tabler/icons-react"
@@ -166,30 +164,38 @@ export default function Settings() {
     {
       id: "light",
       label: "Light",
+      desc: "Clean and bright",
       bg: "#ffffff",
-      fg: "#0f1729",
+      card: "#f1f5f9",
       accent: "#6366f1",
+      text: "#0f1729",
     },
     {
       id: "dark",
       label: "Dark",
+      desc: "Easy on the eyes",
       bg: "#0c0c14",
-      fg: "#ededee",
+      card: "#161e34",
       accent: "#6366f1",
+      text: "#ededee",
     },
     {
       id: "forest",
       label: "Forest",
+      desc: "Natural green tones",
       bg: "#0d1a0d",
-      fg: "#e2f0e2",
+      card: "#142414",
       accent: "#4ade80",
+      text: "#e2f0e2",
     },
     {
       id: "ocean",
       label: "Ocean",
+      desc: "Deep blue vibes",
       bg: "#0a1628",
-      fg: "#dce8f5",
+      card: "#12203a",
       accent: "#38bdf8",
+      text: "#dce8f5",
     },
   ]
 
@@ -266,62 +272,89 @@ export default function Settings() {
             {activeSection === "appearance" && (
               <section>
                 <div className="mb-4">
-                  <h2 className="text-sm font-semibold">Appearance</h2>
-                  <p className="text-xs text-muted-foreground">Theme, animations, and layout density</p>
+                  <h2 className="text-sm font-semibold text-foreground">Appearance</h2>
+                  <p className="text-xs text-muted-foreground">Choose your theme</p>
                 </div>
-                <div className="rounded-sm border border-border bg-card p-4 space-y-1">
-                  <SettingRow icon={IconMoon} label="Theme">
-                    <div className="grid grid-cols-4 gap-3 w-72">
-                      {themeOptions.map((opt) => (
-                        <Button
-                          key={opt.id}
-                          variant="outline"
-                          onClick={() => {
-                            setTheme(opt.id)
-                            toast.success(`${opt.label} theme applied`)
-                          }}
-                          className={cn(
-                            "flex items-center justify-center p-0 h-9 transition-all duration-300 ease-out",
-                            theme === opt.id && "border-primary ring ring-primary/40"
-                          )}
-                          style={{ backgroundColor: opt.bg, color: opt.fg }}
-                        >
-                          <span className="text-xs font-medium">{opt.label}</span>
-                        </Button>
-                      ))}
-                    </div>
-                  </SettingRow>
-                  <Separator className="my-2" />
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">More themes coming soon</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {upcomingThemes.map((name) => (
-                        <span
-                          key={name}
-                          className="rounded-md border border-border bg-muted/30 px-2.5 py-1 text-xs text-muted-foreground cursor-default"
-                        >
-                          {name}
-                          <span className="ml-1.5 text-[10px] text-muted-foreground/50">&#8226; Soon</span>
-                        </span>
-                      ))}
-                    </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {themeOptions.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => {
+                        setTheme(t.id)
+                        toast.success(`${t.label} theme applied`)
+                      }}
+                      className={cn(
+                        "group relative rounded-xl border-2 p-4 text-left transition-all cursor-pointer",
+                        theme === t.id
+                          ? "border-primary shadow-sm"
+                          : "border-border hover:border-muted-foreground/30"
+                      )}
+                    >
+                      {theme === t.id && (
+                        <div className="absolute top-3 right-3 flex items-center justify-center size-5 rounded-full bg-primary">
+                          <IconCheck size={12} className="text-primary-foreground" />
+                        </div>
+                      )}
+                      <div
+                        className="rounded-lg border overflow-hidden mb-3"
+                        style={{ borderColor: t.card }}
+                      >
+                        <div style={{ background: t.bg, padding: "12px" }}>
+                          <div
+                            className="h-2 w-16 rounded-full mb-2"
+                            style={{ background: t.accent }}
+                          />
+                          <div
+                            className="h-1.5 w-24 rounded-full mb-1.5 opacity-40"
+                            style={{ background: t.text }}
+                          />
+                          <div
+                            className="rounded p-2 flex gap-1.5"
+                            style={{ background: t.card }}
+                          >
+                            <div
+                              className="h-1.5 w-1.5 rounded-full"
+                              style={{ background: t.accent }}
+                            />
+                            <div
+                              className="h-1.5 w-1.5 rounded-full opacity-30"
+                              style={{ background: t.text }}
+                            />
+                            <div
+                              className="h-1.5 w-1.5 rounded-full opacity-30"
+                              style={{ background: t.text }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-sm font-medium text-foreground">{t.label}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t.desc}</p>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-8">
+                  <p className="text-xs font-medium text-muted-foreground mb-3">More themes coming soon</p>
+                  <div className="grid grid-cols-4 gap-3">
+                    {upcomingThemes.map((name) => (
+                      <div
+                        key={name}
+                        className="group relative rounded-xl border-2 border-border p-3 text-left opacity-60"
+                      >
+                        <div className="rounded-lg border border-border/50 overflow-hidden mb-2 bg-muted/30 p-3">
+                          <div className="h-1.5 w-10 rounded-full bg-muted-foreground/20 mb-1.5" />
+                          <div className="h-1 w-16 rounded-full bg-muted-foreground/10 mb-1" />
+                          <div className="rounded p-1.5 flex gap-1 bg-muted/20">
+                            <div className="h-1 w-1 rounded-full bg-muted-foreground/20" />
+                            <div className="h-1 w-1 rounded-full bg-muted-foreground/10" />
+                            <div className="h-1 w-1 rounded-full bg-muted-foreground/10" />
+                          </div>
+                        </div>
+                        <p className="text-xs font-medium text-foreground">{name}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Coming soon</p>
+                      </div>
+                    ))}
                   </div>
-                  <Separator className="my-1" />
-                  <SettingRow
-                    icon={IconSparkles}
-                    label="Animations"
-                    description="Enable transition effects and micro-interactions"
-                  >
-                    <ComingSoon />
-                  </SettingRow>
-                  <Separator className="my-1" />
-                  <SettingRow
-                    icon={IconLayoutGrid}
-                    label="Density"
-                    description="Content spacing and sizing"
-                  >
-                    <ComingSoon />
-                  </SettingRow>
                 </div>
               </section>
             )}
