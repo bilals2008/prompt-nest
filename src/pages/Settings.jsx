@@ -197,10 +197,19 @@ export default function Settings() {
       accent: "#38bdf8",
       text: "#dce8f5",
     },
+    {
+      id: "midnight",
+      label: "Midnight",
+      desc: "Deep purple vibes",
+      bg: "#0e0a1a",
+      card: "#1a1430",
+      accent: "#a78bfa",
+      text: "#e8e0f0",
+    },
   ]
 
   const upcomingThemes = [
-    "Midnight", "Sunset", "Lavender", "Rose",
+    "Sunset", "Lavender", "Rose",
     "Mocha", "Nord", "Dracula", "Catppuccin",
     "Tokyo Night", "Minimal",
   ]
