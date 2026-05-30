@@ -117,6 +117,8 @@ function registerIpcHandlers() {
   ipcMain.handle('db:batchSetFavorite', (_, ids, favorite) => prompts.batchSetFavorite(ids, favorite))
   ipcMain.handle('db:batchSetCollection', (_, ids, collectionId) => prompts.batchSetCollection(ids, collectionId))
   ipcMain.handle('db:getDatabaseStats', () => getDatabaseStats())
+  ipcMain.handle('db:getSetting', (_, key) => db.getSetting(key))
+  ipcMain.handle('db:setSetting', (_, key, value) => db.setSetting(key, value))
   ipcMain.handle('app:getVersion', () => app.getVersion())
   ipcMain.handle('updater:get-app-version', () => {
     if (isDev) {

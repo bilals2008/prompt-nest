@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Joyride, STATUS } from "react-joyride"
 
-const TOUR_KEY = "promptnest-tour-completed"
+const TOUR_KEY = "tour_completed"
 
 const STEPS = [
   {
@@ -52,16 +52,15 @@ export default function OnboardingTour() {
   const [run, setRun] = useState(false)
 
   useEffect(() => {
-    const done = localStorage.getItem(TOUR_KEY)
-    if (!done) {
-      setRun(true)
-    }
+    window.db.getSetting(TOUR_KEY).then((val) => {
+      if (!val) setRun(true)
+    })
   }, [])
 
   const handleCallback = (data) => {
     const { status } = data
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
-      localStorage.setItem(TOUR_KEY, "true")
+      window.db.setSetting(TOUR_KEY, "true")
       setRun(false)
     }
   }
