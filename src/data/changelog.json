@@ -9,6 +9,16 @@
   ],
   "releases": [
     {
+      "version": "0.0.10-beta",
+      "date": "May 30, 2026",
+      "type": "beta",
+      "changes": [
+        "New Midnight theme with deep purple tones",
+        "QuickPrompt-style theme picker with color preview cards",
+        "Upcoming themes showcase in Appearance settings"
+      ]
+    },
+    {
       "version": "0.0.9-beta",
       "date": "May 26, 2026",
       "type": "beta",
