@@ -19,7 +19,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="forest"], [data-theme="ocean"]));
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="forest"], [data-theme="ocean"], [data-theme="midnight"]));
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -221,6 +221,42 @@
   --sidebar-accent-foreground: #dce8f5;
   --sidebar-border: #1a3560;
   --sidebar-ring: #38bdf8;
+}
+
+[data-theme="midnight"] {
+  --background: #0e0a1a;
+  --foreground: #e8e0f0;
+  --card: #1a1430;
+  --card-foreground: #e8e0f0;
+  --popover: #1a1430;
+  --popover-foreground: #e8e0f0;
+  --primary: #a78bfa;
+  --primary-foreground: #0e0a1a;
+  --secondary: #241d40;
+  --secondary-foreground: #e8e0f0;
+  --muted: #241d40;
+  --muted-foreground: #9a8bb8;
+  --accent: #322860;
+  --accent-foreground: #e8e0f0;
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: #ffffff;
+  --border: #2a2050;
+  --input: #2a2050;
+  --ring: #a78bfa;
+  --overlay: oklch(0 0 0 / 0.45);
+  --chart-1: oklch(0.546 0.245 262.881);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: #0a0715;
+  --sidebar-foreground: #e8e0f0;
+  --sidebar-primary: #a78bfa;
+  --sidebar-primary-foreground: #0e0a1a;
+  --sidebar-accent: #322860;
+  --sidebar-accent-foreground: #e8e0f0;
+  --sidebar-border: #2a2050;
+  --sidebar-ring: #a78bfa;
 }
 
 @layer base {
