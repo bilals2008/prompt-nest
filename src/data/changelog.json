@@ -1,13 +1,25 @@
 {
   "comingSoon": [
-    { "label": "Trash / Soft Delete", "desc": "Deleted prompts go to trash, restore anytime", "icon": "Trash2" },
-    { "label": "Auto-Save Drafts", "desc": "Editor auto-saves so you never lose changes", "icon": "Megaphone" },
-    { "label": "Prompt Stats", "desc": "Per-prompt copy count, edit count, view count", "icon": "Sparkles" },
-    { "label": "Tag Management", "desc": "Merge, rename, and delete tags", "icon": "Hash" },
-    { "label": "Global Search (Cmd+K)", "desc": "Quick search overlay from anywhere", "icon": "SearchIcon" },
-    { "label": "Prompt Variables", "desc": "Use {{variable}} placeholders in prompts", "icon": "Variable" }
+    { "label": "Cloud Sync", "desc": "Sync prompts across devices", "icon": "Cloud" },
+    { "label": "Prompt Sharing", "desc": "Create shareable prompt links and bundles", "icon": "Share" },
+    { "label": "AI Rewrite Tools", "desc": "Improve, shorten, or expand saved prompts", "icon": "Sparkles" },
+    { "label": "Collection Templates", "desc": "Reusable starter packs for prompt libraries", "icon": "FileText" },
+    { "label": "Auto-Save Drafts", "desc": "Editor changes saved automatically while typing", "icon": "ClockCheck" },
+    { "label": "Prompt Stats", "desc": "Cards and editor details show copy, view, and edit counts", "icon": "ChartBar" },
+    { "label": "Global Search", "desc": "Ctrl+K opens a fast prompt search overlay from anywhere", "icon": "Search" },
+    { "label": "Prompt Variables", "desc": "Use {{variable}} placeholders and copy resolved prompts", "icon": "Braces" }
   ],
   "releases": [
+    {
+      "version": "0.0.11-beta",
+      "date": "May 30, 2026",
+      "type": "beta",
+      "changes": [
+        "Tag Management: rename, merge, and delete tags from the editor",
+        "Added Rose and Mocha themes",
+        "Hardened release upload flow so latest.yml is published last"
+      ]
+    },
     {
       "version": "0.0.10-beta",
       "date": "May 30, 2026",
