@@ -1,19 +1,14 @@
 import { APP_VERSION, APP_NAME } from "@/lib/version"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { IconHistory, IconRocket, IconListCheck, IconStar, IconCode } from "@tabler/icons-react"
-import {
-  IconFileText, IconGitCommit, IconSpeakerphone, IconSparkles,
-  IconSearch, IconHash, IconCloud, IconShare, IconClockCheck, IconChartBar, IconBraces
-} from "@tabler/icons-react"
+import { IconHistory, IconListCheck, IconStar, IconCode } from "@tabler/icons-react"
 import changelogData from "@/data/changelog.json"
-
-const ICON_MAP = { GitCommit: IconGitCommit, FileText: IconFileText, Megaphone: IconSpeakerphone, Sparkles: IconSparkles, Hash: IconHash, SearchIcon: IconSearch, Cloud: IconCloud, Share: IconShare, ClockCheck: IconClockCheck, ChartBar: IconChartBar, Search: IconSearch, Braces: IconBraces }
 
 function VersionBadge({ type }) {
   const styles = {
     alpha: "bg-chart-4/10 text-chart-4 border-chart-4/20",
     beta: "bg-chart-2/10 text-chart-2 border-chart-2/20",
+    stable: "bg-primary/10 text-primary border-primary/20",
     release: "bg-primary/10 text-primary border-primary/20",
   }
   return (
@@ -39,34 +34,6 @@ export default function Changelog() {
 
       <ScrollArea className="flex-1">
         <div className="space-y-5 p-5">
-          <div className="rounded-xl border border-border bg-card p-4">
-            <div className="mb-3 flex items-center gap-2.5">
-              <div className="flex size-8 items-center justify-center rounded-xl bg-chart-4/10 text-chart-4">
-                <IconRocket className="size-4" />
-              </div>
-              <div>
-                <h2 className="text-sm font-semibold">Coming Soon</h2>
-                <p className="text-xs text-muted-foreground">Planned features for upcoming releases</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {changelogData.comingSoon.map((item) => {
-                const Icon = ICON_MAP[item.icon]
-                return (
-                  <div key={item.label} className="flex items-start gap-2 rounded-lg border border-dashed border-border bg-background/50 p-2">
-                    <div className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                      {Icon ? <Icon className="size-3.5" /> : <IconSparkles className="size-3.5" />}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium">{item.label}</p>
-                      <p className="mt-0.5 text-[11px] text-muted-foreground">{item.desc}</p>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
           <div className="space-y-4">
             {changelogData.releases.map((release, idx) => {
               const isLatest = idx === 0
