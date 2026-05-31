@@ -142,6 +142,12 @@ export default function PromptEditor() {
     return () => window.removeEventListener("keydown", handler)
   }, [save])
 
+  useEffect(() => {
+    const handler = () => handleToggleFavorite()
+    window.addEventListener("shortcut:toggle-favorite", handler)
+    return () => window.removeEventListener("shortcut:toggle-favorite", handler)
+  }, [handleToggleFavorite])
+
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(form.content)

@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Outlet } from "react-router-dom"
 import { AppSidebar } from "@/components/app-sidebar"
 import { CommandPaletteProvider } from "@/features/command-palette/CommandPaletteProvider"
+import { KeyboardShortcuts } from "@/components/keyboard-shortcuts"
 
 import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
@@ -11,6 +12,7 @@ function App() {
 
   return (
     <CommandPaletteProvider>
+      <KeyboardShortcuts />
       <div className="flex h-screen w-full bg-background overflow-hidden">
         <AppSidebar
           expanded={sidebarExpanded}
