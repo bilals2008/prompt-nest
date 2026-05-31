@@ -152,7 +152,7 @@ export function BatchActionsBar({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {selectedCount} prompt{selectedCount !== 1 ? "s" : ""}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. The selected prompts will be permanently deleted.
+              The selected prompts will move to Trash, where they can be restored or permanently deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

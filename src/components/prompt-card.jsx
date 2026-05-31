@@ -2,7 +2,6 @@
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { TagBadge } from "@/components/tag-badge"
-import { collectionIcons, getCollectionColor } from "@/lib/collection-config"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
@@ -18,7 +17,6 @@ import {
   IconTrash,
   IconCopy,
   IconPin,
-  IconFolder,
 } from "@tabler/icons-react"
 import { IconHeart } from "@tabler/icons-react"
 
@@ -99,7 +97,9 @@ export function PromptCard({ prompt, viewMode = "grid", selected = false, onSele
           ))}
         </div>
 
-        <span className="hidden shrink-0 text-xs text-muted-foreground sm:block">{formatDate(prompt.updated_at)}</span>
+        <div className="hidden shrink-0 items-center gap-3 sm:flex">
+          <span className="text-xs text-muted-foreground">{formatDate(prompt.updated_at)}</span>
+        </div>
 
         <button
           onClick={handleCopy}
@@ -175,7 +175,9 @@ export function PromptCard({ prompt, viewMode = "grid", selected = false, onSele
       </div>
 
       <div className="flex items-center justify-between border-t border-border px-4 py-2">
-        <span className="text-[11px] text-muted-foreground">{formatDate(prompt.updated_at)}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] text-muted-foreground">{formatDate(prompt.updated_at)}</span>
+        </div>
         <div className="flex items-center gap-1">
           <button
             onClick={handleCopy}

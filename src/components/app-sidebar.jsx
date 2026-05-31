@@ -36,6 +36,7 @@ const topNavItems = [
   { icon: IconPlus, label: "New Prompt", path: "/prompts/new", tourId: "tour-new-prompt" },
   { icon: IconLibrary, label: "Prompt Library", path: "/prompts" },
   { icon: IconHeart, label: "Favorites", path: "/favorites" },
+
   { icon: IconFolderOpen, label: "Collections", path: "/collections", tourId: "tour-collections" },
   { icon: IconSearch, label: "Search", path: "/search", tourId: "tour-search" },
   { icon: IconClock, label: "Activity", path: "/activity" },
