@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { TagBadge } from "@/components/tag-badge"
+import { TagManagementSheet } from "@/components/tag-management-sheet"
 import { getTagColorDot, parseTag, colorNames } from "@/lib/tag-colors"
 import { getCollectionIcon, getCollectionColor } from "@/lib/collection-config"
 import { Badge } from "@/components/ui/badge"
@@ -25,6 +26,7 @@ import {
   IconFileText,
   IconTags,
   IconFolderOpen,
+  IconSettings,
 } from "@tabler/icons-react"
 import {
   DropdownMenu,
@@ -42,6 +44,7 @@ export default function PromptEditor() {
   const [viewMode, setViewMode] = useState("edit")
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [tagSheetOpen, setTagSheetOpen] = useState(false)
 
   const [form, setForm] = useState({
     title: "",
@@ -76,7 +79,6 @@ export default function PromptEditor() {
             created_at: data.created_at,
             updated_at: data.updated_at,
           })
-          window.db.logActivity(id, "viewed").catch(() => {})
         }
       })
     }
@@ -113,9 +115,11 @@ export default function PromptEditor() {
         })
         const updated = await window.db.getPromptById(id)
         if (updated) {
-          setMeta({ created_at: updated.created_at, updated_at: updated.updated_at })
+          setMeta({
+            created_at: updated.created_at,
+            updated_at: updated.updated_at,
+          })
         }
-        window.db.logActivity(id, "edited").catch(() => {})
         toast.success("Prompt saved")
       }
       setDirty(false)
@@ -149,6 +153,7 @@ export default function PromptEditor() {
       document.execCommand("copy")
       document.body.removeChild(ta)
     }
+    toast.success("Prompt copied")
   }
 
   const handleDuplicate = async () => {
@@ -171,6 +176,7 @@ export default function PromptEditor() {
       return
     }
     await window.db.deletePrompt(id)
+    toast.success("Prompt deleted")
     navigate("/prompts")
   }
 
@@ -371,9 +377,18 @@ export default function PromptEditor() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                    <IconTags className="size-3.5" /> Tags
-                  </label>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                      <IconTags className="size-3.5" /> Tags
+                    </label>
+                    <button
+                      onClick={() => setTagSheetOpen(true)}
+                      className="flex items-center gap-1 rounded-md border border-border px-2 py-0.5 text-[10px] text-muted-foreground hover:text-foreground hover:bg-accent transition-all cursor-pointer"
+                    >
+                      <IconSettings className="size-3" />
+                      Manage
+                    </button>
+                  </div>
                   <Input
                     placeholder="react, component, frontend"
                     value={form.tags}
@@ -468,8 +483,6 @@ export default function PromptEditor() {
               </div>
             </div>
 
-            <Separator />
-
             <div>
               <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Details</h4>
               <div className="space-y-3">
@@ -526,6 +539,18 @@ export default function PromptEditor() {
           </div>
         </aside>
       </div>
+
+      <TagManagementSheet
+        open={tagSheetOpen}
+        onOpenChange={setTagSheetOpen}
+        onTagsChanged={() => {
+          if (!isNew) {
+            window.db.getPromptById(id).then((data) => {
+              if (data) setForm((prev) => ({ ...prev, tags: data.tags || "" }))
+            })
+          }
+        }}
+      />
     </div>
   )
 }

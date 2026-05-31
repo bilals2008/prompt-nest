@@ -57,4 +57,10 @@ contextBridge.exposeInMainWorld('db', {
   getLastBackup: () => ipcRenderer.invoke('app:getLastBackup'),
   getTotalActivity: () => ipcRenderer.invoke('app:getTotalActivity'),
   getDiskFree: () => ipcRenderer.invoke('app:getDiskFree'),
+  tags: {
+    getAll: () => ipcRenderer.invoke('tags:getAll'),
+    rename: (oldName, newName) => ipcRenderer.invoke('tags:rename', oldName, newName),
+    merge: (source, target) => ipcRenderer.invoke('tags:merge', source, target),
+    delete: (tagName) => ipcRenderer.invoke('tags:delete', tagName),
+  },
 })
