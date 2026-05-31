@@ -1,6 +1,6 @@
 # PromptNest
 
-[![Download Latest Release](https://img.shields.io/badge/Download-v0.0.7--beta-blue?style=for-the-badge&logo=github)](https://github.com/bilals2008/prompt-nest/releases/tag/v0.0.7-beta)
+[![Download Latest Release](https://img.shields.io/badge/Download-v0.0.11--beta-blue?style=for-the-badge&logo=github)](https://github.com/bilals2008/prompt-nest/releases/tag/v0.0.11-beta)
 
 A modern desktop application for saving, organizing, and managing prompts with a clean productivity-focused experience.
 
@@ -18,7 +18,7 @@ The application focuses on:
 
 ## Download
 
-You can download the latest installer for Windows from the [releases page](https://github.com/bilals2008/prompt-nest/releases/tag/v0.0.7-beta).
+You can download the latest installer for Windows from the [releases page](https://github.com/bilals2008/prompt-nest/releases/tag/v0.0.11-beta).
 
 > **Note:** macOS and Linux builds are not yet available.
 
@@ -53,7 +53,9 @@ You can download the latest installer for Windows from the [releases page](https
 - Native desktop-style layout
 - Compact sidebar navigation
 - Keyboard-focused workflow
+- Resizable panels
 - Smooth interactions
+- Auto-updates via GitHub releases
 
 ### Editor
 
@@ -63,6 +65,7 @@ You can download the latest installer for Windows from the [releases page](https
 
 ### Storage
 
+- SQLite database
 - Local-first architecture
 - Offline support
 - Future cloud sync support
@@ -86,13 +89,27 @@ You can download the latest installer for Windows from the [releases page](https
 
 - Zustand
 
+### Desktop
+
+- Electron 42
+- electron-updater (auto-updates)
+
+### Database
+
+- SQLite3
+
 ### Utilities
 
 - clsx
 - tailwind-merge
 - class-variance-authority
 - @tabler/icons-react
-- @tabler/icons-react (all icons)
+- react-markdown + remark-gfm + rehype-raw
+- react-hotkeys-hook
+- react-resizable-panels
+- recharts
+- sonner
+- date-fns
 
 ---
 
@@ -134,6 +151,19 @@ Start development server:
 
 ```bash
 npm run dev
+```
+
+Build for Windows:
+
+```bash
+npm run dist:win
+```
+
+Build and publish to GitHub releases:
+
+```bash
+export GH_TOKEN="<your-github-token>"
+npm run release
 ```
 
 ---
