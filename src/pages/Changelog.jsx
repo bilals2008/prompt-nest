@@ -3,12 +3,12 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { IconHistory, IconRocket, IconListCheck, IconStar, IconCode } from "@tabler/icons-react"
 import {
-  IconFileText, IconGitCommit, IconSpeakerphone, IconTrash, IconSparkles,
-  IconSearch, IconVariable, IconHash
+  IconFileText, IconGitCommit, IconSpeakerphone, IconSparkles,
+  IconSearch, IconHash, IconCloud, IconShare, IconClockCheck, IconChartBar, IconBraces
 } from "@tabler/icons-react"
 import changelogData from "@/data/changelog.json"
 
-const ICON_MAP = { Trash2: IconTrash, GitCommit: IconGitCommit, FileText: IconFileText, Megaphone: IconSpeakerphone, Sparkles: IconSparkles, Hash: IconHash, SearchIcon: IconSearch, Variable: IconVariable }
+const ICON_MAP = { GitCommit: IconGitCommit, FileText: IconFileText, Megaphone: IconSpeakerphone, Sparkles: IconSparkles, Hash: IconHash, SearchIcon: IconSearch, Cloud: IconCloud, Share: IconShare, ClockCheck: IconClockCheck, ChartBar: IconChartBar, Search: IconSearch, Braces: IconBraces }
 
 function VersionBadge({ type }) {
   const styles = {
