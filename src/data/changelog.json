@@ -1,23 +1,22 @@
 {
-  "comingSoon": [
-    { "label": "Cloud Sync", "desc": "Sync prompts across devices", "icon": "Cloud" },
-    { "label": "Prompt Sharing", "desc": "Create shareable prompt links and bundles", "icon": "Share" },
-    { "label": "AI Rewrite Tools", "desc": "Improve, shorten, or expand saved prompts", "icon": "Sparkles" },
-    { "label": "Collection Templates", "desc": "Reusable starter packs for prompt libraries", "icon": "FileText" },
-    { "label": "Auto-Save Drafts", "desc": "Editor changes saved automatically while typing", "icon": "ClockCheck" },
-    { "label": "Prompt Stats", "desc": "Cards and editor details show copy, view, and edit counts", "icon": "ChartBar" },
-    { "label": "Global Search", "desc": "Ctrl+K opens a fast prompt search overlay from anywhere", "icon": "Search" },
-    { "label": "Prompt Variables", "desc": "Use {{variable}} placeholders and copy resolved prompts", "icon": "Braces" }
-  ],
   "releases": [
     {
-      "version": "0.0.11-beta",
-      "date": "May 30, 2026",
-      "type": "beta",
+      "version": "0.1.0",
+      "date": "May 31, 2026",
+      "type": "stable",
       "changes": [
-        "Tag Management: rename, merge, and delete tags from the editor",
-        "Added Rose and Mocha themes",
-        "Hardened release upload flow so latest.yml is published last"
+        "Full settings system: General, Appearance, Editor, Notifications, Database, Shortcuts, About",
+        "Auto-save prompts with configurable delay",
+        "Compact mode for tighter spacing",
+        "Adjustable font size (Small, Medium, Large)",
+        "Default startup view selector",
+        "Editor modes: Simple, Markdown, Split view",
+        "Spell check toggle in editor",
+        "Confirm before delete dialog",
+        "Backup reminder notifications",
+        "Update notification control",
+        "Theme-aware dropdowns (Radix Select)",
+        "Fixed PromptEditor favorite toggle crash"
       ]
     },
     {
