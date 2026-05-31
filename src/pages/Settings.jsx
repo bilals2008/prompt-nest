@@ -160,69 +160,88 @@ export default function Settings() {
     }
   }
 
-  const themeOptions = [
+  const themeGroups = [
     {
-      id: "light",
       label: "Light",
-      desc: "Clean and bright",
-      bg: "#ffffff",
-      card: "#f1f5f9",
-      accent: "#6366f1",
-      text: "#0f1729",
+      themes: [
+        {
+          id: "light",
+          label: "Light",
+          desc: "Clean and bright",
+          bg: "#ffffff",
+          card: "#f1f5f9",
+          accent: "#6366f1",
+          text: "#0f1729",
+        },
+        {
+          id: "amber",
+          label: "Amber",
+          desc: "Warm golden tones",
+          bg: "#fffbeb",
+          card: "#fef3c7",
+          accent: "#f59e0b",
+          text: "#451a03",
+        },
+      ],
     },
     {
-      id: "dark",
       label: "Dark",
-      desc: "Easy on the eyes",
-      bg: "#0c0c14",
-      card: "#161e34",
-      accent: "#6366f1",
-      text: "#ededee",
-    },
-    {
-      id: "forest",
-      label: "Forest",
-      desc: "Natural green tones",
-      bg: "#0d1a0d",
-      card: "#142414",
-      accent: "#4ade80",
-      text: "#e2f0e2",
-    },
-    {
-      id: "ocean",
-      label: "Ocean",
-      desc: "Deep blue vibes",
-      bg: "#0a1628",
-      card: "#12203a",
-      accent: "#38bdf8",
-      text: "#dce8f5",
-    },
-    {
-      id: "midnight",
-      label: "Midnight",
-      desc: "Deep purple vibes",
-      bg: "#0e0a1a",
-      card: "#1a1430",
-      accent: "#a78bfa",
-      text: "#e8e0f0",
-    },
-    {
-      id: "rose",
-      label: "Rose",
-      desc: "Soft editorial red",
-      bg: "#1b0f16",
-      card: "#281720",
-      accent: "#fb7185",
-      text: "#f4e7ec",
-    },
-    {
-      id: "mocha",
-      label: "Mocha",
-      desc: "Warm focused brown",
-      bg: "#17120f",
-      card: "#241b16",
-      accent: "#d6a15f",
-      text: "#f0e7dc",
+      themes: [
+        {
+          id: "dark",
+          label: "Dark",
+          desc: "Easy on the eyes",
+          bg: "#0c0c14",
+          card: "#161e34",
+          accent: "#6366f1",
+          text: "#ededee",
+        },
+        {
+          id: "forest",
+          label: "Forest",
+          desc: "Natural green tones",
+          bg: "#0d1a0d",
+          card: "#142414",
+          accent: "#4ade80",
+          text: "#e2f0e2",
+        },
+        {
+          id: "ocean",
+          label: "Ocean",
+          desc: "Deep blue vibes",
+          bg: "#0a1628",
+          card: "#12203a",
+          accent: "#38bdf8",
+          text: "#dce8f5",
+        },
+        {
+          id: "midnight",
+          label: "Midnight",
+          desc: "Deep purple vibes",
+          bg: "#0e0a1a",
+          card: "#1a1430",
+          accent: "#a78bfa",
+          text: "#e8e0f0",
+        },
+        {
+          id: "rose",
+          label: "Rose",
+          desc: "Soft editorial red",
+          bg: "#1b0f16",
+          card: "#281720",
+          accent: "#fb7185",
+          text: "#f4e7ec",
+        },
+        {
+          id: "mocha",
+          label: "Mocha",
+          desc: "Warm focused brown",
+          bg: "#17120f",
+          card: "#241b16",
+          accent: "#d6a15f",
+          text: "#f0e7dc",
+        },
+      ],
     },
   ]
 
@@ -301,61 +320,68 @@ export default function Settings() {
                   <h2 className="text-sm font-semibold text-foreground">Appearance</h2>
                   <p className="text-xs text-muted-foreground">Choose your theme</p>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {themeOptions.map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => {
-                        setTheme(t.id)
-                        toast.success(`${t.label} theme applied`)
-                      }}
-                      className={cn(
-                        "group relative rounded-xl border-2 p-4 text-left transition-all cursor-pointer",
-                        theme === t.id
-                          ? "border-primary shadow-sm"
-                          : "border-border hover:border-muted-foreground/30"
-                      )}
-                    >
-                      {theme === t.id && (
-                        <div className="absolute top-3 right-3 flex items-center justify-center size-5 rounded-full bg-primary">
-                          <IconCheck size={12} className="text-primary-foreground" />
-                        </div>
-                      )}
-                      <div
-                        className="rounded-lg border overflow-hidden mb-3"
-                        style={{ borderColor: t.card }}
-                      >
-                        <div style={{ background: t.bg, padding: "12px" }}>
-                          <div
-                            className="h-2 w-16 rounded-full mb-2"
-                            style={{ background: t.accent }}
-                          />
-                          <div
-                            className="h-1.5 w-24 rounded-full mb-1.5 opacity-40"
-                            style={{ background: t.text }}
-                          />
-                          <div
-                            className="rounded p-2 flex gap-1.5"
-                            style={{ background: t.card }}
+                <div className="space-y-5">
+                  {themeGroups.map((group) => (
+                    <div key={group.label}>
+                      <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">{group.label}</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {group.themes.map((t) => (
+                          <button
+                            key={t.id}
+                            onClick={() => {
+                              setTheme(t.id)
+                              toast.success(`${t.label} theme applied`)
+                            }}
+                            className={cn(
+                              "group relative rounded-xl border-2 p-4 text-left transition-all cursor-pointer",
+                              theme === t.id
+                                ? "border-primary shadow-sm"
+                                : "border-border hover:border-muted-foreground/30"
+                            )}
                           >
+                            {theme === t.id && (
+                              <div className="absolute top-3 right-3 flex items-center justify-center size-5 rounded-full bg-primary">
+                                <IconCheck size={12} className="text-primary-foreground" />
+                              </div>
+                            )}
                             <div
-                              className="h-1.5 w-1.5 rounded-full"
-                              style={{ background: t.accent }}
-                            />
-                            <div
-                              className="h-1.5 w-1.5 rounded-full opacity-30"
-                              style={{ background: t.text }}
-                            />
-                            <div
-                              className="h-1.5 w-1.5 rounded-full opacity-30"
-                              style={{ background: t.text }}
-                            />
-                          </div>
-                        </div>
+                              className="rounded-lg border overflow-hidden mb-3"
+                              style={{ borderColor: t.card }}
+                            >
+                              <div style={{ background: t.bg, padding: "12px" }}>
+                                <div
+                                  className="h-2 w-16 rounded-full mb-2"
+                                  style={{ background: t.accent }}
+                                />
+                                <div
+                                  className="h-1.5 w-24 rounded-full mb-1.5 opacity-40"
+                                  style={{ background: t.text }}
+                                />
+                                <div
+                                  className="rounded p-2 flex gap-1.5"
+                                  style={{ background: t.card }}
+                                >
+                                  <div
+                                    className="h-1.5 w-1.5 rounded-full"
+                                    style={{ background: t.accent }}
+                                  />
+                                  <div
+                                    className="h-1.5 w-1.5 rounded-full opacity-30"
+                                    style={{ background: t.text }}
+                                  />
+                                  <div
+                                    className="h-1.5 w-1.5 rounded-full opacity-30"
+                                    style={{ background: t.text }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <p className="text-sm font-medium text-foreground">{t.label}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{t.desc}</p>
+                          </button>
+                        ))}
                       </div>
-                      <p className="text-sm font-medium text-foreground">{t.label}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{t.desc}</p>
-                    </button>
+                    </div>
                   ))}
                 </div>
 
