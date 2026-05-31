@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { Outlet } from "react-router-dom"
 import { AppSidebar } from "@/components/app-sidebar"
-import OnboardingTour from "@/components/onboarding-tour"
+import { CommandPaletteProvider } from "@/features/command-palette/CommandPaletteProvider"
+
 import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
 
@@ -9,20 +10,21 @@ function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden">
-      <AppSidebar
-        expanded={sidebarExpanded}
-        onToggle={() => setSidebarExpanded((prev) => !prev)}
-      />
-      <main className={cn(
-        "flex flex-1 flex-col overflow-hidden transition-all duration-300 ease-in-out",
-        sidebarExpanded ? "ml-56" : "ml-18"
-      )}>
-        <Outlet />
-      </main>
-      <OnboardingTour />
-      <Toaster />
-    </div>
+    <CommandPaletteProvider>
+      <div className="flex h-screen w-full bg-background overflow-hidden">
+        <AppSidebar
+          expanded={sidebarExpanded}
+          onToggle={() => setSidebarExpanded((prev) => !prev)}
+        />
+        <main className={cn(
+          "flex flex-1 flex-col overflow-hidden transition-all duration-300 ease-in-out",
+          sidebarExpanded ? "ml-56" : "ml-18"
+        )}>
+          <Outlet />
+        </main>
+        <Toaster />
+      </div>
+    </CommandPaletteProvider>
   )
 }
 
