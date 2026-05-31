@@ -1,7 +1,9 @@
-import { readFileSync, writeFileSync, statSync, existsSync } from "node:fs"
+/* global console, process */
+import { existsSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { execSync } from "node:child_process"
+import { spawnSync } from "node:child_process"
+import yaml from "js-yaml"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, "..")
@@ -12,152 +14,156 @@ const tag = `v${version}`
 const { owner, repo: repoName } = pkg.build?.publish?.[0] || {}
 const repo = `${owner}/${repoName}`
 const token = process.env.GH_TOKEN
-if (!token) { console.error("GH_TOKEN not set"); process.exit(1) }
 const dir = path.join(root, "release")
-
-// 1. Build the app first (ensures fresh artifacts + latest.yml)
-console.log(`Building ${productName} v${version}...`)
-execSync("npx vite build && npx electron-builder --win nsis", { cwd: root, stdio: "inherit" })
-
-// 2. Parse latest.yml to discover actual filenames
 const ymlPath = path.join(dir, "latest.yml")
-if (!existsSync(ymlPath)) {
-  console.error("latest.yml not found — build failed?")
-  process.exit(1)
-}
-let ymlText = readFileSync(ymlPath, "utf8")
 
-function parseYmlUrls(text) {
-  const files = []
-  const lines = text.split("\n")
-  let inFiles = false
-  for (const line of lines) {
-    if (line.startsWith("files:")) { inFiles = true; continue }
-    if (inFiles && line.match(/^\S/)) inFiles = false
-    if (inFiles && line.startsWith("  - url:")) {
-      files.push(line.replace(/^  - url:\s*/, "").trim())
-    }
-  }
-  return files
-}
-
-const urls = parseYmlUrls(ymlText)
-if (!urls.length) {
-  console.error("latest.yml has no files")
+if (!token) {
+  console.error("GH_TOKEN not set")
   process.exit(1)
 }
 
-// Add blockmap files to latest.yml if missing (electron-builder sometimes omits them)
-let ymlModified = false
-ymlText = ymlText.replace(/\r\n/g, "\n")
-for (const url of [...urls]) {
-  if (url.endsWith(".exe")) {
-    const blockmapUrl = url + ".blockmap"
-    if (!urls.includes(blockmapUrl) && existsSync(path.join(dir, blockmapUrl))) {
-      const { createHash } = await import("node:crypto")
-      const buf = readFileSync(path.join(dir, blockmapUrl))
-      const sha512 = createHash("sha512").update(buf).digest("base64")
-      urls.push(blockmapUrl)
-      // Insert blockmap entry after the last entry in the files array (before "path:")
-      const insertPos = ymlText.lastIndexOf("\npath:")
-      ymlText = ymlText.slice(0, insertPos) + `  - url: ${blockmapUrl}\n    sha512: ${sha512}\n    size: ${buf.length}\n` + ymlText.slice(insertPos)
-      ymlModified = true
-    }
-  }
-}
-if (ymlModified) {
-  writeFileSync(ymlPath, ymlText)
-  console.log("Added blockmap entries to latest.yml")
+if (!owner || !repoName) {
+  console.error("GitHub publish owner/repo is missing in package.json build.publish")
+  process.exit(1)
 }
 
-console.log("Found artifacts:", urls.join(", "))
+function commandName(command) {
+  return process.platform === "win32" && command === "npx" ? "npx.cmd" : command
+}
 
-// Validate all files from latest.yml exist on disk
-for (const url of urls) {
-  const localPath = path.join(dir, url)
-  if (!existsSync(localPath)) {
-    console.error(`MISMATCH: latest.yml says "${url}" but file not found at: ${localPath}`)
-    console.log("Available files:")
-    const { readdirSync } = await import("node:fs")
-    for (const f of readdirSync(dir).filter(f => f.endsWith(".exe") || f.endsWith(".blockmap") || f.endsWith(".yml"))) {
-      console.log(`  ${f}`)
+function run(command, args, options = {}) {
+  const result = spawnSync(commandName(command), args, {
+    cwd: root,
+    stdio: "inherit",
+    shell: false,
+    ...options,
+  })
+
+  if (result.error) throw result.error
+  if (result.status !== 0) process.exit(result.status ?? 1)
+}
+
+function runQuiet(command, args) {
+  return spawnSync(commandName(command), args, {
+    cwd: root,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    shell: false,
+  })
+}
+
+function assertFileExists(filePath, label) {
+  if (!existsSync(filePath)) {
+    console.error(`${label} not found: ${filePath}`)
+    console.error("Release directory contains:")
+    for (const file of existsSync(dir) ? readdirSync(dir) : []) {
+      console.error(`  ${file}`)
     }
     process.exit(1)
   }
 }
 
-// 3. Create GitHub release with retry
-function execWithRetry(cmd, opts = {}, retries = 3) {
-  for (let i = 0; i < retries; i++) {
-    try { execSync(cmd, opts); return } catch (e) {
-      if (i === retries - 1) throw e
-      console.log(`  Retry ${i + 1}/${retries}...`)
-    }
-  }
-}
-
-try {
-  execWithRetry(`gh release view ${tag} --repo ${repo}`, { stdio: "pipe" })
-  console.log(`Release ${tag} already exists — will clobber assets`)
-} catch {
-  console.log(`Creating release ${tag}...`)
-  execWithRetry(`gh release create ${tag} --repo ${repo} --title "${productName} v${version}" --notes "Release v${version}"`, { stdio: "inherit" })
-}
-
-// 4. Get release ID from GH API with retry
-async function fetchWithRetry(url, opts, retries = 3) {
-  for (let i = 0; i < retries; i++) {
-    try { return await fetch(url, opts) } catch (e) {
-      if (i === retries - 1) throw e
-      console.log(`  API retry ${i + 1}/${retries}... (${e?.cause?.code || e.message})`)
-      await new Promise(r => setTimeout(r, 2000))
-    }
-  }
-}
-
-const idResp = await fetchWithRetry(`https://api.github.com/repos/${repo}/releases/tags/${tag}`, {
-  headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github.v3+json" }
-})
-if (!idResp.ok) {
-  const text = await idResp.text()
-  throw new Error(`API ${idResp.status}: ${text.slice(0, 200)}`)
-}
-const { id: releaseId } = await idResp.json()
-console.log(`Release ID: ${releaseId}`)
-
-// 5. Upload small files (non-exe) via gh CLI
-const smallFiles = urls
-  .filter(u => !u.endsWith(".exe"))
-  .map(u => path.join(dir, u))
-  .filter(f => existsSync(f))
-
-if (smallFiles.length) {
-  console.log("Uploading small files via gh...")
-  execSync(`gh release upload ${tag} --repo ${repo} ${smallFiles.map(f => `"${f}"`).join(" ")} --clobber`, { stdio: "inherit" })
-}
-
-// Upload latest.yml too
-if (existsSync(ymlPath)) {
-  execSync(`gh release upload ${tag} --repo ${repo} "${ymlPath}" --clobber`, { stdio: "inherit" })
-}
-
-// 6. Upload exe(s) via curl with progress bar
-for (const url of urls) {
-  if (!url.endsWith(".exe")) continue
-  const localPath = path.join(dir, url)
-  if (!existsSync(localPath)) {
-    console.error(`EXE not found at: ${localPath}`)
+function validateLatestYml(updateInfo) {
+  if (updateInfo.version !== version) {
+    console.error(`latest.yml version mismatch: expected ${version}, got ${updateInfo.version}`)
     process.exit(1)
   }
-  const stat = statSync(localPath)
-  const uploadUrl = `https://uploads.github.com/repos/${repo}/releases/${releaseId}/assets?name=${encodeURIComponent(url)}`
-  const authHeader = `Authorization: Bearer ${token}`
-  console.log(`\nUploading ${url} (${(stat.size / 1024 / 1024).toFixed(1)} MB)...`)
-  execSync(
-    `curl.exe --progress-bar -T "${localPath}" -H "${authHeader}" -H "Content-Type: application/octet-stream" --connect-timeout 60 --max-time 7200 "${uploadUrl}"`,
-    { stdio: "inherit", cwd: dir, shell: true, timeout: 7200000 }
-  )
-  console.log(`  Upload complete: ${url}`)
+
+  if (!Array.isArray(updateInfo.files) || updateInfo.files.length === 0) {
+    console.error("latest.yml has no files entries")
+    process.exit(1)
+  }
+
+  for (const file of updateInfo.files) {
+    if (!file.url || !file.sha512 || !file.size) {
+      console.error(`Invalid latest.yml file entry: ${JSON.stringify(file)}`)
+      process.exit(1)
+    }
+
+    if (file.url.endsWith(".blockmap")) {
+      console.error("latest.yml must not list .blockmap as an update file. Let electron-builder generate metadata unchanged.")
+      process.exit(1)
+    }
+
+    const artifactPath = path.join(dir, file.url)
+    assertFileExists(artifactPath, "Installer artifact")
+    const actualSize = statSync(artifactPath).size
+    if (actualSize !== file.size) {
+      console.error(`Size mismatch for ${file.url}: latest.yml=${file.size}, disk=${actualSize}`)
+      process.exit(1)
+    }
+  }
+
+  const installerFromPath = updateInfo.path && path.join(dir, updateInfo.path)
+  if (installerFromPath) assertFileExists(installerFromPath, "latest.yml path artifact")
 }
 
-console.log(`\nDone! https://github.com/${repo}/releases/tag/${tag}`)
+function uploadAsset(filePath) {
+  run("gh", ["release", "upload", tag, "--repo", repo, filePath, "--clobber"])
+}
+
+console.log(`Cleaning release output: ${dir}`)
+rmSync(dir, { recursive: true, force: true })
+
+console.log(`Building ${productName} v${version}...`)
+run("npx", ["vite", "build"])
+run("npx", ["electron-builder", "--win", "nsis", "--publish", "never"])
+
+assertFileExists(ymlPath, "latest.yml")
+const updateInfo = yaml.load(readFileSync(ymlPath, "utf8"))
+validateLatestYml(updateInfo)
+
+const installerFiles = updateInfo.files.map(file => path.join(dir, file.url))
+const blockmapFiles = installerFiles
+  .map(file => `${file}.blockmap`)
+  .filter(file => existsSync(file))
+
+if (blockmapFiles.length !== installerFiles.length) {
+  console.error("Every NSIS installer must have a matching .blockmap for differential updates.")
+  for (const file of installerFiles) {
+    if (!existsSync(`${file}.blockmap`)) console.error(`  Missing: ${file}.blockmap`)
+  }
+  process.exit(1)
+}
+
+console.log("Validated artifacts:")
+for (const file of [...installerFiles, ...blockmapFiles, ymlPath]) {
+  const sizeMb = (statSync(file).size / 1024 / 1024).toFixed(2)
+  console.log(`  ${path.basename(file)} (${sizeMb} MB)`)
+}
+
+const existingRelease = runQuiet("gh", ["release", "view", tag, "--repo", repo, "--json", "isDraft"])
+
+if (existingRelease.status === 0) {
+  console.log(`Release ${tag} already exists; assets will be replaced.`)
+} else {
+  console.log(`Creating draft release ${tag}...`)
+  run("gh", [
+    "release",
+    "create",
+    tag,
+    "--repo",
+    repo,
+    "--title",
+    `${productName} v${version}`,
+    "--notes",
+    `Release v${version}`,
+    "--draft",
+  ])
+}
+
+console.log("Uploading installers first...")
+for (const file of installerFiles) uploadAsset(file)
+
+console.log("Uploading blockmaps...")
+for (const file of blockmapFiles) uploadAsset(file)
+
+console.log("Uploading latest.yml last...")
+uploadAsset(ymlPath)
+
+if (existingRelease.status !== 0) {
+  console.log("Publishing draft release...")
+  run("gh", ["release", "edit", tag, "--repo", repo, "--draft=false"])
+}
+
+console.log(`Done: https://github.com/${repo}/releases/tag/${tag}`)
