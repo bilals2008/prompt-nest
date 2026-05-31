@@ -48,7 +48,7 @@ const sections = [
 
 const shortcuts = [
   { keys: ["Ctrl", "B"], label: "Toggle sidebar" },
-  { keys: ["Ctrl", "K"], label: "Quick search" },
+
   { keys: ["Ctrl", "N"], label: "New prompt" },
   { keys: ["Ctrl", "E"], label: "Export" },
   { keys: ["Ctrl", "S"], label: "Save prompt" },
@@ -206,11 +206,28 @@ export default function Settings() {
       accent: "#a78bfa",
       text: "#e8e0f0",
     },
+    {
+      id: "rose",
+      label: "Rose",
+      desc: "Soft editorial red",
+      bg: "#1b0f16",
+      card: "#281720",
+      accent: "#fb7185",
+      text: "#f4e7ec",
+    },
+    {
+      id: "mocha",
+      label: "Mocha",
+      desc: "Warm focused brown",
+      bg: "#17120f",
+      card: "#241b16",
+      accent: "#d6a15f",
+      text: "#f0e7dc",
+    },
   ]
 
   const upcomingThemes = [
-    "Sunset", "Lavender", "Rose",
-    "Mocha", "Nord", "Dracula", "Catppuccin",
+    "Sunset", "Lavender", "Nord", "Dracula", "Catppuccin",
     "Tokyo Night", "Minimal",
   ]
 
