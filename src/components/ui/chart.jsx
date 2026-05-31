@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = {
   light: "",
-  dark: "[data-theme='dark'],[data-theme='forest'],[data-theme='ocean']"
+  dark: "[data-theme='dark'],[data-theme='forest'],[data-theme='ocean'],[data-theme='midnight'],[data-theme='rose'],[data-theme='mocha']"
 }
 
 const INITIAL_DIMENSION = {

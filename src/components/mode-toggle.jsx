@@ -1,5 +1,5 @@
 import { useTheme } from "@/hooks/use-theme"
-import { IconSun, IconMoon, IconMonitor, IconTrees, IconDroplet, IconMoonStars } from "@tabler/icons-react"
+import { IconSun, IconMoon, IconMonitor, IconTrees, IconDroplet, IconMoonStars, IconFlower, IconCoffee } from "@tabler/icons-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,8 @@ const themes = [
   { value: "forest", icon: IconTrees, label: "Forest" },
   { value: "ocean", icon: IconDroplet, label: "Ocean" },
   { value: "midnight", icon: IconMoonStars, label: "Midnight" },
+  { value: "rose", icon: IconFlower, label: "Rose" },
+  { value: "mocha", icon: IconCoffee, label: "Mocha" },
   { value: "system", icon: IconMonitor, label: "System" },
 ]
 
