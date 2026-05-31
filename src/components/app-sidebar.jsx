@@ -97,10 +97,15 @@ export function AppSidebar({ expanded, onToggle }) {
   }, [])
 
   useEffect(() => {
-    if (updateAvailable && latestVersion && notifiedVersion.current !== latestVersion) {
+    if (!updateAvailable || !latestVersion || notifiedVersion.current === latestVersion) return
+    window.db.getSetting("updateNotifications").then((v) => {
+      if (v === "false") return
       notifiedVersion.current = latestVersion
       setTimeout(() => setUpdateOpen(true), 500)
-    }
+    }).catch(() => {
+      notifiedVersion.current = latestVersion
+      setTimeout(() => setUpdateOpen(true), 500)
+    })
   }, [updateAvailable, latestVersion])
 
   return (

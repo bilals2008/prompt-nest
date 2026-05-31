@@ -11,8 +11,10 @@ import { getTagColorDot, parseTag, colorNames } from "@/lib/tag-colors"
 import { getCollectionIcon, getCollectionColor } from "@/lib/collection-config"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import { useSetting } from "@/hooks/use-setting"
 import {
   IconArrowLeft,
   IconCopy,
@@ -45,6 +47,13 @@ export default function PromptEditor() {
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
   const [tagSheetOpen, setTagSheetOpen] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+
+  const autoSave = useSetting("autoSave", "false")
+  const autoSaveDelay = useSetting("autoSaveDelay", "10")
+  const confirmDelete = useSetting("confirmDelete", "true")
+  const editorMode = useSetting("editorMode", "simple")
+  const spellCheck = useSetting("spellCheck", "true")
 
   const [form, setForm] = useState({
     title: "",
@@ -59,6 +68,12 @@ export default function PromptEditor() {
     created_at: null,
     updated_at: null,
   })
+
+  useEffect(() => {
+    if (editorMode === "markdown") setViewMode("preview")
+    else if (editorMode === "split") setViewMode("split")
+    else setViewMode("edit")
+  }, [editorMode])
 
   useEffect(() => {
     window.db.getCollections().then((data) => {
@@ -143,10 +158,13 @@ export default function PromptEditor() {
   }, [save])
 
   useEffect(() => {
-    const handler = () => handleToggleFavorite()
-    window.addEventListener("shortcut:toggle-favorite", handler)
-    return () => window.removeEventListener("shortcut:toggle-favorite", handler)
-  }, [handleToggleFavorite])
+    if (autoSave !== "true" || !dirty || isNew) return
+    const delay = parseInt(autoSaveDelay, 10) * 1000
+    const timer = setTimeout(() => {
+      save()
+    }, delay)
+    return () => clearTimeout(timer)
+  }, [autoSave, autoSaveDelay, dirty, isNew, save])
 
   const handleCopy = async () => {
     try {
@@ -181,6 +199,17 @@ export default function PromptEditor() {
       navigate("/prompts")
       return
     }
+    if (confirmDelete === "true") {
+      setDeleteConfirmOpen(true)
+      return
+    }
+    await window.db.deletePrompt(id)
+    toast.success("Prompt deleted")
+    navigate("/prompts")
+  }
+
+  const confirmDeleteAction = async () => {
+    setDeleteConfirmOpen(false)
     await window.db.deletePrompt(id)
     toast.success("Prompt deleted")
     navigate("/prompts")
@@ -219,6 +248,12 @@ export default function PromptEditor() {
       await window.db.toggleFavorite(id)
     }
   }
+
+  useEffect(() => {
+    const handler = () => handleToggleFavorite()
+    window.addEventListener("shortcut:toggle-favorite", handler)
+    return () => window.removeEventListener("shortcut:toggle-favorite", handler)
+  }, [handleToggleFavorite])
 
   const wordCount = form.content ? form.content.trim().split(/\s+/).filter(Boolean).length : 0
   const charCount = form.content ? form.content.length : 0
@@ -346,6 +381,17 @@ export default function PromptEditor() {
                     Edit
                   </button>
                   <button
+                    onClick={() => setViewMode("split")}
+                    className={cn(
+                      "relative -mb-px cursor-pointer px-1 pb-2 text-xs font-medium transition-colors",
+                      viewMode === "split"
+                        ? "text-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Split
+                  </button>
+                  <button
                     onClick={() => setViewMode("preview")}
                     className={cn(
                       "relative -mb-px cursor-pointer px-1 pb-2 text-xs font-medium transition-colors",
@@ -363,8 +409,24 @@ export default function PromptEditor() {
                     placeholder="Write your prompt content here..."
                     value={form.content}
                     onChange={(e) => updateField("content", e.target.value)}
+                    spellCheck={spellCheck === "true"}
                     className="min-h-[300px] resize-y border-border bg-card/30 p-4 text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-primary/20"
                   />
+                ) : viewMode === "split" ? (
+                  <div className="grid grid-cols-2 gap-0 min-h-[300px] rounded-lg border border-border overflow-hidden">
+                    <Textarea
+                      placeholder="Write your prompt content here..."
+                      value={form.content}
+                      onChange={(e) => updateField("content", e.target.value)}
+                      spellCheck={spellCheck === "true"}
+                      className="min-h-[300px] resize-none border-0 border-r border-border bg-card/30 p-4 text-sm leading-relaxed focus-visible:ring-0 rounded-none"
+                    />
+                    <div className="prose-markdown min-h-[300px] bg-card/30 p-4 text-sm leading-relaxed overflow-auto">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {form.content || "*No content to preview*"}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
                 ) : (
                   <div className="prose-markdown min-h-[300px] rounded-lg border border-border bg-card/30 p-4 text-sm leading-relaxed">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -557,6 +619,23 @@ export default function PromptEditor() {
           }
         }}
       />
+
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete prompt?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this prompt.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={confirmDeleteAction}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

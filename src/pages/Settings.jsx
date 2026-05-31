@@ -1,8 +1,10 @@
 // File: src/pages/Settings.jsx
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Switch } from "@/components/ui/switch"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { LoadingState } from "@/components/loading-state"
 import {
   IconDatabase,
@@ -15,9 +17,17 @@ import {
   IconPlayerPlay,
   IconLayoutGrid,
   IconPower,
+  IconPlayerRecord,
+  IconSettings,
+  IconCheck,
+  IconCopy,
+  IconChecks,
+  IconBell,
+  IconEdit,
+  IconClock,
+  IconAlertTriangle,
 } from "@tabler/icons-react"
 import { toast } from "sonner"
-import { IconSettings, IconCheck, IconCopy, IconChecks } from "@tabler/icons-react"
 import { APP_VERSION } from "@/lib/version"
 import { useTheme } from "@/hooks/use-theme"
 import { cn } from "@/lib/utils"
@@ -41,6 +51,8 @@ function formatSize(bytes) {
 const sections = [
   { id: "general", icon: IconPlayerPlay, label: "General" },
   { id: "appearance", icon: IconMoon, label: "Appearance" },
+  { id: "editor", icon: IconEdit, label: "Editor" },
+  { id: "notifications", icon: IconBell, label: "Notifications" },
   { id: "database", icon: IconDatabase, label: "Database" },
   { id: "shortcuts", icon: IconKeyboard, label: "Shortcuts" },
   { id: "about", icon: IconInfoCircle, label: "About" },
@@ -48,19 +60,25 @@ const sections = [
 
 const shortcuts = [
   { keys: ["Ctrl", "B"], label: "Toggle sidebar" },
-
   { keys: ["Ctrl", "N"], label: "New prompt" },
   { keys: ["Ctrl", "E"], label: "Export" },
   { keys: ["Ctrl", "S"], label: "Save prompt" },
   { keys: ["Ctrl", "D"], label: "Toggle favorite" },
 ]
 
-function ComingSoon() {
-  return (
-    <span className="rounded-md border border-border bg-muted/50 px-2 py-1 text-[10px] font-medium text-muted-foreground tracking-wide cursor-default">
-      Coming soon
-    </span>
-  )
+const DEFAULT_SETTINGS = {
+  defaultView: "dashboard",
+  autoSave: "false",
+  autoSaveDelay: "10",
+  confirmDelete: "true",
+  compactMode: "false",
+  fontSize: "large",
+  editorMode: "simple",
+  showLineNumbers: "false",
+  spellCheck: "true",
+  updateNotifications: "true",
+  backupReminders: "false",
+  backupInterval: "14",
 }
 
 function SettingRow({ icon: Icon, label, description, children }) {
@@ -97,6 +115,35 @@ function NavItem({ icon: Icon, label, active, onClick }) {
   )
 }
 
+function ToggleSetting({ icon: Icon, label, description, checked, onChange }) {
+  return (
+    <SettingRow icon={Icon} label={label} description={description}>
+      <Switch
+        checked={checked}
+        onCheckedChange={(v) => {
+          onChange(v)
+          toast.info(`${label} ${v ? "enabled" : "disabled"}`)
+        }}
+      />
+    </SettingRow>
+  )
+}
+
+function SelectSetting({ icon: Icon, label, description, value, onChange, children }) {
+  return (
+    <SettingRow icon={Icon} label={label} description={description}>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-40">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {children}
+        </SelectContent>
+      </Select>
+    </SettingRow>
+  )
+}
+
 export default function Settings() {
   const { theme, setTheme } = useTheme()
   const [activeSection, setActiveSection] = useState("general")
@@ -105,7 +152,31 @@ export default function Settings() {
   const [backupStatus, setBackupStatus] = useState(null)
   const [copied, setCopied] = useState(false)
   const [autoStart, setAutoStart] = useState(false)
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS)
   const [aboutData, setAboutData] = useState({ versions: null, uptime: 0, sessionCount: 0, lastBackup: null, totalActivity: 0, diskFree: 0 })
+
+  const loadSettings = useCallback(async () => {
+    try {
+      const loaded = {}
+      for (const [key, defaultValue] of Object.entries(DEFAULT_SETTINGS)) {
+        const value = await window.db.getSetting(key)
+        loaded[key] = value ?? defaultValue
+      }
+      setSettings(loaded)
+    } catch {
+      // keep defaults
+    }
+  }, [])
+
+  const updateSetting = useCallback(async (key, value) => {
+    setSettings((prev) => ({ ...prev, [key]: value }))
+    try {
+      await window.db.setSetting(key, value)
+      window.dispatchEvent(new CustomEvent("setting-changed", { detail: { key, value } }))
+    } catch {
+      toast.error("Failed to save setting")
+    }
+  }, [])
 
   useEffect(() => {
     window.db.getDatabaseStats()
@@ -113,6 +184,7 @@ export default function Settings() {
       .catch(console.error)
       .finally(() => setLoading(false))
     window.electronAPI?.getAutoStart?.().then(setAutoStart).catch(() => {})
+    loadSettings()
     Promise.all([
       window.electronAPI?.getVersions?.(),
       window.electronAPI?.getUptime?.(),
@@ -123,7 +195,7 @@ export default function Settings() {
     ]).then(([versions, uptime, sessionCount, lastBackup, totalActivity, diskFree]) => {
       setAboutData({ versions, uptime, sessionCount, lastBackup, totalActivity, diskFree })
     }).catch(() => {})
-  }, [])
+  }, [loadSettings])
 
   const handleBackup = async () => {
     setBackupStatus("backingup")
@@ -282,34 +354,65 @@ export default function Settings() {
                   <p className="text-xs text-muted-foreground">Application behavior preferences</p>
                 </div>
                 <div className="rounded-lg border border-border bg-card p-4">
-                  <SettingRow
-                    icon={IconLayoutGrid}
-                    label="Compact mode"
-                    description="Reduce spacing and visual density"
+                  <SelectSetting
+                    icon={IconPlayerRecord}
+                    label="Default view on startup"
+                    description="Choose which screen opens when the app launches"
+                    value={settings.defaultView}
+                    onChange={(v) => updateSetting("defaultView", v)}
                   >
-                    <ComingSoon />
-                  </SettingRow>
+                    <SelectItem value="dashboard">Dashboard</SelectItem>
+                    <SelectItem value="prompts">Prompt Library</SelectItem>
+                    <SelectItem value="last">Last viewed</SelectItem>
+                  </SelectSetting>
+
                   <Separator className="my-1" />
-                  <SettingRow
+
+                  <ToggleSetting
                     icon={IconPower}
                     label="Start on system boot"
                     description="Launch app automatically when you log in"
-                  >
-                    <button
-                      onClick={handleAutoStart}
-                      className={cn(
-                        "relative inline-flex h-6 w-10 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200",
-                        autoStart ? "bg-primary" : "bg-muted"
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "inline-block size-5 rounded-full bg-background shadow-sm ring-0 transition-transform duration-200",
-                          autoStart ? "translate-x-4" : "translate-x-0"
-                        )}
-                      />
-                    </button>
-                  </SettingRow>
+                    checked={autoStart}
+                    onChange={handleAutoStart}
+                  />
+
+                  <Separator className="my-1" />
+
+                  <ToggleSetting
+                    icon={IconPlayerPlay}
+                    label="Auto-save prompts"
+                    description="Automatically save changes while editing"
+                    checked={settings.autoSave === "true"}
+                    onChange={(v) => updateSetting("autoSave", String(v))}
+                  />
+
+                  {settings.autoSave === "true" && (
+                    <>
+                      <Separator className="my-1" />
+                      <SelectSetting
+                        icon={IconClock}
+                        label="Auto-save delay"
+                        description="How long to wait before saving"
+                        value={settings.autoSaveDelay}
+                        onChange={(v) => updateSetting("autoSaveDelay", v)}
+                      >
+                        <SelectItem value="5">5 seconds</SelectItem>
+                        <SelectItem value="10">10 seconds</SelectItem>
+                        <SelectItem value="30">30 seconds</SelectItem>
+                        <SelectItem value="60">1 minute</SelectItem>
+                      </SelectSetting>
+                    </>
+                  )}
+
+                  <Separator className="my-1" />
+
+                  <ToggleSetting
+                    icon={IconAlertTriangle}
+                    label="Confirm before delete"
+                    description="Show a confirmation dialog before deleting items"
+                    checked={settings.confirmDelete === "true"}
+                    onChange={(v) => updateSetting("confirmDelete", String(v))}
+                  />
                 </div>
               </section>
             )}
@@ -318,8 +421,31 @@ export default function Settings() {
               <section>
                 <div className="mb-4">
                   <h2 className="text-sm font-semibold text-foreground">Appearance</h2>
-                  <p className="text-xs text-muted-foreground">Choose your theme</p>
+                  <p className="text-xs text-muted-foreground">Customize the look and feel</p>
                 </div>
+
+                <div className="rounded-lg border border-border bg-card p-4 mb-5">
+                  <ToggleSetting
+                    icon={IconLayoutGrid}
+                    label="Compact mode"
+                    description="Reduce spacing and visual density"
+                    checked={settings.compactMode === "true"}
+                    onChange={(v) => updateSetting("compactMode", String(v))}
+                  />
+                  <Separator className="my-1" />
+                  <SelectSetting
+                    icon={IconMoon}
+                    label="Font size"
+                    description="Adjust the base text size across the app"
+                    value={settings.fontSize}
+                    onChange={(v) => updateSetting("fontSize", v)}
+                  >
+                    <SelectItem value="small">Small</SelectItem>
+                    <SelectItem value="medium">Medium (default)</SelectItem>
+                    <SelectItem value="large">Large</SelectItem>
+                  </SelectSetting>
+                </div>
+
                 <div className="space-y-5">
                   {themeGroups.map((group) => (
                     <div key={group.label}>
@@ -407,6 +533,93 @@ export default function Settings() {
                       </div>
                     ))}
                   </div>
+                </div>
+              </section>
+            )}
+
+            {activeSection === "editor" && (
+              <section>
+                <div className="mb-4">
+                  <h2 className="text-sm font-semibold">Editor</h2>
+                  <p className="text-xs text-muted-foreground">Configure the prompt editor behavior</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4">
+                  <SelectSetting
+                    icon={IconEdit}
+                    label="Default editor mode"
+                    description="Choose how prompts are edited by default"
+                    value={settings.editorMode}
+                    onChange={(v) => updateSetting("editorMode", v)}
+                  >
+                    <SelectItem value="simple">Simple text</SelectItem>
+                    <SelectItem value="markdown">Markdown</SelectItem>
+                    <SelectItem value="split">Split view</SelectItem>
+                  </SelectSetting>
+
+                  <Separator className="my-1" />
+
+                  <ToggleSetting
+                    icon={IconLayoutGrid}
+                    label="Show line numbers"
+                    description="Display line numbers in the editor"
+                    checked={settings.showLineNumbers === "true"}
+                    onChange={(v) => updateSetting("showLineNumbers", String(v))}
+                  />
+
+                  <Separator className="my-1" />
+
+                  <ToggleSetting
+                    icon={IconPlayerRecord}
+                    label="Spell check"
+                    description="Enable spell checking in the editor"
+                    checked={settings.spellCheck === "true"}
+                    onChange={(v) => updateSetting("spellCheck", String(v))}
+                  />
+                </div>
+              </section>
+            )}
+
+            {activeSection === "notifications" && (
+              <section>
+                <div className="mb-4">
+                  <h2 className="text-sm font-semibold">Notifications</h2>
+                  <p className="text-xs text-muted-foreground">Control what you get notified about</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4">
+                  <ToggleSetting
+                    icon={IconBell}
+                    label="Update notifications"
+                    description="Get notified when a new version is available"
+                    checked={settings.updateNotifications === "true"}
+                    onChange={(v) => updateSetting("updateNotifications", String(v))}
+                  />
+
+                  <Separator className="my-1" />
+
+                  <ToggleSetting
+                    icon={IconDatabase}
+                    label="Backup reminders"
+                    description="Remind you to back up your database periodically"
+                    checked={settings.backupReminders === "true"}
+                    onChange={(v) => updateSetting("backupReminders", String(v))}
+                  />
+
+                  {settings.backupReminders === "true" && (
+                    <>
+                      <Separator className="my-1" />
+                      <SelectSetting
+                        icon={IconClock}
+                        label="Backup reminder interval"
+                        description="How often to remind you to back up"
+                        value={settings.backupInterval}
+                        onChange={(v) => updateSetting("backupInterval", v)}
+                      >
+                        <SelectItem value="7">Every 7 days</SelectItem>
+                        <SelectItem value="14">Every 14 days</SelectItem>
+                        <SelectItem value="30">Every 30 days</SelectItem>
+                      </SelectSetting>
+                    </>
+                  )}
                 </div>
               </section>
             )}
