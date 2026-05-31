@@ -113,12 +113,11 @@ export function closeDatabase() {
 
 export async function getDashboardStats() {
   const d = getDatabase()
-  const totalPrompts = await d.get('SELECT COUNT(*) as count FROM prompts WHERE is_template = 0')
+  const totalPrompts = await d.get('SELECT COUNT(*) as count FROM prompts WHERE is_template = 0 AND deleted_at IS NULL')
   const collections = await d.get('SELECT COUNT(*) as count FROM collections')
-  const totalTemplates = await d.get('SELECT COUNT(*) as count FROM prompts WHERE is_template = 1')
-  const thisWeek = await d.get("SELECT COUNT(*) as count FROM prompts WHERE is_template = 0 AND created_at >= datetime('now', '-7 days')")
-  const prevWeek = await d.get("SELECT COUNT(*) as count FROM prompts WHERE is_template = 0 AND created_at >= datetime('now', '-14 days') AND created_at < datetime('now', '-7 days')")
-  const lastWeekNew = await d.get("SELECT COUNT(*) as count FROM prompts WHERE is_template = 0 AND created_at >= datetime('now', '-14 days') AND created_at < datetime('now', '-7 days')")
+  const totalTemplates = await d.get('SELECT COUNT(*) as count FROM prompts WHERE is_template = 1 AND deleted_at IS NULL')
+  const thisWeek = await d.get("SELECT COUNT(*) as count FROM prompts WHERE is_template = 0 AND deleted_at IS NULL AND created_at >= datetime('now', '-7 days')")
+  const prevWeek = await d.get("SELECT COUNT(*) as count FROM prompts WHERE is_template = 0 AND deleted_at IS NULL AND created_at >= datetime('now', '-14 days') AND created_at < datetime('now', '-7 days')")
   return {
     totalPrompts: totalPrompts?.count || 0,
     collections: collections?.count || 0,
@@ -130,15 +129,15 @@ export async function getDashboardStats() {
 
 export async function getTotalActivityCount() {
   const d = getDatabase()
-  const result = await d.get('SELECT COUNT(*) as count FROM activity')
+  const result = await d.get('SELECT COUNT(*) as count FROM activity_log')
   return result?.count || 0
 }
 
 export async function getDatabaseStats() {
   const d = getDatabase()
-  const promptCount = await d.get('SELECT COUNT(*) as count FROM prompts')
+  const promptCount = await d.get('SELECT COUNT(*) as count FROM prompts WHERE deleted_at IS NULL')
   const collectionCount = await d.get('SELECT COUNT(*) as count FROM collections')
-  const favoriteCount = await d.get('SELECT COUNT(*) as count FROM prompts WHERE favorite = 1')
+  const favoriteCount = await d.get('SELECT COUNT(*) as count FROM prompts WHERE favorite = 1 AND deleted_at IS NULL')
   const dbPath = path.join(app.getPath('userData'), 'PromptNest', 'promptnest.db')
   let size = 0
   try { size = fs.statSync(dbPath).size } catch {}

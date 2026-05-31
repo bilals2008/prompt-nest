@@ -4,10 +4,11 @@ import path from 'node:path'
 import fs from 'node:fs'
 import pkg from 'electron-updater'
 const { autoUpdater } = pkg
-import { initDatabase, closeDatabase, getDatabaseStats, getDashboardStats, getTotalActivityCount } from './database/db.js'
+import { initDatabase, closeDatabase, getDatabaseStats, getDashboardStats, getTotalActivityCount, getSetting, setSetting } from './database/db.js'
 import * as prompts from './database/prompts.js'
 import * as collections from './database/collections.js'
 import * as activity from './database/activity.js'
+import * as tags from './database/tags.js'
 import * as io from './database/io.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -22,6 +23,30 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 
 
 let win
 const isDev = !app.isPackaged
+let updaterReady = false
+let updateCheckInProgress = false
+let updateDownloadInProgress = false
+
+function writeUpdaterLog(level, message) {
+  if (isDev) return
+  try {
+    const logDir = path.join(app.getPath('userData'), 'logs')
+    fs.mkdirSync(logDir, { recursive: true })
+    fs.appendFileSync(
+      path.join(logDir, 'updater.log'),
+      `[${new Date().toISOString()}] [${level}] ${message}\n`
+    )
+  } catch (error) {
+    console.error('Unable to write updater log', error)
+  }
+}
+
+const updaterLogger = {
+  info: (message) => writeUpdaterLog('info', String(message)),
+  warn: (message) => writeUpdaterLog('warn', String(message)),
+  error: (message) => writeUpdaterLog('error', String(message)),
+  debug: (message) => writeUpdaterLog('debug', String(message)),
+}
 
 function sendUpdaterEvent(type, payload = {}) {
   if (!win || win.isDestroyed()) return
@@ -29,24 +54,36 @@ function sendUpdaterEvent(type, payload = {}) {
 }
 
 function setupUpdater() {
+  if (updaterReady) return
+  updaterReady = true
+
+  autoUpdater.logger = updaterLogger
   autoUpdater.autoDownload = false
   autoUpdater.autoInstallOnAppQuit = false
+  autoUpdater.disableWebInstaller = true
+  autoUpdater.disableDifferentialDownload = false
+
+  if (app.getVersion().includes('-')) {
+    autoUpdater.allowPrerelease = true
+  }
 
   autoUpdater.on('checking-for-update', () => {
+    writeUpdaterLog('info', 'Checking for update')
     sendUpdaterEvent('checking-for-update')
   })
 
   autoUpdater.on('update-available', (info) => {
-    const hasBlockMap = info.files?.some(f => f.blockMapSize > 0)
+    writeUpdaterLog('info', `Update available: ${info.version}`)
     sendUpdaterEvent('update-available', {
       version: info.version,
       releaseDate: info.releaseDate,
       releaseNotes: info.releaseNotes,
-      updateType: hasBlockMap ? 'patch' : 'full',
+      updateType: 'full',
     })
   })
 
   autoUpdater.on('update-not-available', () => {
+    writeUpdaterLog('info', 'No update available')
     sendUpdaterEvent('update-not-available')
   })
 
@@ -60,11 +97,22 @@ function setupUpdater() {
   })
 
   autoUpdater.on('update-downloaded', (info) => {
+    updateDownloadInProgress = false
+    writeUpdaterLog('info', `Update downloaded: ${info.version}`)
     sendUpdaterEvent('update-downloaded', { version: info.version })
   })
 
   autoUpdater.on('error', (error) => {
+    updateCheckInProgress = false
+    updateDownloadInProgress = false
+    writeUpdaterLog('error', error?.stack || error?.message || 'Update error')
     sendUpdaterEvent('error', { message: error?.message || 'Update error' })
+  })
+
+  autoUpdater.on('update-cancelled', () => {
+    updateDownloadInProgress = false
+    writeUpdaterLog('warn', 'Update download cancelled')
+    sendUpdaterEvent('update-cancelled')
   })
 }
 
@@ -104,7 +152,9 @@ function registerIpcHandlers() {
   ipcMain.handle('db:updateCollection', (_, id, data) => collections.updateCollection(id, data))
   ipcMain.handle('db:deleteCollection', (_, id) => collections.deleteCollection(id))
   ipcMain.handle('db:batchDeleteCollections', (_, ids) => collections.batchDeleteCollections(ids))
-  ipcMain.handle('db:logActivity', (_, promptId, action) => activity.logActivity(promptId, action))
+  ipcMain.handle('db:logActivity', async (_, promptId, action) => {
+    return activity.logActivity(promptId, action)
+  })
   ipcMain.handle('db:getActivity', (_, limit) => activity.getActivity(limit))
   ipcMain.handle('db:exportData', (_, format) => io.exportData(format))
   ipcMain.handle('db:importData', () => io.importData())
@@ -117,8 +167,12 @@ function registerIpcHandlers() {
   ipcMain.handle('db:batchSetFavorite', (_, ids, favorite) => prompts.batchSetFavorite(ids, favorite))
   ipcMain.handle('db:batchSetCollection', (_, ids, collectionId) => prompts.batchSetCollection(ids, collectionId))
   ipcMain.handle('db:getDatabaseStats', () => getDatabaseStats())
-  ipcMain.handle('db:getSetting', (_, key) => db.getSetting(key))
-  ipcMain.handle('db:setSetting', (_, key, value) => db.setSetting(key, value))
+  ipcMain.handle('db:getSetting', (_, key) => getSetting(key))
+  ipcMain.handle('db:setSetting', (_, key, value) => setSetting(key, value))
+  ipcMain.handle('tags:getAll', () => tags.getAllTags())
+  ipcMain.handle('tags:rename', (_, oldName, newName) => tags.renameTag(oldName, newName))
+  ipcMain.handle('tags:merge', (_, source, target) => tags.mergeTags(source, target))
+  ipcMain.handle('tags:delete', (_, tagName) => tags.deleteTag(tagName))
   ipcMain.handle('app:getVersion', () => app.getVersion())
   ipcMain.handle('updater:get-app-version', () => {
     if (isDev) {
@@ -132,10 +186,14 @@ function registerIpcHandlers() {
   })
   ipcMain.handle('updater:check-for-updates', async () => {
     if (isDev) { sendUpdaterEvent('update-not-available'); return { ok: false, devMode: true } }
+    if (updateCheckInProgress) return { ok: true, inProgress: true }
     try {
-      autoUpdater.checkForUpdates()
+      updateCheckInProgress = true
+      await autoUpdater.checkForUpdates()
+      updateCheckInProgress = false
       return { ok: true }
     } catch (error) {
+      updateCheckInProgress = false
       sendUpdaterEvent('error', { message: error?.message || 'Update check failed' })
       return { ok: false, message: error?.message }
     }
@@ -143,10 +201,13 @@ function registerIpcHandlers() {
 
   ipcMain.handle('updater:download-update', async () => {
     if (isDev) return { ok: false, devMode: true, message: 'Packaged builds only.' }
+    if (updateDownloadInProgress) return { ok: true, inProgress: true }
     try {
-      autoUpdater.downloadUpdate()
+      updateDownloadInProgress = true
+      await autoUpdater.downloadUpdate()
       return { ok: true }
     } catch (error) {
+      updateDownloadInProgress = false
       sendUpdaterEvent('error', { message: error?.message || 'Download failed' })
       return { ok: false, message: error?.message }
     }
@@ -159,13 +220,11 @@ function registerIpcHandlers() {
   })
 
   ipcMain.handle('updater:pause-download', () => {
-    try { autoUpdater.pauseDownload(); return { ok: true } }
-    catch (e) { return { ok: false, message: e.message } }
+    return { ok: false, unsupported: true, message: 'Pause is not supported by electron-updater.' }
   })
 
   ipcMain.handle('updater:resume-download', () => {
-    try { autoUpdater.resumeDownload(); return { ok: true } }
-    catch (e) { return { ok: false, message: e.message } }
+    return { ok: false, unsupported: true, message: 'Resume is not supported by electron-updater.' }
   })
   ipcMain.handle('app:getAutoStart', () => {
     return app.getLoginItemSettings().openAtLogin
