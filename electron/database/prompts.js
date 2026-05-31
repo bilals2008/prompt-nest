@@ -24,6 +24,7 @@ export async function getAllPrompts() {
     SELECT p.*, c.name as collection_name, c.icon as collection_icon, c.color as collection_color
     FROM prompts p
     LEFT JOIN collections c ON p.collection_id = c.id
+    WHERE p.is_template = 0
     ORDER BY p.created_at DESC
   `)
 }
@@ -34,7 +35,8 @@ export async function getFavorites() {
     SELECT p.*, c.name as collection_name, c.icon as collection_icon, c.color as collection_color
     FROM prompts p
     LEFT JOIN collections c ON p.collection_id = c.id
-    WHERE p.favorite = 1 ORDER BY p.updated_at DESC
+    WHERE p.favorite = 1 AND p.is_template = 0
+    ORDER BY p.updated_at DESC
   `)
 }
 
@@ -105,7 +107,7 @@ export async function batchDeletePrompts(ids) {
   if (!ids.length) return { success: true }
   const db = getDatabase()
   const placeholders = ids.map(() => '?').join(',')
-  await db.run(`DELETE FROM prompts WHERE id IN (${placeholders})`, ids)
+  await db.run(`DELETE FROM prompts WHERE id IN (${placeholders})`, [...ids])
   return { success: true }
 }
 

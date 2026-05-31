@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS prompts (
   collection_id TEXT,
   favorite INTEGER DEFAULT 0,
   is_template INTEGER DEFAULT 0,
+  pinned INTEGER DEFAULT 0,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
@@ -59,4 +60,5 @@ export async function createTables() {
   if (!hasPinned) {
     await db.run('ALTER TABLE prompts ADD COLUMN pinned INTEGER DEFAULT 0')
   }
+
 }
