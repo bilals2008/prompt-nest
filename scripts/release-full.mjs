@@ -35,7 +35,7 @@ function run(command, args, options = {}) {
   const result = spawnSync(commandName(command), args, {
     cwd: root,
     stdio: "inherit",
-    shell: false,
+    shell: true,
     ...options,
   })
 
@@ -48,7 +48,7 @@ function runQuiet(command, args) {
     cwd: root,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
-    shell: false,
+    shell: true,
   })
 }
 
