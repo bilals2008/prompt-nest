@@ -31,8 +31,14 @@ function commandName(command) {
   return process.platform === "win32" && command === "npx" ? "npx.cmd" : command
 }
 
+function escapeArg(arg) {
+  if (process.platform !== "win32") return arg
+  if (arg.includes(" ")) return `"${arg}"`
+  return arg
+}
+
 function run(command, args, options = {}) {
-  const result = spawnSync(commandName(command), args, {
+  const result = spawnSync(commandName(command), args.map(escapeArg), {
     cwd: root,
     stdio: "inherit",
     shell: true,
@@ -44,7 +50,7 @@ function run(command, args, options = {}) {
 }
 
 function runQuiet(command, args) {
-  return spawnSync(commandName(command), args, {
+  return spawnSync(commandName(command), args.map(escapeArg), {
     cwd: root,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
