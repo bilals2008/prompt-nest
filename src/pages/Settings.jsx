@@ -322,13 +322,71 @@ export default function Settings() {
           accent: "#b8976a",
           text: "#e6ddd0",
         },
+        {
+          id: "sunset",
+          label: "Sunset",
+          desc: "Warm orange glow",
+          bg: "#1a0f14",
+          card: "#2a1a22",
+          accent: "#f97316",
+          text: "#f5e6d8",
+        },
+        {
+          id: "lavender",
+          label: "Lavender",
+          desc: "Soft purple hues",
+          bg: "#12111a",
+          card: "#1e1d2a",
+          accent: "#a78bfa",
+          text: "#e8e4f0",
+        },
+        {
+          id: "nord",
+          label: "Nord",
+          desc: "Arctic blue tones",
+          bg: "#1a1f2e",
+          card: "#242a3a",
+          accent: "#88c0d0",
+          text: "#d8dee9",
+        },
+        {
+          id: "dracula",
+          label: "Dracula",
+          desc: "Classic dark palette",
+          bg: "#1e1f29",
+          card: "#282a36",
+          accent: "#ff79c6",
+          text: "#f8f8f2",
+        },
+        {
+          id: "catppuccin",
+          label: "Catppuccin",
+          desc: "Pastel comfort tones",
+          bg: "#1e1e2e",
+          card: "#313244",
+          accent: "#cba6f7",
+          text: "#cdd6f4",
+        },
+        {
+          id: "tokyonight",
+          label: "Tokyo Night",
+          desc: "Neon city vibes",
+          bg: "#1a1b26",
+          card: "#24283b",
+          accent: "#7aa2f7",
+          text: "#c0caf5",
+        },
+        {
+          id: "minimal",
+          label: "Minimal",
+          desc: "Pure dark simplicity",
+          bg: "#111111",
+          card: "#1a1a1a",
+          accent: "#ffffff",
+          text: "#e5e5e5",
+        },
       ],
     },
-  ]
-
-  const upcomingThemes = [
-    "Sunset", "Lavender", "Nord", "Dracula", "Catppuccin",
-    "Tokyo Night", "Minimal",
   ]
 
   return (
@@ -518,30 +576,6 @@ export default function Settings() {
                       </div>
                     </div>
                   ))}
-                </div>
-
-                <div className="mt-8">
-                  <p className="text-xs font-medium text-muted-foreground mb-3">More themes coming soon</p>
-                  <div className="grid grid-cols-4 gap-3">
-                    {upcomingThemes.map((name) => (
-                      <div
-                        key={name}
-                        className="group relative rounded-xl border-2 border-border p-3 text-left opacity-60"
-                      >
-                        <div className="rounded-lg border border-border/50 overflow-hidden mb-2 bg-muted/30 p-3">
-                          <div className="h-1.5 w-10 rounded-full bg-muted-foreground/20 mb-1.5" />
-                          <div className="h-1 w-16 rounded-full bg-muted-foreground/10 mb-1" />
-                          <div className="rounded p-1.5 flex gap-1 bg-muted/20">
-                            <div className="h-1 w-1 rounded-full bg-muted-foreground/20" />
-                            <div className="h-1 w-1 rounded-full bg-muted-foreground/10" />
-                            <div className="h-1 w-1 rounded-full bg-muted-foreground/10" />
-                          </div>
-                        </div>
-                        <p className="text-xs font-medium text-foreground">{name}</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Coming soon</p>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               </section>
             )}
