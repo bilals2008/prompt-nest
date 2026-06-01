@@ -4,6 +4,7 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom"
 import { AppSidebar } from "@/components/app-sidebar"
 import { CommandPaletteProvider } from "@/features/command-palette/CommandPaletteProvider"
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts"
+import { SpotlightSearch } from "@/features/spotlight-search/SpotlightSearch.jsx"
 import { useSetting } from "@/hooks/use-setting"
 
 import { Toaster } from "@/components/ui/sonner"
@@ -50,6 +51,7 @@ function App() {
     <CommandPaletteProvider>
       <StartupRedirect />
       <KeyboardShortcuts />
+      <SpotlightSearch />
       <div className="flex h-screen w-full bg-background overflow-hidden">
         <AppSidebar
           expanded={sidebarExpanded}

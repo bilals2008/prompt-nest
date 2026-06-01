@@ -64,6 +64,7 @@ const shortcuts = [
   { keys: ["Ctrl", "E"], label: "Export" },
   { keys: ["Ctrl", "S"], label: "Save prompt" },
   { keys: ["Ctrl", "D"], label: "Toggle favorite" },
+  { keys: ["Ctrl", "Alt", "P"], label: "Global search (Spotlight)" },
 ]
 
 const DEFAULT_SETTINGS = {

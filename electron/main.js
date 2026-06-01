@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, shell, globalShortcut } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
@@ -246,6 +246,9 @@ function registerIpcHandlers() {
     updateLastBackup(timestamp)
     return { success: true, path: backupPath }
   })
+  ipcMain.handle('app:hideWindow', () => {
+    win?.minimize()
+  })
 }
 
 const APP_START_TIME = Date.now()
@@ -320,8 +323,19 @@ app.whenReady().then(async () => {
   registerIpcHandlers()
   registerAppInfoHandlers()
   createWindow()
+
+  // Register global shortcut for Spotlight/Quick Search
+  globalShortcut.register('CommandOrControl+Alt+P', () => {
+    if (win) {
+      if (win.isMinimized()) win.restore()
+      if (!win.isVisible()) win.show()
+      win.focus()
+      win.webContents.send('app:global-search')
+    }
+  })
 })
 
 app.on('will-quit', () => {
+  globalShortcut.unregisterAll()
   closeDatabase()
 })

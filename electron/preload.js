@@ -7,6 +7,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('updater:event', handler)
     return () => ipcRenderer.removeListener('updater:event', handler)
   },
+  onGlobalSearch: (listener) => {
+    const handler = () => listener()
+    ipcRenderer.on('app:global-search', handler)
+    return () => ipcRenderer.removeListener('app:global-search', handler)
+  },
+  hideWindow: () => ipcRenderer.invoke('app:hideWindow'),
   updater: {
     getAppVersion: () => ipcRenderer.invoke('updater:get-app-version'),
     checkForUpdates: () => ipcRenderer.invoke('updater:check-for-updates'),
