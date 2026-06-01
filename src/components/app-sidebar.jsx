@@ -88,7 +88,8 @@ export function AppSidebar({ expanded, onToggle }) {
   const { updateAvailable, latestVersion } = useUpdateStatus()
   const notifiedVersion = useRef(null)
   const { theme } = useTheme()
-  const logoSrc = theme === "light" ? logoWhite : logo
+  const logoSrc = ["light", "amber", "sage"].includes(theme) ? logoWhite : logo
+
 
   useEffect(() => {
     const handler = () => setUpdateOpen(true)

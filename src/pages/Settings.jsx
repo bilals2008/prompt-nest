@@ -254,6 +254,15 @@ export default function Settings() {
           accent: "#f59e0b",
           text: "#451a03",
         },
+        {
+          id: "sage",
+          label: "Sage",
+          desc: "Calming forest-gray tones",
+          bg: "#f4f7f5",
+          card: "#ffffff",
+          accent: "#2d6a4f",
+          text: "#1c2e24",
+        },
       ],
     },
     {
@@ -384,6 +393,16 @@ export default function Settings() {
           card: "#1a1a1a",
           accent: "#ffffff",
           text: "#e5e5e5",
+        },
+        {
+          id: "cyberpunk",
+          label: "Cyberpunk",
+          desc: "Neon futuristic glow",
+          bg: "#06060c",
+          card: "#0c0c16",
+          accent: "#00f0ff",
+          text: "#e2e2f5",
+          secondaryAccent: "#ff2a9d",
         },
       ],
     },
@@ -559,12 +578,12 @@ export default function Settings() {
                                     style={{ background: t.accent }}
                                   />
                                   <div
-                                    className="h-1.5 w-1.5 rounded-full opacity-30"
-                                    style={{ background: t.text }}
+                                    className="h-1.5 w-1.5 rounded-full"
+                                    style={{ background: t.secondaryAccent || t.accent, opacity: t.secondaryAccent ? 1 : 0.3 }}
                                   />
                                   <div
-                                    className="h-1.5 w-1.5 rounded-full opacity-30"
-                                    style={{ background: t.text }}
+                                    className="h-1.5 w-1.5 rounded-full"
+                                    style={{ background: t.text, opacity: 0.3 }}
                                   />
                                 </div>
                               </div>

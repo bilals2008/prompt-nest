@@ -1,3 +1,4 @@
+// File: src/App.jsx
 import { useState, useEffect } from "react"
 import { Outlet, useNavigate, useLocation } from "react-router-dom"
 import { AppSidebar } from "@/components/app-sidebar"

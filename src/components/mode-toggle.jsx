@@ -16,8 +16,10 @@ const themeGroups = [
     themes: [
       { value: "light", icon: IconSun, label: "Light" },
       { value: "amber", icon: IconFlame, label: "Amber" },
+      { value: "sage", icon: IconTrees, label: "Sage" },
     ],
   },
+
   {
     label: "Dark",
     themes: [
