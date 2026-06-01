@@ -26,6 +26,8 @@ import { Button } from "@/components/ui/button"
 import { LoadingState, EmptyState } from "@/components/loading-state"
 import { iconOptions, getCollectionIcon, getCollectionColor } from "@/lib/collection-config"
 import { getTagColorDot, colorNames } from "@/lib/tag-colors"
+import { useConfirmDelete } from "@/hooks/use-confirm-delete"
+import { useSetting } from "@/hooks/use-setting"
 import {
   IconPlus,
   IconPencil,
@@ -55,6 +57,8 @@ export default function Collections() {
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const confirmDelete = useConfirmDelete()
+  const confirmDeleteSetting = useSetting("confirmDelete", "true")
 
   const loadData = () => {
     setLoading(true)
@@ -128,6 +132,11 @@ export default function Collections() {
   }
 
   const handleDelete = async (id) => {
+    const col = collections.find((c) => c.id === id)
+    if (!(await confirmDelete({
+      title: "Delete collection?",
+      description: `"${col?.name || "This collection"}" will be removed. Prompts inside will be ungrouped but not deleted.`,
+    }))) return
     await window.db.deleteCollection(id)
     loadData()
     toast.success("Collection deleted")
@@ -154,7 +163,7 @@ export default function Collections() {
     setSelectedIds(new Set())
   }, [])
 
-  const handleBatchDelete = async () => {
+  const performBatchDelete = async () => {
     const ids = Array.from(selectedIds)
     if (!ids.length) return
     await window.db.batchDeleteCollections(ids)
@@ -162,6 +171,14 @@ export default function Collections() {
     setSelectedIds(new Set())
     setShowDeleteDialog(false)
     toast.success(`${ids.length} collection${ids.length !== 1 ? "s" : ""} deleted`)
+  }
+
+  const handleBatchDeleteClick = () => {
+    if (String(confirmDeleteSetting) === "false") {
+      performBatchDelete()
+    } else {
+      setShowDeleteDialog(true)
+    }
   }
 
   return (
@@ -184,7 +201,7 @@ export default function Collections() {
               <Button variant="outline" size="sm" onClick={() => { setSelectMode(false); setSelectedIds(new Set()) }}>
                 Cancel
               </Button>
-              <Button variant="destructive" size="sm" disabled={selectedIds.size === 0} onClick={() => setShowDeleteDialog(true)}>
+              <Button variant="destructive" size="sm" disabled={selectedIds.size === 0} onClick={handleBatchDeleteClick}>
                 <IconTrash className="size-4" /> Delete {selectedIds.size > 0 ? `(${selectedIds.size})` : ""}
               </Button>
             </>
@@ -212,7 +229,7 @@ export default function Collections() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setShowDeleteDialog(false)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={handleBatchDelete}>Delete</AlertDialogAction>
+            <AlertDialogAction variant="destructive" onClick={performBatchDelete}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

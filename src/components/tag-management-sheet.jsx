@@ -31,6 +31,7 @@ import {
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { getTagColorDot } from "@/lib/tag-colors"
+import { useConfirmDelete } from "@/hooks/use-confirm-delete"
 
 const PAGE_SIZE = 20
 
@@ -44,6 +45,7 @@ export function TagManagementSheet({ open, onOpenChange, onTagsChanged }) {
   const [editValue, setEditValue] = useState("")
   const [merging, setMerging] = useState(null)
   const [mergeValue, setMergeValue] = useState("")
+  const confirmDelete = useConfirmDelete()
 
   useEffect(() => { if (open) loadTags() }, [open])
 
@@ -98,6 +100,10 @@ export function TagManagementSheet({ open, onOpenChange, onTagsChanged }) {
   }
 
   async function handleDelete(tagName) {
+    if (!(await confirmDelete({
+      title: "Delete tag?",
+      description: `"${tagName}" will be removed from all prompts. This action cannot be undone.`,
+    }))) return
     try {
       await window.db.tags.delete(tagName)
       toast.success(`Deleted tag "${tagName}"`)

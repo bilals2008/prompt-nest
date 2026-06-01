@@ -4,6 +4,7 @@ import { PromptCard } from "@/components/prompt-card"
 import { BatchActionsBar } from "@/components/batch-actions-bar"
 import { Badge } from "@/components/ui/badge"
 import { LoadingState, EmptyState } from "@/components/loading-state"
+import { useConfirmDelete } from "@/hooks/use-confirm-delete"
 import {
   IconSearch,
   IconX,
@@ -22,6 +23,7 @@ export default function Favorites() {
   const [sortBy, setSortBy] = useState("updated_at")
   const [viewMode, setViewMode] = useState("grid")
   const [selectedIds, setSelectedIds] = useState(new Set())
+  const confirmDelete = useConfirmDelete()
 
   const loadData = () => {
     setLoading(true)
@@ -79,6 +81,11 @@ export default function Favorites() {
   }
 
   const handleDelete = async (id) => {
+    const prompt = prompts.find((p) => p.id === id)
+    if (!(await confirmDelete({
+      title: "Delete prompt?",
+      description: `"${prompt?.title || "This prompt"}" will be permanently deleted. This action cannot be undone.`,
+    }))) return
     await window.db.deletePrompt(id)
     setPrompts((prev) => prev.filter((p) => p.id !== id))
     toast.success("Prompt deleted")

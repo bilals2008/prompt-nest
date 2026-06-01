@@ -8,6 +8,7 @@ import { PromptCard } from "@/components/prompt-card"
 import { BatchActionsBar } from "@/components/batch-actions-bar"
 import { LoadingState, EmptyState } from "@/components/loading-state"
 import { DataPagination } from "@/components/data-pagination"
+import { useConfirmDelete } from "@/hooks/use-confirm-delete"
 
 export default function AllPrompts() {
   const navigate = useNavigate()
@@ -22,6 +23,7 @@ export default function AllPrompts() {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(16)
   const [selectedIds, setSelectedIds] = useState(new Set())
+  const confirmDelete = useConfirmDelete()
 
   const filteredAndSorted = useMemo(() => {
     let result = [...prompts]
@@ -104,6 +106,11 @@ export default function AllPrompts() {
   }
 
   const handleDelete = async (id) => {
+    const prompt = prompts.find((p) => p.id === id)
+    if (!(await confirmDelete({
+      title: "Delete prompt?",
+      description: `"${prompt?.title || "This prompt"}" will be permanently deleted. This action cannot be undone.`,
+    }))) return
     await window.db.deletePrompt(id)
     setPrompts((prev) => prev.filter((p) => p.id !== id))
     toast.success("Prompt deleted")

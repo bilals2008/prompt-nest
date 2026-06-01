@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { CommandPaletteProvider } from "@/features/command-palette/CommandPaletteProvider"
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts"
 import { SpotlightSearch } from "@/features/spotlight-search/SpotlightSearch.jsx"
+import { ConfirmDialogProvider } from "@/components/confirm-dialog"
 import { useSetting } from "@/hooks/use-setting"
 
 import { Toaster } from "@/components/ui/sonner"
@@ -49,22 +50,24 @@ function App() {
 
   return (
     <CommandPaletteProvider>
-      <StartupRedirect />
-      <KeyboardShortcuts />
-      <SpotlightSearch />
-      <div className="flex h-screen w-full bg-background overflow-hidden">
-        <AppSidebar
-          expanded={sidebarExpanded}
-          onToggle={() => setSidebarExpanded((prev) => !prev)}
-        />
-        <main className={cn(
-          "flex flex-1 flex-col overflow-hidden transition-all duration-300 ease-in-out",
-          sidebarExpanded ? "ml-56" : "ml-18"
-        )}>
-          <Outlet />
-        </main>
-        <Toaster />
-      </div>
+      <ConfirmDialogProvider>
+        <StartupRedirect />
+        <KeyboardShortcuts />
+        <SpotlightSearch />
+        <div className="flex h-screen w-full bg-background overflow-hidden">
+          <AppSidebar
+            expanded={sidebarExpanded}
+            onToggle={() => setSidebarExpanded((prev) => !prev)}
+          />
+          <main className={cn(
+            "flex flex-1 flex-col overflow-hidden transition-all duration-300 ease-in-out",
+            sidebarExpanded ? "ml-56" : "ml-18"
+          )}>
+            <Outlet />
+          </main>
+          <Toaster />
+        </div>
+      </ConfirmDialogProvider>
     </CommandPaletteProvider>
   )
 }

@@ -18,6 +18,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog"
 import { getCollectionIcon } from "@/lib/collection-config"
+import { useSetting } from "@/hooks/use-setting"
 import {
   IconHeart,
   IconFolder,
@@ -40,6 +41,7 @@ export function BatchActionsBar({
   const [showMoveDialog, setShowMoveDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [selectedCollectionId, setSelectedCollectionId] = useState("")
+  const confirmDeleteSetting = useSetting("confirmDelete", "true")
 
   if (selectedCount === 0) return null
 
@@ -54,6 +56,14 @@ export function BatchActionsBar({
   const handleDeleteConfirm = () => {
     onDelete()
     setShowDeleteDialog(false)
+  }
+
+  const handleDeleteClick = () => {
+    if (String(confirmDeleteSetting) === "false") {
+      onDelete()
+    } else {
+      setShowDeleteDialog(true)
+    }
   }
 
   const handleFavorite = () => {
@@ -89,7 +99,7 @@ export function BatchActionsBar({
             Move
           </Button>
 
-          <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)}>
+          <Button variant="destructive" size="sm" onClick={handleDeleteClick}>
             <IconTrash className="size-3.5" />
             Delete
           </Button>

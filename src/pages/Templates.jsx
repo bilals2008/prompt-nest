@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { TagBadge } from "@/components/tag-badge"
 import { LoadingState, EmptyState } from "@/components/loading-state"
+import { useConfirmDelete } from "@/hooks/use-confirm-delete"
 import {
   IconFileText,
   IconTrash,
@@ -15,6 +16,7 @@ export default function Templates() {
   const [templates, setTemplates] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
+  const confirmDelete = useConfirmDelete()
 
   const load = () => {
     setLoading(true)
@@ -39,6 +41,11 @@ export default function Templates() {
   }
 
   const handleDelete = async (id) => {
+    const tpl = templates.find((t) => t.id === id)
+    if (!(await confirmDelete({
+      title: "Delete template?",
+      description: `"${tpl?.title || "This template"}" will be permanently deleted. This action cannot be undone.`,
+    }))) return
     await window.db.deleteTemplate(id)
     setTemplates((prev) => prev.filter((t) => t.id !== id))
     toast.success("Template deleted")
