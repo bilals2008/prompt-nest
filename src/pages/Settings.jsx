@@ -313,6 +313,15 @@ export default function Settings() {
           accent: "#d6a15f",
           text: "#f0e7dc",
         },
+        {
+          id: "read",
+          label: "Read",
+          desc: "Warm reading tones",
+          bg: "#1c1816",
+          card: "#2a2420",
+          accent: "#b8976a",
+          text: "#e6ddd0",
+        },
       ],
     },
   ]
