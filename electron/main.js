@@ -159,6 +159,7 @@ function registerIpcHandlers() {
   ipcMain.handle('db:exportData', (_, format, options) => io.exportData(format, options))
   ipcMain.handle('db:importData', (_, filePath) => io.importData(filePath))
   ipcMain.handle('db:importCsv', (_, filePath) => io.importCsv(filePath))
+  ipcMain.handle('db:commitImport', (_, prompts) => io.commitImport(prompts))
   ipcMain.handle('db:searchPrompts', (_, query, filter) => prompts.searchPrompts(query, filter))
   ipcMain.handle('db:getDashboardStats', () => getDashboardStats())
   ipcMain.handle('db:getTemplates', () => prompts.getTemplates())

@@ -22,8 +22,6 @@ import {
   IconCheck,
   IconAlertCircle,
   IconRefresh,
-  IconFileImport,
-  IconHistory,
   IconX,
   IconListCheck,
   IconFolder,
@@ -39,9 +37,56 @@ const exportFormats = [
   { id: "csv", label: "CSV", icon: IconFileSpreadsheet, desc: "Spreadsheet-friendly format (.csv)", color: "text-chart-3 bg-chart-3/10" },
 ]
 
+function detectFormat(fileName, content) {
+  const ext = fileName.split(".").pop().toLowerCase()
+  if (ext === "json") return "json"
+  if (ext === "csv") return "csv"
+  if (ext === "md" || ext === "markdown") return "markdown"
+  const trimmed = content.trim()
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) return "json"
+  if (trimmed.includes(",")) return "csv"
+  if (trimmed.startsWith("#") || trimmed.startsWith("---")) return "markdown"
+  return null
+}
+
+function normalizePrompt(raw) {
+  const content = (raw.content || raw.text || raw.body || "").trim()
+  const title = (raw.title || "").trim()
+  let tags = raw.tags || raw.tag || ""
+  if (Array.isArray(tags)) tags = tags.join(", ")
+  tags = String(tags).trim()
+  const favorite = raw.favorite || raw.isFavorite ? 1 : 0
+  const collection_id = raw.collection_id || null
+  return { title, content, tags, favorite, collection_id }
+}
+
+function parseCSVFrontend(text) {
+  const normalized = text.replace(/^\uFEFF/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n")
+  const rows = []
+  let row = []
+  let field = ""
+  let inQuotes = false
+  let i = 0
+  while (i < normalized.length) {
+    const ch = normalized[i]
+    if (inQuotes) {
+      if (ch === '"') {
+        if (normalized[i + 1] === '"') { field += '"'; i += 2 }
+        else { inQuotes = false; i++ }
+      } else { field += ch; i++ }
+    } else {
+      if (ch === '"' && field === "") { inQuotes = true; i++ }
+      else if (ch === ",") { row.push(field); field = ""; i++ }
+      else if (ch === "\n") { row.push(field); rows.push(row); row = []; field = ""; i++ }
+      else { field += ch; i++ }
+    }
+  }
+  if (field !== "" || row.length > 0) { row.push(field); rows.push(row) }
+  return rows.filter((r) => r.some((c) => c.trim() !== ""))
+}
+
 export default function ExportImport() {
   const [exporting, setExporting] = useState(null)
-  const [importing, setImporting] = useState(false)
   const [result, setResult] = useState(null)
   const [prompts, setPrompts] = useState([])
   const [collections, setCollections] = useState([])
@@ -52,6 +97,8 @@ export default function ExportImport() {
   const [selectedCollectionIds, setSelectedCollectionIds] = useState(new Set())
   const [selectScope, setSelectScope] = useState("all")
   const [isDragging, setIsDragging] = useState(false)
+  const [importFlow, setImportFlow] = useState({ status: "idle", format: null, fileName: null, prompts: [], valid: 0, skipped: 0, result: null, error: null })
+  const fileInputRef = useRef(null)
   const dragCounter = useRef(0)
 
   useEffect(() => {
@@ -132,90 +179,85 @@ export default function ExportImport() {
     return null
   }
 
-  const handleImport = async () => {
-    setImporting(true)
-    setResult(null)
+  const processImportFile = async (file) => {
+    if (!file) return
+    setImportFlow((s) => ({ ...s, status: "parsing", fileName: file.name, error: null }))
     try {
-      const res = await window.db.importData()
-      if (res.canceled) {
-        setImporting(false)
+      const text = await file.text()
+      const format = detectFormat(file.name, text)
+      if (!format) {
+        setImportFlow((s) => ({ ...s, status: "error", error: "Unrecognized file format. Use .json, .csv, or .md" }))
         return
       }
-      if (res.error) {
-        setResult({ type: "error", message: "Import failed", detail: res.error })
-        toast.error("Import failed")
-      } else if (res.success) {
-        setResult({ type: "success", message: "Import complete", detail: `${res.prompts} prompts, ${res.collections} collections imported${res.errors > 0 ? ` (${res.errors} errors)` : ""}` })
-        toast.success("Import complete")
-        loadStats()
+      let prompts = []
+      if (format === "json") {
+        const data = JSON.parse(text)
+        const raw = Array.isArray(data) ? data : Array.isArray(data.prompts) ? data.prompts : []
+        prompts = raw.map(normalizePrompt).filter((p) => p.content)
+      } else if (format === "csv") {
+        const rows = parseCSVFrontend(text)
+        if (rows.length < 2) { setImportFlow((s) => ({ ...s, status: "error", error: "CSV file is empty or missing rows" })); return }
+        const header = rows[0].map((h) => h.trim().toLowerCase())
+        const idx = (name) => header.indexOf(name)
+        const tIdx = idx("title"), cIdx = idx("content"), tgIdx = idx("tags"), fIdx = idx("favorite"), ciIdx = idx("collection_id")
+        if (cIdx === -1) { setImportFlow((s) => ({ ...s, status: "error", error: 'CSV must have a "content" column' })); return }
+        for (let r = 1; r < rows.length; r++) {
+          const row = rows[r]
+          const title = (row[tIdx] || "").trim()
+          const content = (row[cIdx] || "").trim()
+          if (!content) continue
+          const tags = tgIdx !== -1 ? (row[tgIdx] || "").trim() : ""
+          const favorite = fIdx !== -1 && /^(1|true|yes)$/i.test((row[fIdx] || "").trim()) ? 1 : 0
+          const collection_id = ciIdx !== -1 && row[ciIdx] ? row[ciIdx].trim() : null
+          prompts.push(normalizePrompt({ title, content, tags, favorite, collection_id }))
+        }
+      } else if (format === "markdown") {
+        const sections = text.split(/\n---\n/).filter((s) => s.trim())
+        for (const sec of sections) {
+          const lines = sec.split("\n")
+          const titleMatch = lines.find((l) => /^#\s+/.test(l))
+          const title = titleMatch ? titleMatch.replace(/^#\s+/, "").trim() : ""
+          let tags = ""
+          let content = ""
+          let collecting = false
+          for (const line of lines) {
+            if (/^#\s+/.test(line)) continue
+            if (/^\*\*Tags?:\*\*/i.test(line)) { tags = line.replace(/^\*\*Tags?:\*\*\s*/i, "").trim(); continue }
+            if (line.trim() === "") { if (collecting) content += "\n"; continue }
+            content += (content ? "\n" : "") + line
+            collecting = true
+          }
+          if (content.trim()) prompts.push(normalizePrompt({ title, tags, content: content.trim() }))
+        }
       }
+      const valid = prompts.length
+      const skipped = (format === "csv" ? parseCSVFrontend(text).length - 1 : 0) - valid
+      setImportFlow((s) => ({ ...s, status: "preview", format, prompts, valid, skipped: Math.max(0, skipped) }))
     } catch (err) {
-      setResult({ type: "error", message: "Import failed", detail: err.message })
-      toast.error("Import failed")
+      setImportFlow((s) => ({ ...s, status: "error", error: err.message || "Failed to parse file" }))
     }
-    setImporting(false)
   }
 
-  const handleImportCsv = async () => {
-    setImporting(true)
-    setResult(null)
+  const handleCommitImport = async () => {
+    setImportFlow((s) => ({ ...s, status: "importing" }))
     try {
-      const res = await window.db.importCsv()
-      if (res.canceled) {
-        setImporting(false)
-        return
-      }
-      if (res.error) {
-        setResult({ type: "error", message: "CSV import failed", detail: res.error })
-        toast.error("CSV import failed")
-      } else if (res.success) {
-        setResult({ type: "success", message: "CSV imported", detail: `${res.prompts} prompts imported${res.errors > 0 ? ` (${res.errors} skipped)` : ""}` })
-        toast.success("CSV imported")
-        loadStats()
-      }
+      const res = await window.db.commitImport(importFlow.prompts)
+      setImportFlow((s) => ({ ...s, status: "done", result: res }))
+      loadStats()
+      toast.success(`Imported ${res.imported} prompts`)
     } catch (err) {
-      setResult({ type: "error", message: "CSV import failed", detail: err.message })
-      toast.error("CSV import failed")
+      setImportFlow((s) => ({ ...s, status: "error", error: err.message || "Import failed" }))
+      toast.error("Import failed")
     }
-    setImporting(false)
+  }
+
+  const handleImportAnother = () => {
+    setImportFlow({ status: "idle", format: null, fileName: null, prompts: [], valid: 0, skipped: 0, result: null, error: null })
   }
 
   const processDroppedFile = async (file) => {
     if (!file) return
-    const name = file.name.toLowerCase()
-    setImporting(true)
-    setResult(null)
-    try {
-      let res
-      if (name.endsWith(".csv")) {
-        res = await window.db.importCsv(file.path)
-        if (res.error) {
-          setResult({ type: "error", message: "CSV import failed", detail: res.error })
-          toast.error("CSV import failed")
-        } else if (res.success) {
-          setResult({ type: "success", message: "CSV imported", detail: `${res.prompts} prompts imported${res.errors > 0 ? ` (${res.errors} skipped)` : ""}` })
-          toast.success("CSV imported")
-          loadStats()
-        }
-      } else if (name.endsWith(".json")) {
-        res = await window.db.importData(file.path)
-        if (res.error) {
-          setResult({ type: "error", message: "Import failed", detail: res.error })
-          toast.error("Import failed")
-        } else if (res.success) {
-          setResult({ type: "success", message: "Import complete", detail: `${res.prompts} prompts, ${res.collections} collections imported${res.errors > 0 ? ` (${res.errors} errors)` : ""}` })
-          toast.success("Import complete")
-          loadStats()
-        }
-      } else {
-        setResult({ type: "error", message: "Unsupported file type", detail: "Please drop a .json or .csv file" })
-        toast.error("Unsupported file type")
-      }
-    } catch (err) {
-      setResult({ type: "error", message: "Import failed", detail: err.message })
-      toast.error("Import failed")
-    }
-    setImporting(false)
+    processImportFile(file)
   }
 
   const handleDragEnter = (e) => {
@@ -399,72 +441,123 @@ export default function ExportImport() {
               </div>
               <div>
                 <h2 className="text-sm font-semibold">Import</h2>
-                <p className="text-xs text-muted-foreground">Restore from a backup or bulk import prompts — drag &amp; drop a .json or .csv file anywhere on this page</p>
+                <p className="text-xs text-muted-foreground">Restore from backup or bulk import — accepts .json, .csv, .md</p>
               </div>
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Button
-                variant="outline"
-                onClick={handleImport}
-                disabled={importing}
-                className="group flex-col items-start gap-4 p-6 text-left h-auto min-h-[160px] cursor-pointer"
-              >
-                <div className="flex size-11 items-center justify-center rounded-xl bg-chart-2/10 text-chart-2 shrink-0">
-                  {importing ? (
-                    <IconRefresh className="size-5 animate-spin" />
-                  ) : (
-                    <IconFileImport className="size-5" />
-                  )}
-                </div>
-                <div className="w-full min-w-0">
-                  <h3 className="text-sm font-semibold">Restore Backup</h3>
-                  <p className="mt-1 text-xs text-muted-foreground break-words">Import from a previously exported JSON backup</p>
-                </div>
-                <div className="flex items-center gap-1 text-[11px] font-medium text-chart-2 opacity-0 transition-opacity group-hover:opacity-100">
-                  <IconUpload className="size-3" />
-                  Choose file
-                </div>
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={handleImportCsv}
-                disabled={importing}
-                className="group flex-col items-start gap-4 p-6 text-left h-auto min-h-[160px] cursor-pointer"
-              >
-                <div className="flex size-11 items-center justify-center rounded-xl bg-chart-3/10 text-chart-3 shrink-0">
-                  {importing ? (
-                    <IconRefresh className="size-5 animate-spin" />
-                  ) : (
-                    <IconHistory className="size-5" />
-                  )}
-                </div>
-                <div className="w-full min-w-0">
-                  <h3 className="text-sm font-semibold">Bulk Import CSV</h3>
-                  <p className="mt-1 text-xs text-muted-foreground break-words">Import multiple prompts from a CSV (title, content, tags)</p>
-                </div>
-                <div className="flex items-center gap-1 text-[11px] font-medium text-chart-3 opacity-0 transition-opacity group-hover:opacity-100">
-                  <IconUpload className="size-3" />
-                  Choose file
-                </div>
-              </Button>
             </div>
 
-            <div
-              onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); dragCounter.current += 1; setIsDragging(true) }}
-              onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); dragCounter.current -= 1; if (dragCounter.current <= 0) { dragCounter.current = 0; setIsDragging(false) } }}
-              onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
-              onDrop={(e) => { e.preventDefault(); e.stopPropagation(); dragCounter.current = 0; setIsDragging(false); const file = e.dataTransfer?.files?.[0]; if (file) processDroppedFile(file) }}
-              className="mt-6 flex cursor-default flex-col items-center gap-3 rounded-xl border-2 border-dashed border-border bg-card/20 px-6 py-8 transition-colors hover:border-muted-foreground/40 hover:bg-card/30"
-            >
-              <div className="flex size-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-                <IconCloudUpload className="size-6" />
+            {importFlow.status === "idle" && (
+              <>
+                <div
+                  onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); dragCounter.current += 1; setIsDragging(true) }}
+                  onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); dragCounter.current -= 1; if (dragCounter.current <= 0) { dragCounter.current = 0; setIsDragging(false) } }}
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
+                  onDrop={(e) => { e.preventDefault(); e.stopPropagation(); dragCounter.current = 0; setIsDragging(false); const file = e.dataTransfer?.files?.[0]; if (file) processImportFile(file) }}
+                  className="flex cursor-default flex-col items-center gap-4 rounded-xl border-2 border-dashed border-border bg-card/20 px-6 py-10 transition-colors hover:border-muted-foreground/40 hover:bg-card/30"
+                >
+                  <div className="flex size-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                    <IconCloudUpload className="size-7" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold">Drop a file here</p>
+                    <p className="mt-1 text-xs text-muted-foreground">or</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="cursor-pointer">
+                    <IconUpload className="size-3.5" />
+                    Browse files
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".json,.csv,.md,.markdown"
+                    className="hidden"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) processImportFile(f); e.target.value = "" }}
+                  />
+                </div>
+              </>
+            )}
+
+            {importFlow.status === "parsing" && (
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-card/50 px-4 py-3">
+                <IconRefresh className="size-4 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground">Processing {importFlow.fileName}...</p>
               </div>
-              <div className="text-center">
-                <p className="text-sm font-medium">Drop files here</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">Drag &amp; drop a .json or .csv file anywhere on this page</p>
+            )}
+
+            {importFlow.status === "preview" && (
+              <div className="rounded-xl border border-border bg-card/50 p-5 space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex size-9 items-center justify-center rounded-xl bg-chart-2/10 text-chart-2 shrink-0">
+                    <IconCheck className="size-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold">Ready to import</p>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                      <Badge variant="outline" className="text-[10px] font-mono uppercase">{importFlow.format}</Badge>
+                      <span className="text-xs text-muted-foreground truncate">{importFlow.fileName}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-4 text-xs">
+                  <div className="flex items-center gap-1.5 text-chart-2">
+                    <IconCheck className="size-3.5" />
+                    <span className="font-semibold">{importFlow.valid}</span> valid
+                  </div>
+                  {importFlow.skipped > 0 && (
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <IconX className="size-3.5" />
+                      <span className="font-semibold">{importFlow.skipped}</span> skipped
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handleImportAnother} className="cursor-pointer">Cancel</Button>
+                  <Button size="sm" onClick={handleCommitImport} className="cursor-pointer">
+                    <IconDownload className="size-3.5" />
+                    Import {importFlow.valid} prompt{importFlow.valid === 1 ? "" : "s"}
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
+
+            {importFlow.status === "importing" && (
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-card/50 px-4 py-3">
+                <IconRefresh className="size-4 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground">Importing {importFlow.valid} prompts...</p>
+              </div>
+            )}
+
+            {importFlow.status === "done" && (
+              <div className="rounded-xl border border-chart-2/30 bg-chart-2/5 p-5 space-y-3">
+                <div className="flex items-start gap-3">
+                  <IconCheck className="mt-0.5 size-4 shrink-0 text-chart-2" />
+                  <div>
+                    <p className="text-sm font-semibold">Import complete</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {importFlow.result?.imported} imported{importFlow.result?.failed > 0 ? `, ${importFlow.result.failed} failed` : ""}
+                    </p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={handleImportAnother} className="cursor-pointer">
+                  <IconUpload className="size-3.5" />
+                  Import another file
+                </Button>
+              </div>
+            )}
+
+            {importFlow.status === "error" && (
+              <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-5 space-y-3">
+                <div className="flex items-start gap-3">
+                  <IconAlertCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
+                  <div>
+                    <p className="text-sm font-semibold">Import failed</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{importFlow.error}</p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={handleImportAnother} className="cursor-pointer">
+                  Try again
+                </Button>
+              </div>
+            )}
           </section>
         </div>
       </div>
@@ -477,7 +570,7 @@ export default function ExportImport() {
             </div>
             <div className="text-center">
               <p className="text-sm font-semibold">Drop file to import</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">Accepts .json or .csv</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">Accepts .json, .csv, .md</p>
             </div>
           </div>
         </div>

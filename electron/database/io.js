@@ -285,3 +285,22 @@ export async function importCsv(filePath = null) {
 
   return { success: true, ...imported }
 }
+
+export async function commitImport(prompts) {
+  const db = getDatabase()
+  const now = new Date().toISOString()
+  const result = { imported: 0, failed: 0 }
+  for (const p of prompts) {
+    try {
+      const id = crypto.randomUUID()
+      await db.run(
+        'INSERT INTO prompts (id, title, content, tags, collection_id, favorite, is_template, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)',
+        [id, p.title, p.content, p.tags || '', p.collection_id || null, p.favorite || 0, now, now]
+      )
+      result.imported++
+    } catch {
+      result.failed++
+    }
+  }
+  return result
+}

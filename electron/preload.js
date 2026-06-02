@@ -42,6 +42,7 @@ contextBridge.exposeInMainWorld('db', {
   exportData: (format, options) => ipcRenderer.invoke('db:exportData', format, options),
   importData: (filePath) => ipcRenderer.invoke('db:importData', filePath),
   importCsv: (filePath) => ipcRenderer.invoke('db:importCsv', filePath),
+  commitImport: (prompts) => ipcRenderer.invoke('db:commitImport', prompts),
   searchPrompts: (query, filter) => ipcRenderer.invoke('db:searchPrompts', query, filter),
   getDashboardStats: () => ipcRenderer.invoke('db:getDashboardStats'),
   getTemplates: () => ipcRenderer.invoke('db:getTemplates'),
