@@ -298,7 +298,7 @@ export default function ExportImport() {
       </header>
 
       <div className="flex-1 overflow-auto p-6">
-        <div className="mx-auto max-w-3xl space-y-8">
+        <div className="mx-auto max-w-6xl space-y-8">
           {result && (
             <div className={cn(
               "relative flex items-start gap-3 rounded-xl border px-4 py-3 pr-10",
@@ -357,7 +357,7 @@ export default function ExportImport() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {exportFormats.map((fmt) => {
                 const Icon = fmt.icon
                 const isLoading = exporting === fmt.id
@@ -367,18 +367,18 @@ export default function ExportImport() {
                     variant="outline"
                     onClick={() => handleExport(fmt.id)}
                     disabled={exporting !== null || totalPrompts === 0}
-                    className="group flex-col items-start gap-3 p-5 text-left h-auto cursor-pointer"
+                    className="group flex-col items-start gap-4 p-6 text-left h-auto min-h-[170px] cursor-pointer"
                   >
-                    <div className={cn("flex size-10 items-center justify-center rounded-xl", fmt.color)}>
+                    <div className={cn("flex size-11 items-center justify-center rounded-xl shrink-0", fmt.color)}>
                       {isLoading ? (
                         <IconRefresh className="size-5 animate-spin" />
                       ) : (
                         <Icon className="size-5" />
                       )}
                     </div>
-                    <div className="w-full">
+                    <div className="w-full min-w-0">
                       <h3 className="text-sm font-semibold">{fmt.label}</h3>
-                      <p className="mt-1 text-xs text-muted-foreground">{fmt.desc}</p>
+                      <p className="mt-1.5 text-xs text-muted-foreground break-words">{fmt.desc}</p>
                     </div>
                     <div className="flex items-center gap-1 text-[11px] font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
                       <IconDownload className="size-3" />
@@ -402,23 +402,23 @@ export default function ExportImport() {
                 <p className="text-xs text-muted-foreground">Restore from a backup or bulk import prompts — drag &amp; drop a .json or .csv file anywhere on this page</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Button
                 variant="outline"
                 onClick={handleImport}
                 disabled={importing}
-                className="group flex-col items-start gap-3 p-5 text-left h-auto cursor-pointer"
+                className="group flex-col items-start gap-4 p-6 text-left h-auto min-h-[160px] cursor-pointer"
               >
-                <div className="flex size-10 items-center justify-center rounded-xl bg-chart-2/10 text-chart-2">
+                <div className="flex size-11 items-center justify-center rounded-xl bg-chart-2/10 text-chart-2 shrink-0">
                   {importing ? (
                     <IconRefresh className="size-5 animate-spin" />
                   ) : (
                     <IconFileImport className="size-5" />
                   )}
                 </div>
-                <div className="w-full">
+                <div className="w-full min-w-0">
                   <h3 className="text-sm font-semibold">Restore Backup</h3>
-                  <p className="mt-1 text-xs text-muted-foreground">Import from a previously exported JSON backup</p>
+                  <p className="mt-1 text-xs text-muted-foreground break-words">Import from a previously exported JSON backup</p>
                 </div>
                 <div className="flex items-center gap-1 text-[11px] font-medium text-chart-2 opacity-0 transition-opacity group-hover:opacity-100">
                   <IconUpload className="size-3" />
@@ -430,24 +430,40 @@ export default function ExportImport() {
                 variant="outline"
                 onClick={handleImportCsv}
                 disabled={importing}
-                className="group flex-col items-start gap-3 p-5 text-left h-auto cursor-pointer"
+                className="group flex-col items-start gap-4 p-6 text-left h-auto min-h-[160px] cursor-pointer"
               >
-                <div className="flex size-10 items-center justify-center rounded-xl bg-chart-3/10 text-chart-3">
+                <div className="flex size-11 items-center justify-center rounded-xl bg-chart-3/10 text-chart-3 shrink-0">
                   {importing ? (
                     <IconRefresh className="size-5 animate-spin" />
                   ) : (
                     <IconHistory className="size-5" />
                   )}
                 </div>
-                <div className="w-full">
+                <div className="w-full min-w-0">
                   <h3 className="text-sm font-semibold">Bulk Import CSV</h3>
-                  <p className="mt-1 text-xs text-muted-foreground">Import multiple prompts from a CSV (title, content, tags)</p>
+                  <p className="mt-1 text-xs text-muted-foreground break-words">Import multiple prompts from a CSV (title, content, tags)</p>
                 </div>
                 <div className="flex items-center gap-1 text-[11px] font-medium text-chart-3 opacity-0 transition-opacity group-hover:opacity-100">
                   <IconUpload className="size-3" />
                   Choose file
                 </div>
               </Button>
+            </div>
+
+            <div
+              onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); dragCounter.current += 1; setIsDragging(true) }}
+              onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); dragCounter.current -= 1; if (dragCounter.current <= 0) { dragCounter.current = 0; setIsDragging(false) } }}
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
+              onDrop={(e) => { e.preventDefault(); e.stopPropagation(); dragCounter.current = 0; setIsDragging(false); const file = e.dataTransfer?.files?.[0]; if (file) processDroppedFile(file) }}
+              className="mt-6 flex cursor-default flex-col items-center gap-3 rounded-xl border-2 border-dashed border-border bg-card/20 px-6 py-8 transition-colors hover:border-muted-foreground/40 hover:bg-card/30"
+            >
+              <div className="flex size-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                <IconCloudUpload className="size-6" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-medium">Drop files here</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">Drag &amp; drop a .json or .csv file anywhere on this page</p>
+              </div>
             </div>
           </section>
         </div>
