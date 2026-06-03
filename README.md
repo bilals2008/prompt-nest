@@ -1,6 +1,6 @@
 # PromptNest
 
-[![Download Latest Release](https://img.shields.io/badge/Download-v0.0.11--beta-blue?style=for-the-badge&logo=github)](https://github.com/bilals2008/prompt-nest/releases/tag/v0.0.11-beta)
+[![Download Latest Release](https://img.shields.io/badge/Download-v0.1.0-blue?style=for-the-badge&logo=github)](https://github.com/bilals2008/prompt-nest/releases/tag/v0.1.0)
 
 A modern desktop application for saving, organizing, and managing prompts with a clean productivity-focused experience.
 
@@ -18,7 +18,7 @@ The application focuses on:
 
 ## Download
 
-You can download the latest installer for Windows from the [releases page](https://github.com/bilals2008/prompt-nest/releases/tag/v0.0.11-beta).
+You can download the latest installer for Windows from the [releases page](https://github.com/bilals2008/prompt-nest/releases/tag/v0.1.0).
 
 > **Note:** macOS and Linux builds are not yet available.
 
@@ -32,18 +32,23 @@ You can download the latest installer for Windows from the [releases page](https
 - Edit prompts
 - Delete prompts
 - Favorite prompts
+- Pin prompts
 - Copy prompts instantly
+- Markdown support with live preview
+- Notes field for extra context
 
 ### Organization
 
 - Folder support
-- Collections
-- Tags
+- Collections with color coding
+- Tags with rename, merge, and delete
 - Categories
 - Recent prompts
+- Batch actions (select multiple prompts)
 
 ### Search
 
+- Global spotlight search (Ctrl+K)
 - Fast prompt search
 - Filter by category or folder
 - Quick access workflow
@@ -52,16 +57,42 @@ You can download the latest installer for Windows from the [releases page](https
 
 - Native desktop-style layout
 - Compact sidebar navigation
-- Keyboard-focused workflow
+- Keyboard shortcuts (Ctrl+N, Ctrl+E, Ctrl+D)
 - Resizable panels
 - Smooth interactions
 - Auto-updates via GitHub releases
+- Start on system boot option
+
+### Templates
+
+- Pre-built prompt templates
+- Quick template access
+
+### Export / Import
+
+- CSV export and import
+- Selective export
+- Full database backup and restore
 
 ### Editor
 
 - Markdown support
 - Code block support
+- Live preview mode
 - Clean writing experience
+
+### Themes
+
+- Light and dark mode
+- Multiple theme variants (Midnight, Rose, Mocha, Cyberpunk, Sage, Amber, Read)
+- System theme detection
+
+### Settings
+
+- User preferences management
+- Confirm before delete option
+- Database statistics
+- App info and session tracking
 
 ### Storage
 
@@ -84,15 +115,11 @@ You can download the latest installer for Windows from the [releases page](https
 ### Desktop
 
 - Electron 42
+- electron-updater (auto-updates)
 
 ### State Management
 
 - Zustand
-
-### Desktop
-
-- Electron 42
-- electron-updater (auto-updates)
 
 ### Database
 
@@ -113,6 +140,68 @@ You can download the latest installer for Windows from the [releases page](https
 
 ---
 
+## Changelog
+
+### v0.1.0
+
+- Spotlight search (Ctrl+K)
+- Cyberpunk and Sage themes
+- Expanded color theme options
+- Read theme
+- CSV export/import with selective export
+- Confirm before delete setting
+- Backend support for prompt committing
+
+### v0.0.11-beta
+
+- User settings management system
+- Keyboard shortcuts (Ctrl+N, Ctrl+E, Ctrl+D)
+- Amber light theme with light/dark categorization
+- Command palette (replaced onboarding tour)
+- Tag management with rename, merge, and delete
+- Rose and Mocha theme variants
+- Refined sidebar, cards, and settings UI
+
+### v0.0.10-beta
+
+- Midnight theme
+- Theme configuration and appearance settings updates
+
+### v0.0.9-beta
+
+- Onboarding tour with react-joyride
+- HTML rendering in update dialog release notes
+- Automated update dialog trigger in sidebar
+
+### v0.0.8-beta
+
+- Batch delete for collections
+- Copy-to-clipboard on prompt cards
+- Prompt pinning
+- Markdown support and preview mode in editor
+- Batch actions for prompts
+- Icon library migration to @tabler/icons-react
+- Improved release scripts
+
+### v0.0.7-beta
+
+- Initial tagged release
+- Core prompt CRUD operations
+- Folder and collection management
+- Tags and categories
+- Search and filtering
+- Dashboard with stats
+- Auto-update system
+- Light/dark theme
+- Settings page with database management
+- Changelog page
+- Activity logging
+- Data export/import
+- Templates system
+- Pagination and loading states
+
+---
+
 ## Goals
 
 The goal of PromptNest is to provide a calm and professional workspace for prompt organization without unnecessary complexity or distracting UI trends.
@@ -124,18 +213,6 @@ The application is designed to feel:
 - focused
 - fast
 - desktop-native
-
----
-
-## Future Plans
-
-- Cloud sync
-- Multi-device support
-- AI prompt enhancement
-- Prompt templates
-- Export/import system
-- Prompt version history
-- Workspace customization
 
 ---
 
