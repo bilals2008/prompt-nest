@@ -13,7 +13,6 @@ import {
   IconSettings,
   IconLayoutSidebarLeftExpandFilled,
   IconLayoutSidebarLeftCollapseFilled,
-  IconHistory,
   IconRefresh,
 } from "@tabler/icons-react"
 import logo from "@/assets/logo.png"
@@ -45,7 +44,6 @@ const topNavItems = [
 ]
 
 const bottomNavItems = [
-  { icon: IconHistory, label: "Changelog", path: "/changelog" },
   { icon: IconSettings, label: "Settings", path: "/settings", tourId: "tour-settings" },
 ]
 

@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return () => ipcRenderer.removeListener('app:global-search', handler)
   },
   hideWindow: () => ipcRenderer.invoke('app:hideWindow'),
+  openExternal: (url) => ipcRenderer.invoke('app:openExternal', url),
   updater: {
     getAppVersion: () => ipcRenderer.invoke('updater:get-app-version'),
     checkForUpdates: () => ipcRenderer.invoke('updater:check-for-updates'),

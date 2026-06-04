@@ -251,6 +251,9 @@ function registerIpcHandlers() {
   ipcMain.handle('app:hideWindow', () => {
     win?.minimize()
   })
+  ipcMain.handle('app:openExternal', (_, url) => {
+    shell.openExternal(url)
+  })
 }
 
 const APP_START_TIME = Date.now()
