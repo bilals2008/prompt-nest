@@ -1,6 +1,6 @@
 # PromptNest
 
-[![Download Latest Release](https://img.shields.io/badge/Download-v0.2.0-blue?style=for-the-badge&logo=github)](https://github.com/bilals2008/prompt-nest/releases/tag/v0.2.0)
+[![Download Latest Release](https://img.shields.io/badge/Download-v0.2.1-blue?style=for-the-badge&logo=github)](https://github.com/bilals2008/prompt-nest/releases/tag/v0.2.1)
 
 A modern desktop application for saving, organizing, and managing prompts with a clean productivity-focused experience.
 
@@ -18,7 +18,7 @@ The application focuses on:
 
 ## Download
 
-You can download the latest installer for Windows from the [releases page](https://github.com/bilals2008/prompt-nest/releases/tag/v0.2.0).
+You can download the latest installer for Windows from the [releases page](https://github.com/bilals2008/prompt-nest/releases/tag/v0.2.1).
 
 > **Note:** macOS and Linux builds are not yet available.
 
@@ -141,6 +141,14 @@ You can download the latest installer for Windows from the [releases page](https
 ---
 
 ## Changelog
+
+### v0.2.1
+
+- Removed Electron and React badges from Settings
+- Added Desktop App badge
+- Added social links in Settings footer
+- Added Changelog link in Settings > Resources
+- Default theme changed to Cyberpunk
 
 ### v0.2.0
 

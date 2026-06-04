@@ -4,6 +4,20 @@ All notable changes to PromptNest will be documented in this file.
 
 ---
 
+## v0.2.1
+
+**Released:** 04 June 2026
+
+### Changes
+
+- Removed Electron and React badges from Settings
+- Added Desktop App badge
+- Added social links in Settings footer
+- Added Changelog link in Settings > Resources
+- Default theme changed to Cyberpunk
+
+---
+
 ## v0.2.0
 
 **Released:** 04 June 2026

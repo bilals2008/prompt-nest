@@ -1,6 +1,18 @@
 {
   "releases": [
     {
+      "version": "0.2.1",
+      "date": "June 04, 2026",
+      "type": "stable",
+      "changes": [
+        "Removed Electron and React badges from Settings",
+        "Added Desktop App badge",
+        "Added social links in Settings footer",
+        "Added Changelog link in Settings > Resources",
+        "Default theme changed to Cyberpunk"
+      ]
+    },
+    {
       "version": "0.2.0",
       "date": "June 04, 2026",
       "type": "stable",
