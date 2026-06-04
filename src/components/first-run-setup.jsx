@@ -19,6 +19,9 @@ import {
   IconCoffee,
   IconFlame,
   IconCheck,
+  IconTextSize,
+  IconLayoutDashboard,
+  IconLibrary,
 } from "@tabler/icons-react"
 
 const STORAGE_KEY = "pn-first-run-completed"
@@ -37,14 +40,14 @@ const themes = [
 ]
 
 const fontSizes = [
-  { value: "small", label: "Small" },
-  { value: "medium", label: "Medium" },
-  { value: "large", label: "Large" },
+  { value: "small", label: "Small", icon: IconTextSize },
+  { value: "medium", label: "Medium", icon: IconTextSize },
+  { value: "large", label: "Large", icon: IconTextSize },
 ]
 
 const defaultViews = [
-  { value: "dashboard", label: "Dashboard" },
-  { value: "prompts", label: "Prompt Library" },
+  { value: "dashboard", label: "Dashboard", icon: IconLayoutDashboard },
+  { value: "prompts", label: "Prompt Library", icon: IconLibrary },
 ]
 
 export function FirstRunSetup() {
@@ -98,7 +101,7 @@ export function FirstRunSetup() {
                   <button
                     key={value}
                     onClick={() => setTheme(value)}
-                    className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 transition-all cursor-pointer ${
+                    className={`relative flex flex-col items-center gap-1.5 rounded-lg border p-3 transition-all cursor-pointer ${
                       theme === value
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border hover:border-primary/50 hover:bg-accent"
@@ -119,16 +122,17 @@ export function FirstRunSetup() {
             <div className="space-y-4">
               <p className="text-sm font-medium">Text size</p>
               <div className="flex gap-2">
-                {fontSizes.map(({ value, label }) => (
+                {fontSizes.map(({ value, label, icon: Icon }) => (
                   <button
                     key={value}
                     onClick={() => setSetting("fontSize", value)}
-                    className={`flex-1 rounded-lg border p-3 text-center transition-all cursor-pointer ${
+                    className={`flex flex-1 items-center justify-center gap-2 rounded-lg border p-3 transition-all cursor-pointer ${
                       fontSize === value
                         ? "border-primary bg-primary/10 text-primary font-medium"
                         : "border-border hover:border-primary/50 hover:bg-accent"
                     }`}
                   >
+                    <Icon className="size-4" />
                     {label}
                   </button>
                 ))}
@@ -140,16 +144,17 @@ export function FirstRunSetup() {
             <div className="space-y-4">
               <p className="text-sm font-medium">Default startup view</p>
               <div className="flex gap-2">
-                {defaultViews.map(({ value, label }) => (
+                {defaultViews.map(({ value, label, icon: Icon }) => (
                   <button
                     key={value}
                     onClick={() => setSetting("defaultView", value)}
-                    className={`flex-1 rounded-lg border p-3 text-center transition-all cursor-pointer ${
+                    className={`flex flex-1 items-center justify-center gap-2 rounded-lg border p-3 transition-all cursor-pointer ${
                       defaultView === value
                         ? "border-primary bg-primary/10 text-primary font-medium"
                         : "border-border hover:border-primary/50 hover:bg-accent"
                     }`}
                   >
+                    <Icon className="size-4" />
                     {label}
                   </button>
                 ))}
