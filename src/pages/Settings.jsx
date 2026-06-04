@@ -919,9 +919,9 @@ export default function Settings() {
                   </div>
                 </div>
 
-                <div className="mt-6 space-y-1 text-center text-[11px] text-muted-foreground">
-                  <p>Prompt Nest &copy; {new Date().getFullYear()}</p>
+                <div className="mt-6 flex items-center justify-between text-[11px] text-muted-foreground">
                   <p>Built by <span className="font-medium text-foreground">Muhammad Bilal Hassan</span></p>
+                  <p>Prompt Nest &copy; {new Date().getFullYear()}</p>
                 </div>
               </section>
             )}
