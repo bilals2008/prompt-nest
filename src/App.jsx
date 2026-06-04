@@ -7,6 +7,7 @@ import { KeyboardShortcuts } from "@/components/keyboard-shortcuts"
 import { SpotlightSearch } from "@/features/spotlight-search/SpotlightSearch.jsx"
 import { ConfirmDialogProvider } from "@/components/confirm-dialog"
 import { WelcomeModal } from "@/components/welcome-modal"
+import { FirstRunSetup } from "@/components/first-run-setup"
 import { useSetting } from "@/hooks/use-setting"
 
 import { Toaster } from "@/components/ui/sonner"
@@ -55,6 +56,7 @@ function App() {
         <StartupRedirect />
         <KeyboardShortcuts />
         <SpotlightSearch />
+        <FirstRunSetup />
         <WelcomeModal />
         <div className="flex h-screen w-full bg-background overflow-hidden">
           <AppSidebar
