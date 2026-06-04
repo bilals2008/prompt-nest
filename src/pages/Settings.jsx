@@ -33,6 +33,7 @@ import {
 import { toast } from "sonner"
 import { APP_VERSION } from "@/lib/version"
 import { useTheme } from "@/hooks/use-theme"
+import { useConfirm } from "@/components/confirm-dialog"
 import { cn } from "@/lib/utils"
 
 function formatUptime(ms) {
@@ -151,6 +152,7 @@ function SelectSetting({ icon: Icon, label, description, value, onChange, childr
 export default function Settings() {
   const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
+  const confirm = useConfirm()
   const [activeSection, setActiveSection] = useState("general")
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -159,7 +161,6 @@ export default function Settings() {
   const [autoStart, setAutoStart] = useState(false)
   const [settings, setSettings] = useState(DEFAULT_SETTINGS)
   const [aboutData, setAboutData] = useState({ versions: null, uptime: 0, sessionCount: 0, lastBackup: null, totalActivity: 0, diskFree: 0 })
-  const [eraseConfirm, setEraseConfirm] = useState(false)
   const [erasing, setErasing] = useState(false)
 
   const loadSettings = useCallback(async () => {
@@ -240,10 +241,15 @@ export default function Settings() {
   }
 
   const handleEraseAll = async () => {
-    if (!eraseConfirm) {
-      setEraseConfirm(true)
-      return
-    }
+    const confirmed = await confirm({
+      title: "Erase All Data?",
+      description: "This will permanently delete all prompts, collections, and favorites. This action cannot be undone.",
+      confirmText: "Erase Everything",
+      cancelText: "Cancel",
+      destructive: true,
+    })
+    if (!confirmed) return
+
     setErasing(true)
     try {
       const all = await window.db.getAllPrompts()
@@ -256,7 +262,6 @@ export default function Settings() {
         await window.db.batchDeleteCollections(collections.map((c) => c.id))
       }
       toast.success("All data erased successfully")
-      setEraseConfirm(false)
       setStats((prev) => prev ? { ...prev, prompts: 0, collections: 0, favorites: 0 } : prev)
     } catch {
       toast.error("Failed to erase data")
@@ -834,24 +839,11 @@ export default function Settings() {
                   <button
                     onClick={handleEraseAll}
                     disabled={erasing}
-                    className={cn(
-                      "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all cursor-pointer",
-                      eraseConfirm
-                        ? "border-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        : "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20"
-                    )}
+                    className="flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/20 transition-all cursor-pointer"
                   >
                     <IconTrash className="size-3" />
-                    {erasing ? "Erasing..." : eraseConfirm ? "Confirm Erase All" : "Erase All Data"}
+                    {erasing ? "Erasing..." : "Erase All Data"}
                   </button>
-                  {eraseConfirm && (
-                    <button
-                      onClick={() => setEraseConfirm(false)}
-                      className="ml-2 flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-all cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                  )}
                 </div>
               </section>
             )}
