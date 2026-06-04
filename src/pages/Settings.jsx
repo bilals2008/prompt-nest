@@ -28,6 +28,7 @@ import {
   IconClock,
   IconAlertTriangle,
   IconHistory,
+  IconTrash,
 } from "@tabler/icons-react"
 import { toast } from "sonner"
 import { APP_VERSION } from "@/lib/version"
@@ -158,6 +159,8 @@ export default function Settings() {
   const [autoStart, setAutoStart] = useState(false)
   const [settings, setSettings] = useState(DEFAULT_SETTINGS)
   const [aboutData, setAboutData] = useState({ versions: null, uptime: 0, sessionCount: 0, lastBackup: null, totalActivity: 0, diskFree: 0 })
+  const [eraseConfirm, setEraseConfirm] = useState(false)
+  const [erasing, setErasing] = useState(false)
 
   const loadSettings = useCallback(async () => {
     try {
@@ -233,6 +236,32 @@ export default function Settings() {
       setTimeout(() => setCopied(false), 2000)
     } catch {
       toast.error("Failed to copy path")
+    }
+  }
+
+  const handleEraseAll = async () => {
+    if (!eraseConfirm) {
+      setEraseConfirm(true)
+      return
+    }
+    setErasing(true)
+    try {
+      const all = await window.db.getAllPrompts()
+      if (all && all.length > 0) {
+        const ids = all.map((p) => p.id)
+        await window.db.batchDeletePrompts(ids)
+      }
+      const collections = await window.db.getCollections()
+      if (collections && collections.length > 0) {
+        await window.db.batchDeleteCollections(collections.map((c) => c.id))
+      }
+      toast.success("All data erased successfully")
+      setEraseConfirm(false)
+      setStats((prev) => prev ? { ...prev, prompts: 0, collections: 0, favorites: 0 } : prev)
+    } catch {
+      toast.error("Failed to erase data")
+    } finally {
+      setErasing(false)
     }
   }
 
@@ -792,6 +821,37 @@ export default function Settings() {
                       Open
                     </button>
                   </div>
+                </div>
+
+                <div className="mt-4 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <IconAlertTriangle className="size-4 text-destructive" />
+                    <p className="text-sm font-semibold text-destructive">Danger Zone</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Permanently delete all prompts, collections, and favorites. This cannot be undone.
+                  </p>
+                  <button
+                    onClick={handleEraseAll}
+                    disabled={erasing}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all cursor-pointer",
+                      eraseConfirm
+                        ? "border-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        : "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20"
+                    )}
+                  >
+                    <IconTrash className="size-3" />
+                    {erasing ? "Erasing..." : eraseConfirm ? "Confirm Erase All" : "Erase All Data"}
+                  </button>
+                  {eraseConfirm && (
+                    <button
+                      onClick={() => setEraseConfirm(false)}
+                      className="ml-2 flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-all cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  )}
                 </div>
               </section>
             )}
