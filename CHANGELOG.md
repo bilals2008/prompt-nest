@@ -4,6 +4,24 @@ All notable changes to PromptNest will be documented in this file.
 
 ---
 
+## v0.3.0
+
+**Released:** 04 June 2026
+
+### Features
+
+- Splash screen with loading animation on app startup
+- First-run setup wizard (theme, text size, default view)
+- Welcome modal for new users
+- Warning modal for Danger Zone (Erase All Data)
+
+### Changes
+
+- Removed tour-related props from sidebar
+- Cleaned up onboarding code
+
+---
+
 ## v0.2.1
 
 **Released:** 04 June 2026

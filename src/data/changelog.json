@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "version": "0.3.0",
+      "date": "June 04, 2026",
+      "type": "stable",
+      "changes": [
+        "Splash screen with loading animation on app startup",
+        "First-run setup wizard (theme, text size, default view)",
+        "Welcome modal for new users",
+        "Warning modal for Danger Zone (Erase All Data)"
+      ]
+    },
+    {
       "version": "0.2.1",
       "date": "June 04, 2026",
       "type": "stable",

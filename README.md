@@ -1,6 +1,6 @@
 # PromptNest
 
-[![Download Latest Release](https://img.shields.io/badge/Download-v0.2.1-blue?style=for-the-badge&logo=github)](https://github.com/bilals2008/prompt-nest/releases/tag/v0.2.1)
+[![Download Latest Release](https://img.shields.io/badge/Download-v0.3.0-blue?style=for-the-badge&logo=github)](https://github.com/bilals2008/prompt-nest/releases/tag/v0.3.0)
 
 A modern desktop application for saving, organizing, and managing prompts with a clean productivity-focused experience.
 
@@ -18,7 +18,7 @@ The application focuses on:
 
 ## Download
 
-You can download the latest installer for Windows from the [releases page](https://github.com/bilals2008/prompt-nest/releases/tag/v0.2.1).
+You can download the latest installer for Windows from the [releases page](https://github.com/bilals2008/prompt-nest/releases/tag/v0.3.0).
 
 > **Note:** macOS and Linux builds are not yet available.
 
@@ -141,6 +141,13 @@ You can download the latest installer for Windows from the [releases page](https
 ---
 
 ## Changelog
+
+### v0.3.0
+
+- Splash screen with loading animation on app startup
+- First-run setup wizard (theme, text size, default view)
+- Welcome modal for new users
+- Warning modal for Danger Zone (Erase All Data)
 
 ### v0.2.1
 
