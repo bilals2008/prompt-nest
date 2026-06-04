@@ -849,10 +849,7 @@ export default function Settings() {
                         <p className="text-base font-bold">Prompt Nest</p>
                         <p className="text-xs text-muted-foreground">{APP_VERSION}</p>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <Badge variant="secondary" className="text-[10px] font-normal">Electron {aboutData.versions?.electron}</Badge>
-                        <Badge variant="secondary" className="text-[10px] font-normal">React</Badge>
-                      </div>
+                      <Badge variant="secondary" className="text-[10px] font-normal">Desktop App</Badge>
                     </div>
 
                     <div className="grid grid-cols-4 gap-2">
