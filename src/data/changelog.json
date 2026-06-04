@@ -1,6 +1,23 @@
 {
   "releases": [
     {
+      "version": "0.2.0",
+      "date": "June 04, 2026",
+      "type": "stable",
+      "changes": [
+        "Spotlight search (Ctrl+K) for quick access",
+        "Cyberpunk and Sage theme variants",
+        "Expanded color theme options",
+        "Read theme for distraction-free reading",
+        "CSV export/import with selective export",
+        "Confirm before delete setting now works across app",
+        "Backend support for prompt committing",
+        "Improved layout and spacing in export/import page",
+        "Fixed shell args escaping on Windows",
+        "Fixed Windows compatibility in release script"
+      ]
+    },
+    {
       "version": "0.1.0",
       "date": "May 31, 2026",
       "type": "stable",
