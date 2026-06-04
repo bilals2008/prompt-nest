@@ -1,3 +1,4 @@
+// File: electron/main.js
 import { app, BrowserWindow, ipcMain, shell, globalShortcut } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -117,8 +118,21 @@ function setupUpdater() {
 }
 
 function createWindow() {
+  const splash = new BrowserWindow({
+    width: 320,
+    height: 400,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    skipTaskbar: true,
+    alwaysOnTop: true,
+  })
+
+  splash.loadFile(path.join(process.env.APP_ROOT, 'electron', 'splash.html'))
+
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'icon.png'),
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
       contextIsolation: true,
@@ -128,6 +142,11 @@ function createWindow() {
 
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
+  })
+
+  win.once('ready-to-show', () => {
+    splash.close()
+    win.show()
   })
 
   if (VITE_DEV_SERVER_URL) {

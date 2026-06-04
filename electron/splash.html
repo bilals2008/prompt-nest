@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompt Nest</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0f;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      -webkit-app-region: drag;
+      user-select: none;
+    }
+    .splash {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      animation: fadeIn 0.4s ease;
+    }
+    .logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
+    }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .loader {
+      width: 40px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .loader::after {
+      content: '';
+      display: block;
+      width: 50%;
+      height: 100%;
+      background: #6366f1;
+      border-radius: 2px;
+      animation: loading 1s ease-in-out infinite;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes loading {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(300%); }
+    }
+  </style>
+</head>
+<body>
+  <div class="splash">
+    <div class="logo">
+      <img src="icon.png" alt="Prompt Nest" />
+    </div>
+    <div class="text">
+      <div class="title">Prompt Nest</div>
+      <div class="loader"></div>
+    </div>
+  </div>
+</body>
+</html>
