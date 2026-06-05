@@ -4,7 +4,7 @@
   "description": "A prompt management and organization tool",
   "author": "Bilal S.",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.3.1",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -4,6 +4,16 @@ All notable changes to PromptNest will be documented in this file.
 
 ---
 
+## v0.3.1
+
+**Released:** 04 June 2026
+
+### Changes
+
+- Minor improvements and bug fixes
+
+---
+
 ## v0.3.0
 
 **Released:** 04 June 2026
